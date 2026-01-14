@@ -4,7 +4,6 @@ import { I18nProvider } from './lib/i18n';
 import { ThemeProvider } from './lib/theme-context';
 
 import { HomePage } from './pages/marketing/HomePage';
-import { HomePageDynamic } from './pages/marketing/HomePageDynamic';
 import { ProductPage } from './pages/marketing/ProductPage';
 import { PricingPage } from './pages/marketing/PricingPage';
 import { IntegrationsPage } from './pages/marketing/IntegrationsPage';
@@ -36,7 +35,7 @@ function App() {
         <AuthProvider>
           <BrowserRouter>
             <Routes>
-          <Route path="/" element={<HomePageDynamic />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/product" element={<ProductPage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/integrations" element={<IntegrationsPage />} />
