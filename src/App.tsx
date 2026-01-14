@@ -21,6 +21,7 @@ import { LogisticsPage } from './pages/dashboard/LogisticsPage';
 
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { TenantsPage } from './pages/admin/TenantsPage';
+import { CMSPage } from './pages/admin/CMSPage';
 
 import { PortalLayout } from './components/portal/PortalLayout';
 import { PortalDashboard } from './pages/portal/PortalDashboard';
@@ -63,6 +64,7 @@ function App() {
             <Route index element={<AdminDashboard />} />
             <Route path="tenants" element={<TenantsPage />} />
             <Route path="users" element={<TenantsPage />} />
+            <Route path="cms" element={<CMSPage />} />
             <Route path="billing" element={<AdminDashboard />} />
             <Route path="integrations" element={<AdminDashboard />} />
             <Route path="security" element={<AdminDashboard />} />

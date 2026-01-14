@@ -26,6 +26,7 @@ import {
   CreditCard,
   Shield,
   Zap,
+  FileText,
 } from 'lucide-react';
 
 type NavItem = {
@@ -72,6 +73,7 @@ export function DashboardLayout({ variant = 'client' }: DashboardLayoutProps) {
     { name: t.dashboard.nav.dashboard, href: '/admin', icon: LayoutDashboard },
     { name: t.admin.tenants, href: '/admin/tenants', icon: Building2 },
     { name: t.admin.users, href: '/admin/users', icon: Users },
+    { name: 'Website CMS', href: '/admin/cms', icon: FileText },
     { name: t.admin.billing, href: '/admin/billing', icon: CreditCard },
     { name: t.dashboard.nav.integrations, href: '/admin/integrations', icon: Zap },
     { name: t.admin.security, href: '/admin/security', icon: Shield },
