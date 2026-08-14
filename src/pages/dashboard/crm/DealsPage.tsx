@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../../../components/ui/Button';
+import { supabase } from '../../../lib/supabase';
+import { useAuth } from '../../../lib/auth-context';
 import {
   Plus,
   MoreVertical,
   DollarSign,
   Calendar,
-  User,
-  ArrowRight,
+  Loader2,
 } from 'lucide-react';
 
 type Deal = {
@@ -20,15 +21,6 @@ type Deal = {
   assignedTo: string;
 };
 
-const sampleDeals: Deal[] = [
-  { id: '1', name: 'Q1 Electronics Order', company: 'ABC Corp', value: 45000, stage: 'proposal', probability: 60, expectedCloseDate: '2024-02-15', assignedTo: 'John' },
-  { id: '2', name: 'Annual Contract Renewal', company: 'XYZ Ltd', value: 120000, stage: 'negotiation', probability: 80, expectedCloseDate: '2024-02-01', assignedTo: 'Sarah' },
-  { id: '3', name: 'New Product Line', company: 'Tech Inc', value: 75000, stage: 'discovery', probability: 30, expectedCloseDate: '2024-03-01', assignedTo: 'Mike' },
-  { id: '4', name: 'Expansion Deal', company: 'Global Trade', value: 250000, stage: 'qualification', probability: 20, expectedCloseDate: '2024-04-01', assignedTo: 'John' },
-  { id: '5', name: 'Component Supply', company: 'Euro Goods', value: 35000, stage: 'proposal', probability: 50, expectedCloseDate: '2024-02-20', assignedTo: 'Sarah' },
-  { id: '6', name: 'OEM Partnership', company: 'Asia Manufacturing', value: 500000, stage: 'negotiation', probability: 75, expectedCloseDate: '2024-01-30', assignedTo: 'Mike' },
-];
-
 const stages = [
   { id: 'qualification', name: 'Qualification', color: 'bg-blue-500' },
   { id: 'discovery', name: 'Discovery', color: 'bg-cyan-500' },
@@ -39,8 +31,37 @@ const stages = [
 ];
 
 export function DealsPage() {
-  const [deals] = useState<Deal[]>(sampleDeals);
+  const { tenant } = useAuth();
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'board' | 'list'>('board');
+
+  useEffect(() => {
+    if (!tenant) return;
+    (async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('deals')
+        .select('*, account:accounts(name)')
+        .eq('tenant_id', tenant.id)
+        .order('created_at', { ascending: false });
+      if (!error && data) {
+        setDeals(
+          data.map((row: Record<string, unknown>) => ({
+            id: row.id as string,
+            name: (row.name as string) || 'Untitled',
+            company: ((row.account as { name?: string } | null)?.name) || '—',
+            value: Number(row.value) || 0,
+            stage: row.stage as Deal['stage'],
+            probability: (row.probability as number) || 0,
+            expectedCloseDate: (row.expected_close_date as string) || '',
+            assignedTo: 'Unassigned',
+          })),
+        );
+      }
+      setLoading(false);
+    })();
+  }, [tenant]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -51,16 +72,20 @@ export function DealsPage() {
     }).format(value);
   };
 
-  const getStageDeals = (stageId: string) => {
-    return deals.filter((deal) => deal.stage === stageId);
-  };
+  const getStageDeals = (stageId: string) => deals.filter((deal) => deal.stage === stageId);
+  const getStageTotalValue = (stageId: string) => getStageDeals(stageId).reduce((sum, deal) => sum + deal.value, 0);
 
-  const getStageTotalValue = (stageId: string) => {
-    return getStageDeals(stageId).reduce((sum, deal) => sum + deal.value, 0);
-  };
+  const activeDeals = deals.filter(d => d.stage !== 'closed_lost');
+  const totalPipeline = activeDeals.reduce((sum, deal) => sum + deal.value, 0);
+  const weightedPipeline = activeDeals.reduce((sum, deal) => sum + (deal.value * deal.probability / 100), 0);
 
-  const totalPipeline = deals.filter(d => d.stage !== 'closed_lost').reduce((sum, deal) => sum + deal.value, 0);
-  const weightedPipeline = deals.filter(d => d.stage !== 'closed_lost').reduce((sum, deal) => sum + (deal.value * deal.probability / 100), 0);
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 animate-spin text-xisync-cyan-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -92,7 +117,7 @@ export function DealsPage() {
         <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
           <div className="text-sm text-gray-500 mb-1">Total Pipeline</div>
           <div className="text-2xl font-bold text-gray-900">{formatCurrency(totalPipeline)}</div>
-          <div className="text-sm text-gray-500 mt-1">{deals.filter(d => d.stage !== 'closed_lost').length} deals</div>
+          <div className="text-sm text-gray-500 mt-1">{activeDeals.length} deals</div>
         </div>
         <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
           <div className="text-sm text-gray-500 mb-1">Weighted Pipeline</div>
@@ -102,7 +127,7 @@ export function DealsPage() {
         <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
           <div className="text-sm text-gray-500 mb-1">Avg. Deal Size</div>
           <div className="text-2xl font-bold text-gray-900">
-            {formatCurrency(totalPipeline / deals.filter(d => d.stage !== 'closed_lost').length || 0)}
+            {formatCurrency(activeDeals.length > 0 ? totalPipeline / activeDeals.length : 0)}
           </div>
           <div className="text-sm text-gray-500 mt-1">Per opportunity</div>
         </div>
@@ -143,8 +168,8 @@ export function DealsPage() {
                           {formatCurrency(deal.value)}
                         </div>
                         <div className="flex items-center gap-1 text-gray-500">
-                          <Calendar className="w-3 h-3" />
-                          {new Date(deal.expectedCloseDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          {deal.expectedCloseDate && <Calendar className="w-3 h-3" />}
+                          {deal.expectedCloseDate && new Date(deal.expectedCloseDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </div>
                       </div>
                       <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
@@ -166,6 +191,10 @@ export function DealsPage() {
                       </div>
                     </div>
                   ))}
+
+                  {getStageDeals(stage.id).length === 0 && (
+                    <div className="text-center py-4 text-sm text-gray-400">No deals</div>
+                  )}
 
                   <button className="w-full py-2 text-sm text-gray-500 hover:text-xisync-cyan-600 hover:bg-white rounded-lg transition-colors flex items-center justify-center gap-1">
                     <Plus className="w-4 h-4" />
@@ -213,7 +242,7 @@ export function DealsPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-gray-600">
-                    {new Date(deal.expectedCloseDate).toLocaleDateString()}
+                    {deal.expectedCloseDate ? new Date(deal.expectedCloseDate).toLocaleDateString() : '—'}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
@@ -225,6 +254,11 @@ export function DealsPage() {
                   </td>
                 </tr>
               ))}
+              {deals.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-400">No deals yet</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

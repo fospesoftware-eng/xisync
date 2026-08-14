@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../../components/ui/Button';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../lib/auth-context';
 import {
   Search,
-  Filter,
   MoreVertical,
   Send,
   Paperclip,
@@ -10,20 +11,18 @@ import {
   Languages,
   Star,
   Archive,
-  Trash2,
-  Clock,
-  CheckCircle2,
   AlertCircle,
+  Loader2,
 } from 'lucide-react';
 
 type Conversation = {
   id: string;
   contact: string;
   company: string;
-  channel: 'whatsapp' | 'email' | 'wechat' | 'instagram' | 'facebook';
+  channel: 'whatsapp' | 'email' | 'wechat' | 'instagram' | 'facebook' | 'webchat' | 'sms';
   lastMessage: string;
   lastMessageTime: string;
-  status: 'open' | 'pending' | 'resolved';
+  status: 'open' | 'pending' | 'resolved' | 'closed';
   unread: boolean;
   priority: 'low' | 'normal' | 'high' | 'urgent';
 };
@@ -37,27 +36,14 @@ type Message = {
   status: 'sent' | 'delivered' | 'read';
 };
 
-const sampleConversations: Conversation[] = [
-  { id: '1', contact: 'John Smith', company: 'ABC Corp', channel: 'whatsapp', lastMessage: 'What is the MOQ for the stainless steel bottles?', lastMessageTime: '5m ago', status: 'open', unread: true, priority: 'high' },
-  { id: '2', contact: 'Maria Garcia', company: 'XYZ Ltd', channel: 'email', lastMessage: 'Re: Quote Request - Need updated pricing', lastMessageTime: '23m ago', status: 'pending', unread: true, priority: 'normal' },
-  { id: '3', contact: 'James Wilson', company: 'Tech Inc', channel: 'wechat', lastMessage: 'Thank you for the samples!', lastMessageTime: '1h ago', status: 'open', unread: false, priority: 'low' },
-  { id: '4', contact: 'Sophie Chen', company: 'Global Trade', channel: 'email', lastMessage: 'When can we expect the shipment?', lastMessageTime: '2h ago', status: 'open', unread: false, priority: 'urgent' },
-  { id: '5', contact: 'Ahmed Hassan', company: 'Middle East Trading', channel: 'whatsapp', lastMessage: 'I need the compliance certificates', lastMessageTime: '3h ago', status: 'pending', unread: false, priority: 'high' },
-];
-
-const sampleMessages: Message[] = [
-  { id: '1', content: 'Hello! I am interested in your stainless steel water bottles.', sender: 'customer', timestamp: '10:30 AM', status: 'read' },
-  { id: '2', content: '您好！我们有各种不同尺寸和款式的不锈钢水壶。请问您需要什么具体的规格呢？', translation: 'Hello! We have various sizes and styles of stainless steel bottles. What specific specifications do you need?', sender: 'agent', timestamp: '10:32 AM', status: 'read' },
-  { id: '3', content: 'I need 500ml bottles with custom logo printing. What is the MOQ?', sender: 'customer', timestamp: '10:35 AM', status: 'read' },
-  { id: '4', content: 'What is the MOQ for the stainless steel bottles?', sender: 'customer', timestamp: '10:36 AM', status: 'read' },
-];
-
 const channelIcons: Record<Conversation['channel'], string> = {
   whatsapp: 'WA',
   email: '@',
   wechat: 'WC',
   instagram: 'IG',
   facebook: 'FB',
+  webchat: 'WC',
+  sms: 'SM',
 };
 
 const channelColors: Record<Conversation['channel'], string> = {
@@ -66,14 +52,111 @@ const channelColors: Record<Conversation['channel'], string> = {
   wechat: 'bg-emerald-100 text-emerald-700',
   instagram: 'bg-pink-100 text-pink-700',
   facebook: 'bg-indigo-100 text-indigo-700',
+  webchat: 'bg-cyan-100 text-cyan-700',
+  sms: 'bg-gray-100 text-gray-700',
 };
 
 export function InboxPage() {
-  const [conversations] = useState<Conversation[]>(sampleConversations);
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(conversations[0]);
-  const [messages] = useState<Message[]>(sampleMessages);
+  const { tenant } = useAuth();
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [showTranslation, setShowTranslation] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+
+  useEffect(() => {
+    if (!tenant) return;
+    (async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('conversations')
+        .select('*, contact:contacts(first_name,last_name,account:accounts(name))')
+        .eq('tenant_id', tenant.id)
+        .order('last_message_at', { ascending: false });
+      if (!error && data) {
+        const mapped: Conversation[] = data.map((row: Record<string, unknown>) => {
+          const contact = row.contact as { first_name?: string; last_name?: string; account?: { name?: string } | null } | null;
+          return {
+            id: row.id as string,
+            contact: contact ? `${contact.first_name || ''} ${contact.last_name || ''}`.trim() || 'Unknown' : 'Unknown',
+            company: contact?.account?.name || '—',
+            channel: (row.channel_type as Conversation['channel']) || 'email',
+            lastMessage: (row.subject as string) || '—',
+            lastMessageTime: row.last_message_at ? new Date(row.last_message_at as string).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+            status: row.status as Conversation['status'],
+            unread: false,
+            priority: (row.priority as Conversation['priority']) || 'normal',
+          };
+        });
+        setConversations(mapped);
+        if (mapped.length > 0) setSelectedConversation(mapped[0]);
+      }
+      setLoading(false);
+    })();
+  }, [tenant]);
+
+  useEffect(() => {
+    if (!selectedConversation) return;
+    (async () => {
+      setLoadingMessages(true);
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('conversation_id', selectedConversation.id)
+        .order('created_at', { ascending: true });
+      if (!error && data) {
+        setMessages(
+          data.map((row: Record<string, unknown>) => ({
+            id: row.id as string,
+            content: (row.content as string) || '',
+            translation: (row.content_translated as string) || undefined,
+            sender: (row.sender_type as 'customer' | 'agent') || 'customer',
+            timestamp: row.created_at ? new Date(row.created_at as string).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+            status: (row.status as Message['status']) || 'sent',
+          })),
+        );
+      }
+      setLoadingMessages(false);
+    })();
+  }, [selectedConversation]);
+
+  const handleSend = async () => {
+    if (!newMessage.trim() || !selectedConversation || !tenant) return;
+    const content = newMessage.trim();
+    setNewMessage('');
+    const { data } = await supabase
+      .from('messages')
+      .insert({
+        conversation_id: selectedConversation.id,
+        direction: 'outbound',
+        sender_type: 'agent',
+        content,
+        content_type: 'text',
+        status: 'sent',
+      })
+      .select('*')
+      .single();
+    if (data) {
+      setMessages(prev => [...prev, {
+        id: data.id as string,
+        content: (data.content as string) || content,
+        translation: (data.content_translated as string) || undefined,
+        sender: 'agent',
+        timestamp: new Date(data.created_at as string).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        status: 'sent',
+      }]);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 animate-spin text-xisync-cyan-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="h-[calc(100vh-8rem)] flex bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
@@ -89,61 +172,65 @@ export function InboxPage() {
           </div>
           <div className="flex items-center gap-2 mt-3">
             <button className="flex-1 px-3 py-1.5 text-sm font-medium text-xisync-cyan-700 bg-xisync-cyan-50 rounded-lg">
-              All (12)
+              All ({conversations.length})
             </button>
             <button className="flex-1 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">
-              Open (8)
+              Open ({conversations.filter(c => c.status === 'open').length})
             </button>
             <button className="flex-1 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">
-              Pending (4)
+              Pending ({conversations.filter(c => c.status === 'pending').length})
             </button>
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {conversations.map((conv) => (
-            <div
-              key={conv.id}
-              onClick={() => setSelectedConversation(conv)}
-              className={`p-4 border-b border-gray-100 cursor-pointer transition-colors ${
-                selectedConversation?.id === conv.id ? 'bg-xisync-cyan-50' : 'hover:bg-gray-50'
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <div className="relative">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-xisync-blue-400 to-xisync-cyan-400 flex items-center justify-center text-white text-sm font-semibold">
-                    {conv.contact.charAt(0)}
+          {conversations.length === 0 ? (
+            <div className="flex items-center justify-center h-full text-gray-400 text-sm">No conversations</div>
+          ) : (
+            conversations.map((conv) => (
+              <div
+                key={conv.id}
+                onClick={() => setSelectedConversation(conv)}
+                className={`p-4 border-b border-gray-100 cursor-pointer transition-colors ${
+                  selectedConversation?.id === conv.id ? 'bg-xisync-cyan-50' : 'hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-xisync-blue-400 to-xisync-cyan-400 flex items-center justify-center text-white text-sm font-semibold">
+                      {conv.contact.charAt(0)}
+                    </div>
+                    <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${channelColors[conv.channel]}`}>
+                      {channelIcons[conv.channel]}
+                    </div>
                   </div>
-                  <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${channelColors[conv.channel]}`}>
-                    {channelIcons[conv.channel]}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className={`font-medium text-gray-900 ${conv.unread ? 'font-semibold' : ''}`}>
+                        {conv.contact}
+                      </span>
+                      <span className="text-xs text-gray-500">{conv.lastMessageTime}</span>
+                    </div>
+                    <div className="text-xs text-gray-500 mb-1">{conv.company}</div>
+                    <p className={`text-sm truncate ${conv.unread ? 'text-gray-900 font-medium' : 'text-gray-600'}`}>
+                      {conv.lastMessage}
+                    </p>
                   </div>
+                  {conv.unread && (
+                    <div className="w-2 h-2 rounded-full bg-xisync-cyan-500 mt-2" />
+                  )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className={`font-medium text-gray-900 ${conv.unread ? 'font-semibold' : ''}`}>
-                      {conv.contact}
+                {conv.priority === 'urgent' || conv.priority === 'high' ? (
+                  <div className="mt-2 flex items-center gap-1">
+                    <AlertCircle className={`w-3 h-3 ${conv.priority === 'urgent' ? 'text-red-500' : 'text-orange-500'}`} />
+                    <span className={`text-xs font-medium ${conv.priority === 'urgent' ? 'text-red-600' : 'text-orange-600'}`}>
+                      {conv.priority === 'urgent' ? 'Urgent' : 'High priority'}
                     </span>
-                    <span className="text-xs text-gray-500">{conv.lastMessageTime}</span>
                   </div>
-                  <div className="text-xs text-gray-500 mb-1">{conv.company}</div>
-                  <p className={`text-sm truncate ${conv.unread ? 'text-gray-900 font-medium' : 'text-gray-600'}`}>
-                    {conv.lastMessage}
-                  </p>
-                </div>
-                {conv.unread && (
-                  <div className="w-2 h-2 rounded-full bg-xisync-cyan-500 mt-2" />
-                )}
+                ) : null}
               </div>
-              {conv.priority === 'urgent' || conv.priority === 'high' ? (
-                <div className="mt-2 flex items-center gap-1">
-                  <AlertCircle className={`w-3 h-3 ${conv.priority === 'urgent' ? 'text-red-500' : 'text-orange-500'}`} />
-                  <span className={`text-xs font-medium ${conv.priority === 'urgent' ? 'text-red-600' : 'text-orange-600'}`}>
-                    {conv.priority === 'urgent' ? 'Urgent' : 'High priority'}
-                  </span>
-                </div>
-              ) : null}
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
@@ -177,37 +264,42 @@ export function InboxPage() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.sender === 'agent' ? 'justify-end' : 'justify-start'}`}
-                >
+              {loadingMessages ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-5 h-5 animate-spin text-xisync-cyan-500" />
+                </div>
+              ) : messages.length === 0 ? (
+                <div className="flex items-center justify-center py-8 text-gray-400 text-sm">No messages yet</div>
+              ) : (
+                messages.map((message) => (
                   <div
-                    className={`max-w-md rounded-2xl px-4 py-3 ${
-                      message.sender === 'agent'
-                        ? 'bg-gradient-to-br from-xisync-blue-600 to-xisync-cyan-600 text-white'
-                        : 'bg-white border border-gray-200 text-gray-900'
-                    }`}
+                    key={message.id}
+                    className={`flex ${message.sender === 'agent' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <p className="text-sm">{message.content}</p>
-                    {message.translation && showTranslation && (
-                      <div className={`mt-2 pt-2 border-t ${message.sender === 'agent' ? 'border-white/20' : 'border-gray-200'}`}>
-                        <div className="flex items-center gap-1 mb-1">
-                          <Languages className="w-3 h-3 opacity-60" />
-                          <span className="text-xs opacity-60">Translation</span>
+                    <div
+                      className={`max-w-md rounded-2xl px-4 py-3 ${
+                        message.sender === 'agent'
+                          ? 'bg-gradient-to-br from-xisync-blue-600 to-xisync-cyan-600 text-white'
+                          : 'bg-white border border-gray-200 text-gray-900'
+                      }`}
+                    >
+                      <p className="text-sm">{message.content}</p>
+                      {message.translation && showTranslation && (
+                        <div className={`mt-2 pt-2 border-t ${message.sender === 'agent' ? 'border-white/20' : 'border-gray-200'}`}>
+                          <div className="flex items-center gap-1 mb-1">
+                            <Languages className="w-3 h-3 opacity-60" />
+                            <span className="text-xs opacity-60">Translation</span>
+                          </div>
+                          <p className="text-sm opacity-90">{message.translation}</p>
                         </div>
-                        <p className="text-sm opacity-90">{message.translation}</p>
-                      </div>
-                    )}
-                    <div className={`flex items-center justify-end gap-1 mt-1 ${message.sender === 'agent' ? 'text-white/60' : 'text-gray-400'}`}>
-                      <span className="text-xs">{message.timestamp}</span>
-                      {message.sender === 'agent' && (
-                        <CheckCircle2 className="w-3 h-3" />
                       )}
+                      <div className={`flex items-center justify-end gap-1 mt-1 ${message.sender === 'agent' ? 'text-white/60' : 'text-gray-400'}`}>
+                        <span className="text-xs">{message.timestamp}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
 
             <div className="p-4 border-t border-gray-200 bg-white">
@@ -228,6 +320,7 @@ export function InboxPage() {
                   <textarea
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                     placeholder="Type your message..."
                     className="w-full bg-transparent text-sm resize-none outline-none"
                     rows={2}
@@ -244,7 +337,7 @@ export function InboxPage() {
                     <span className="text-xs text-gray-400">Press Enter to send</span>
                   </div>
                 </div>
-                <Button icon={<Send className="w-4 h-4" />}>Send</Button>
+                <Button icon={<Send className="w-4 h-4" />} onClick={handleSend}>Send</Button>
               </div>
             </div>
           </>
@@ -270,27 +363,19 @@ export function InboxPage() {
             <div className="space-y-4">
               <div>
                 <div className="text-xs font-medium text-gray-500 uppercase mb-1">Status</div>
-                <select className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg">
-                  <option>Open</option>
-                  <option>Pending</option>
-                  <option>Resolved</option>
+                <select className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg" defaultValue={selectedConversation.status}>
+                  <option value="open">Open</option>
+                  <option value="pending">Pending</option>
+                  <option value="resolved">Resolved</option>
                 </select>
               </div>
               <div>
                 <div className="text-xs font-medium text-gray-500 uppercase mb-1">Priority</div>
-                <select className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg">
-                  <option>Low</option>
-                  <option>Normal</option>
-                  <option>High</option>
-                  <option>Urgent</option>
-                </select>
-              </div>
-              <div>
-                <div className="text-xs font-medium text-gray-500 uppercase mb-1">Assigned To</div>
-                <select className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg">
-                  <option>Me</option>
-                  <option>John</option>
-                  <option>Sarah</option>
+                <select className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg" defaultValue={selectedConversation.priority}>
+                  <option value="low">Low</option>
+                  <option value="normal">Normal</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
                 </select>
               </div>
             </div>

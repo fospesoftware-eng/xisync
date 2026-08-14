@@ -1,30 +1,17 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../../components/ui/Button';
 import { StatsCard } from '../../components/dashboard/StatsCard';
-import {
-  Plus,
-  Search,
-  Filter,
-  Ship,
-  Plane,
-  Truck,
-  Package,
-  MapPin,
-  Calendar,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  ExternalLink,
-  MoreVertical,
-} from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../lib/auth-context';
+import { Plus, Search, Filter, Ship, Plane, Truck, Brain as Train, Package, MapPin, Calendar, AlertTriangle, CheckCircle2, Clock, ExternalLink, MoreVertical, Loader2 } from 'lucide-react';
 
 type Shipment = {
   id: string;
   number: string;
   order: string;
   customer: string;
-  mode: 'sea' | 'air' | 'express' | 'truck';
-  status: 'booked' | 'picked_up' | 'in_transit' | 'arrived' | 'delivered' | 'exception';
+  mode: 'sea' | 'air' | 'express' | 'rail' | 'truck';
+  status: 'booked' | 'picked_up' | 'export_cleared' | 'in_transit' | 'arrived' | 'import_cleared' | 'delivered' | 'exception';
   origin: string;
   destination: string;
   etd: string;
@@ -33,40 +20,76 @@ type Shipment = {
   tracking: string;
 };
 
-const sampleShipments: Shipment[] = [
-  { id: '1', number: 'SH-2024-001', order: 'ORD-001', customer: 'ABC Corp', mode: 'sea', status: 'in_transit', origin: 'Shanghai, CN', destination: 'Los Angeles, US', etd: '2024-01-10', eta: '2024-02-05', carrier: 'COSCO', tracking: 'COSU123456' },
-  { id: '2', number: 'SH-2024-002', order: 'ORD-002', customer: 'XYZ Ltd', mode: 'air', status: 'picked_up', origin: 'Shenzhen, CN', destination: 'London, UK', etd: '2024-01-18', eta: '2024-01-22', carrier: 'DHL', tracking: 'DHL789012' },
-  { id: '3', number: 'SH-2024-003', order: 'ORD-003', customer: 'Tech Inc', mode: 'express', status: 'delivered', origin: 'Guangzhou, CN', destination: 'New York, US', etd: '2024-01-12', eta: '2024-01-16', carrier: 'FedEx', tracking: 'FEDEX345678' },
-  { id: '4', number: 'SH-2024-004', order: 'ORD-004', customer: 'Global Trade', mode: 'sea', status: 'exception', origin: 'Ningbo, CN', destination: 'Hamburg, DE', etd: '2024-01-08', eta: '2024-02-10', carrier: 'Maersk', tracking: 'MAEU901234' },
-  { id: '5', number: 'SH-2024-005', order: 'ORD-005', customer: 'Euro Goods', mode: 'air', status: 'booked', origin: 'Shanghai, CN', destination: 'Paris, FR', etd: '2024-01-25', eta: '2024-01-28', carrier: 'Air France', tracking: 'AF567890' },
-];
-
 const modeIcons: Record<Shipment['mode'], React.ReactNode> = {
   sea: <Ship className="w-4 h-4" />,
   air: <Plane className="w-4 h-4" />,
   express: <Package className="w-4 h-4" />,
+  rail: <Train className="w-4 h-4" />,
   truck: <Truck className="w-4 h-4" />,
 };
 
 const statusConfig: Record<Shipment['status'], { color: string; label: string; icon: React.ReactNode }> = {
   booked: { color: 'bg-blue-100 text-blue-700', label: 'Booked', icon: <Calendar className="w-3 h-3" /> },
   picked_up: { color: 'bg-cyan-100 text-cyan-700', label: 'Picked Up', icon: <Package className="w-3 h-3" /> },
+  export_cleared: { color: 'bg-cyan-100 text-cyan-700', label: 'Export Cleared', icon: <CheckCircle2 className="w-3 h-3" /> },
   in_transit: { color: 'bg-yellow-100 text-yellow-700', label: 'In Transit', icon: <Clock className="w-3 h-3" /> },
   arrived: { color: 'bg-green-100 text-green-700', label: 'Arrived', icon: <MapPin className="w-3 h-3" /> },
+  import_cleared: { color: 'bg-green-100 text-green-700', label: 'Import Cleared', icon: <CheckCircle2 className="w-3 h-3" /> },
   delivered: { color: 'bg-green-100 text-green-700', label: 'Delivered', icon: <CheckCircle2 className="w-3 h-3" /> },
   exception: { color: 'bg-red-100 text-red-700', label: 'Exception', icon: <AlertTriangle className="w-3 h-3" /> },
 };
 
-const stats = [
-  { title: 'Active Shipments', value: '42', change: 8.1, icon: <Package className="w-5 h-5" />, iconColor: 'bg-xisync-cyan-100 text-xisync-cyan-600' },
-  { title: 'In Transit', value: '28', icon: <Ship className="w-5 h-5" />, iconColor: 'bg-xisync-blue-100 text-xisync-blue-600' },
-  { title: 'Delivered (MTD)', value: '156', change: 12.3, icon: <CheckCircle2 className="w-5 h-5" />, iconColor: 'bg-xisync-green-100 text-xisync-green-600' },
-  { title: 'Exceptions', value: '3', change: -25, icon: <AlertTriangle className="w-5 h-5" />, iconColor: 'bg-red-100 text-red-600' },
-];
-
 export function LogisticsPage() {
-  const [shipments] = useState<Shipment[]>(sampleShipments);
+  const { tenant } = useAuth();
+  const [shipments, setShipments] = useState<Shipment[]>([]);
   const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!tenant) return;
+    (async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('shipments')
+        .select('*, account:accounts(name)')
+        .eq('tenant_id', tenant.id)
+        .order('created_at', { ascending: false });
+      if (!error && data) {
+        setShipments(
+          data.map((row: Record<string, unknown>) => ({
+            id: row.id as string,
+            number: (row.shipment_number as string) || '—',
+            order: (row.order_id as string) || '—',
+            customer: ((row.account as { name?: string } | null)?.name) || '—',
+            mode: (row.mode as Shipment['mode']) || 'sea',
+            status: (row.status as Shipment['status']) || 'booked',
+            origin: `${row.origin_port || '—'}, ${row.origin_country || ''}`.trim(),
+            destination: `${row.destination_port || '—'}, ${row.destination_country || ''}`.trim(),
+            etd: (row.etd as string) || '',
+            eta: (row.eta as string) || '',
+            carrier: (row.carrier as string) || '—',
+            tracking: (row.tracking_number as string) || '—',
+          })),
+        );
+      }
+      setLoading(false);
+    })();
+  }, [tenant]);
+
+  const stats = [
+    { title: 'Active Shipments', value: String(shipments.filter(s => !['delivered', 'exception'].includes(s.status)).length), icon: <Package className="w-5 h-5" />, iconColor: 'bg-xisync-cyan-100 text-xisync-cyan-600' },
+    { title: 'In Transit', value: String(shipments.filter(s => s.status === 'in_transit').length), icon: <Ship className="w-5 h-5" />, iconColor: 'bg-xisync-blue-100 text-xisync-blue-600' },
+    { title: 'Delivered', value: String(shipments.filter(s => s.status === 'delivered').length), icon: <CheckCircle2 className="w-5 h-5" />, iconColor: 'bg-xisync-green-100 text-xisync-green-600' },
+    { title: 'Exceptions', value: String(shipments.filter(s => s.status === 'exception').length), icon: <AlertTriangle className="w-5 h-5" />, iconColor: 'bg-red-100 text-red-600' },
+  ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 animate-spin text-xisync-cyan-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -84,7 +107,6 @@ export function LogisticsPage() {
             key={stat.title}
             title={stat.title}
             value={stat.value}
-            change={stat.change}
             icon={stat.icon}
             iconColor={stat.iconColor}
           />
@@ -119,48 +141,54 @@ export function LogisticsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {shipments.map((shipment) => (
-              <tr key={shipment.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedShipment(shipment)}>
-                <td className="px-6 py-4">
-                  <div className="font-medium text-gray-900">{shipment.number}</div>
-                  <div className="text-sm text-gray-500">{shipment.order}</div>
-                </td>
-                <td className="px-6 py-4 text-gray-600">{shipment.customer}</td>
-                <td className="px-6 py-4">
-                  <div className="text-sm">
-                    <div className="text-gray-900">{shipment.origin}</div>
-                    <div className="text-gray-500">to {shipment.destination}</div>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600">
-                      {modeIcons[shipment.mode]}
-                    </div>
-                    <span className="capitalize text-gray-600">{shipment.mode}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusConfig[shipment.status].color}`}>
-                    {statusConfig[shipment.status].icon}
-                    {statusConfig[shipment.status].label}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-gray-600">
-                  {new Date(shipment.eta).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    <button className="p-1 text-gray-400 hover:text-gray-600">
-                      <ExternalLink className="w-4 h-4" />
-                    </button>
-                    <button className="p-1 text-gray-400 hover:text-gray-600">
-                      <MoreVertical className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
+            {shipments.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="px-6 py-12 text-center text-gray-400">No shipments yet</td>
               </tr>
-            ))}
+            ) : (
+              shipments.map((shipment) => (
+                <tr key={shipment.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedShipment(shipment)}>
+                  <td className="px-6 py-4">
+                    <div className="font-medium text-gray-900">{shipment.number}</div>
+                    <div className="text-sm text-gray-500">{shipment.order}</div>
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">{shipment.customer}</td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm">
+                      <div className="text-gray-900">{shipment.origin}</div>
+                      <div className="text-gray-500">to {shipment.destination}</div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600">
+                        {modeIcons[shipment.mode]}
+                      </div>
+                      <span className="capitalize text-gray-600">{shipment.mode}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusConfig[shipment.status].color}`}>
+                      {statusConfig[shipment.status].icon}
+                      {statusConfig[shipment.status].label}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">
+                    {shipment.eta ? new Date(shipment.eta).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—'}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button className="p-1 text-gray-400 hover:text-gray-600">
+                        <ExternalLink className="w-4 h-4" />
+                      </button>
+                      <button className="p-1 text-gray-400 hover:text-gray-600">
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -187,12 +215,12 @@ export function LogisticsPage() {
                 <div>
                   <div className="text-sm text-gray-500 mb-1">Origin</div>
                   <div className="font-medium text-gray-900">{selectedShipment.origin}</div>
-                  <div className="text-sm text-gray-500">ETD: {new Date(selectedShipment.etd).toLocaleDateString()}</div>
+                  <div className="text-sm text-gray-500">ETD: {selectedShipment.etd ? new Date(selectedShipment.etd).toLocaleDateString() : '—'}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-500 mb-1">Destination</div>
                   <div className="font-medium text-gray-900">{selectedShipment.destination}</div>
-                  <div className="text-sm text-gray-500">ETA: {new Date(selectedShipment.eta).toLocaleDateString()}</div>
+                  <div className="text-sm text-gray-500">ETA: {selectedShipment.eta ? new Date(selectedShipment.eta).toLocaleDateString() : '—'}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-500 mb-1">Carrier</div>
@@ -209,8 +237,10 @@ export function LogisticsPage() {
                 <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200" />
                 <div className="space-y-6">
                   {['Booked', 'Picked Up', 'Export Cleared', 'In Transit', 'Arrived', 'Import Cleared', 'Delivered'].map((milestone, index) => {
-                    const isCompleted = index < 3;
-                    const isCurrent = index === 3;
+                    const statusOrder = ['booked', 'picked_up', 'export_cleared', 'in_transit', 'arrived', 'import_cleared', 'delivered'];
+                    const currentIndex = statusOrder.indexOf(selectedShipment.status);
+                    const isCompleted = index <= currentIndex;
+                    const isCurrent = index === currentIndex;
                     return (
                       <div key={milestone} className="relative flex items-start gap-4 pl-8">
                         <div className={`absolute left-0 w-8 h-8 rounded-full flex items-center justify-center ${
@@ -224,9 +254,6 @@ export function LogisticsPage() {
                           <div className={`font-medium ${isCompleted || isCurrent ? 'text-gray-900' : 'text-gray-400'}`}>
                             {milestone}
                           </div>
-                          {isCompleted && (
-                            <div className="text-sm text-gray-500">Jan {10 + index}, 2024</div>
-                          )}
                         </div>
                       </div>
                     );

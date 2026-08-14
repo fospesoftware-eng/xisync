@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DataTable } from '../../../components/dashboard/DataTable';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
+import { supabase } from '../../../lib/supabase';
+import { useAuth } from '../../../lib/auth-context';
 import {
   Plus,
   Filter,
@@ -13,6 +15,7 @@ import {
   Building2,
   Globe,
   X,
+  Loader2,
 } from 'lucide-react';
 
 type Lead = {
@@ -22,30 +25,52 @@ type Lead = {
   company: string;
   country: string;
   source: string;
-  status: 'new' | 'contacted' | 'qualified' | 'unqualified';
+  status: 'new' | 'contacted' | 'qualified' | 'unqualified' | 'converted';
   score: number;
   createdAt: string;
 };
-
-const sampleLeads: Lead[] = [
-  { id: '1', name: 'John Smith', email: 'john@abccorp.com', company: 'ABC Corp', country: 'USA', source: 'Website', status: 'new', score: 85, createdAt: '2024-01-15' },
-  { id: '2', name: 'Maria Garcia', email: 'maria@xyzltd.com', company: 'XYZ Ltd', country: 'Spain', source: 'WhatsApp', status: 'contacted', score: 72, createdAt: '2024-01-14' },
-  { id: '3', name: 'James Wilson', email: 'james@techinc.com', company: 'Tech Inc', country: 'UK', source: 'Email', status: 'qualified', score: 91, createdAt: '2024-01-13' },
-  { id: '4', name: 'Sophie Chen', email: 'sophie@globaltrade.com', company: 'Global Trade', country: 'Singapore', source: 'Alibaba', status: 'new', score: 68, createdAt: '2024-01-12' },
-  { id: '5', name: 'Ahmed Hassan', email: 'ahmed@middleeast.com', company: 'Middle East Trading', country: 'UAE', source: 'WeChat', status: 'contacted', score: 79, createdAt: '2024-01-11' },
-  { id: '6', name: 'Lisa Brown', email: 'lisa@eurogoods.com', company: 'Euro Goods', country: 'Germany', source: 'Website', status: 'qualified', score: 88, createdAt: '2024-01-10' },
-];
 
 const statusColors: Record<Lead['status'], string> = {
   new: 'bg-blue-100 text-blue-700',
   contacted: 'bg-yellow-100 text-yellow-700',
   qualified: 'bg-green-100 text-green-700',
   unqualified: 'bg-gray-100 text-gray-600',
+  converted: 'bg-emerald-100 text-emerald-700',
 };
 
 export function LeadsPage() {
+  const { tenant } = useAuth();
   const [showNewLeadModal, setShowNewLeadModal] = useState(false);
-  const [leads] = useState<Lead[]>(sampleLeads);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!tenant) return;
+    (async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('leads')
+        .select('*')
+        .eq('tenant_id', tenant.id)
+        .order('created_at', { ascending: false });
+      if (!error && data) {
+        setLeads(
+          data.map((row: Record<string, unknown>) => ({
+            id: row.id as string,
+            name: (row.contact_name as string) || 'Unknown',
+            email: (row.email as string) || '',
+            company: (row.company_name as string) || '—',
+            country: (row.country as string) || '—',
+            source: (row.source as string) || '—',
+            status: row.status as Lead['status'],
+            score: (row.score as number) || 0,
+            createdAt: row.created_at as string,
+          })),
+        );
+      }
+      setLoading(false);
+    })();
+  }, [tenant]);
 
   const columns = [
     {
@@ -127,6 +152,14 @@ export function LeadsPage() {
     },
   ];
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 animate-spin text-xisync-cyan-500" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -171,7 +204,7 @@ export function LeadsPage() {
         columns={columns}
         searchable
         searchPlaceholder="Search leads..."
-        actions={(lead) => (
+        actions={() => (
           <div className="flex items-center gap-2">
             <button className="p-1 text-gray-400 hover:text-gray-600">
               <Mail className="w-4 h-4" />
@@ -196,54 +229,113 @@ export function LeadsPage() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <Input label="First Name" placeholder="John" required />
-                <Input label="Last Name" placeholder="Smith" required />
-              </div>
-              <Input label="Email" type="email" placeholder="john@company.com" required />
-              <Input label="Phone" type="tel" placeholder="+1 234 567 890" />
-              <Input label="Company" placeholder="Company name" />
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Country</label>
-                  <select className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-xisync-cyan-500">
-                    <option>Select country</option>
-                    <option>USA</option>
-                    <option>UK</option>
-                    <option>Germany</option>
-                    <option>Spain</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Source</label>
-                  <select className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-xisync-cyan-500">
-                    <option>Website</option>
-                    <option>WhatsApp</option>
-                    <option>Email</option>
-                    <option>Alibaba</option>
-                    <option>WeChat</option>
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Notes</label>
-                <textarea
-                  className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-xisync-cyan-500 resize-none"
-                  rows={3}
-                  placeholder="Additional notes..."
-                />
-              </div>
-              <div className="flex justify-end gap-3 pt-4">
-                <Button variant="outline" type="button" onClick={() => setShowNewLeadModal(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit">Add Lead</Button>
-              </div>
-            </form>
+            <LeadForm tenantId={tenant?.id} onClose={() => setShowNewLeadModal(false)} onSaved={() => {
+              setShowNewLeadModal(false);
+              if (tenant) {
+                supabase.from('leads').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false })
+                  .then(({ data }) => {
+                    if (data) setLeads(data.map((row: Record<string, unknown>) => ({
+                      id: row.id as string,
+                      name: (row.contact_name as string) || 'Unknown',
+                      email: (row.email as string) || '',
+                      company: (row.company_name as string) || '—',
+                      country: (row.country as string) || '—',
+                      source: (row.source as string) || '—',
+                      status: row.status as Lead['status'],
+                      score: (row.score as number) || 0,
+                      createdAt: row.created_at as string,
+                    })));
+                  });
+              }
+            }} />
           </div>
         </div>
       )}
     </div>
+  );
+}
+
+function LeadForm({ tenantId, onClose, onSaved }: { tenantId?: string; onClose: () => void; onSaved: () => void }) {
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    contactName: '',
+    email: '',
+    phone: '',
+    company: '',
+    country: '',
+    source: 'Website',
+    notes: '',
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tenantId) return;
+    setSaving(true);
+    const { error } = await supabase.from('leads').insert({
+      tenant_id: tenantId,
+      contact_name: form.contactName,
+      email: form.email,
+      phone: form.phone,
+      company_name: form.company,
+      country: form.country,
+      source: form.source,
+      notes: form.notes,
+      status: 'new',
+    });
+    setSaving(false);
+    if (!error) onSaved();
+  };
+
+  return (
+    <form className="space-y-4" onSubmit={handleSubmit}>
+      <div className="grid grid-cols-2 gap-4">
+        <Input label="Contact Name" placeholder="John Smith" required value={form.contactName} onChange={(e) => setForm({ ...form, contactName: e.target.value })} />
+      </div>
+      <Input label="Email" type="email" placeholder="john@company.com" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+      <Input label="Phone" type="tel" placeholder="+1 234 567 890" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+      <Input label="Company" placeholder="Company name" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Country</label>
+          <select className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-xisync-cyan-500" value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })}>
+            <option value="">Select country</option>
+            <option>USA</option>
+            <option>UK</option>
+            <option>Germany</option>
+            <option>Spain</option>
+            <option>Singapore</option>
+            <option>UAE</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Source</label>
+          <select className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-xisync-cyan-500" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })}>
+            <option>Website</option>
+            <option>WhatsApp</option>
+            <option>Email</option>
+            <option>Alibaba</option>
+            <option>WeChat</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1.5">Notes</label>
+        <textarea
+          className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-xisync-cyan-500 resize-none"
+          rows={3}
+          placeholder="Additional notes..."
+          value={form.notes}
+          onChange={(e) => setForm({ ...form, notes: e.target.value })}
+        />
+      </div>
+      <div className="flex justify-end gap-3 pt-4">
+        <Button variant="outline" type="button" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={saving}>
+          {saving ? 'Saving...' : 'Add Lead'}
+        </Button>
+      </div>
+    </form>
   );
 }
