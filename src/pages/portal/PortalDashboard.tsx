@@ -5,8 +5,6 @@ import {
   Package,
   MessageSquare,
   Clock,
-  CheckCircle2,
-  AlertCircle,
   ArrowRight,
   Ship,
   Plane,

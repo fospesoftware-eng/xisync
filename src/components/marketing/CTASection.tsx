@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '../ui/Button';
-import { ArrowRight, Calendar, MessageSquare } from 'lucide-react';
+import { ArrowRight, Calendar, MessageSquare, CheckCircle2 } from 'lucide-react';
 import { useI18n } from '../../lib/i18n';
 
 export function CTASection() {
@@ -16,7 +16,7 @@ export function CTASection() {
     {
       icon: Calendar,
       title: t.nav.bookDemo,
-      description: language === 'zh' ? '获取XiSync个性化演示' : 'Get a personalized walkthrough of XiSync',
+      description: language === 'zh' ? '获取犀同步个性化演示' : 'Get a personalized walkthrough of XiSync',
     },
     {
       icon: MessageSquare,
@@ -24,9 +24,9 @@ export function CTASection() {
       description: language === 'zh' ? '与我们的团队讨论您的具体需求' : 'Discuss your specific needs with our team',
     },
     {
-      icon: ArrowRight,
-      title: language === 'zh' ? '免费开始' : 'Start Free',
-      description: language === 'zh' ? '免费试用XiSync 14天，无需承诺' : 'Try XiSync free for 14 days, no commitment',
+      icon: CheckCircle2,
+      title: language === 'zh' ? '14 天免费试用' : '14-Day Free Trial',
+      description: language === 'zh' ? '免费试用犀同步 14天，无需承诺' : 'Try XiSync free for 14 days, no commitment',
     },
   ];
 

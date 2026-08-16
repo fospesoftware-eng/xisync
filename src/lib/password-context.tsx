@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 interface PasswordContextType {
   isUnlocked: boolean;
@@ -11,14 +11,7 @@ const CORRECT_PASSWORD = 'Fospe@7561';
 const PASSWORD_STORAGE_KEY = 'app_unlocked';
 
 export function PasswordProvider({ children }: { children: React.ReactNode }) {
-  const [isUnlocked, setIsUnlocked] = useState(false);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(PASSWORD_STORAGE_KEY);
-    if (stored === 'true') {
-      setIsUnlocked(true);
-    }
-  }, []);
+  const [isUnlocked, setIsUnlocked] = useState(true);
 
   const unlockApp = (password: string) => {
     if (password === CORRECT_PASSWORD) {

@@ -122,7 +122,7 @@ export const zh = {
   },
   testimonials: {
     title: '受领先出口商信赖',
-    subtitle: '了解XiSync如何改变中国各地的出口业务',
+    subtitle: '了解犀同步如何改变中国各地的出口业务',
   },
   pricing: {
     title: '简单透明的定价',
@@ -177,7 +177,7 @@ export const zh = {
   },
   cta: {
     title: '准备好改变您的出口业务了吗？',
-    subtitle: '加入数千家已在使用XiSync发展全球贸易的中国出口商。',
+    subtitle: '加入数千家已在使用犀同步发展全球贸易的中国出口商。',
     button: '开始免费试用',
     note: '无需信用卡，14天免费试用。',
   },
@@ -190,7 +190,7 @@ export const zh = {
   },
   auth: {
     loginTitle: '欢迎回来',
-    loginSubtitle: '登录您的XiSync账户',
+    loginSubtitle: '登录您的犀同步账户',
     registerTitle: '创建账户',
     registerSubtitle: '开始14天免费试用',
     forgotPassword: '忘记密码？',
@@ -223,7 +223,7 @@ export const zh = {
     ],
     loginSide: {
       title: '一站式管理您的全球业务',
-      description: '加入数千家使用XiSync简化运营和拓展国际销售的中国出口商。',
+      description: '加入数千家使用犀同步简化运营和拓展国际销售的中国出口商。',
       stats: {
         exporters: '出口商',
         countries: '国家',
@@ -264,6 +264,36 @@ export const zh = {
       team: '团队',
       billing: '账单',
       integrations: '集成',
+      marketing: '全球数字营销',
+    },
+  },
+  marketing: {
+    hubTitle: '全球数字营销枢纽',
+    hubSubtitle: '一站式投放 Meta (FB/IG)、Google 广告、TikTok 与 WhatsApp Business，全链路归因获客',
+    nav: {
+      marketing: '全球数字营销',
+      overview: '营销概览 & ROI',
+      campaigns: '广告系列管理',
+      channels: '渠道与 API 授权',
+      creatives: '素材工坊与 AI',
+      attribution: '获客归因跟踪',
+    },
+    stats: {
+      totalSpend: '总广告消耗',
+      impressions: '总曝光量',
+      clicks: '总点击次数',
+      leads: 'B2B 询盘线索数',
+      inquiries: '直接对话询盘',
+      pipeline: '估算商机货值',
+    },
+    wizard: {
+      title: '全渠道出海广告发布 Wizard',
+      step1: '第一步：选择投放渠道',
+      step2: '第二步：选择出海产品',
+      step3: '第三步：B2B 买家画像与国家目标区域',
+      step4: '第四步：广告预算与多币种换算',
+      step5: '第五步：AI 多语言广告文案生成',
+      step6: '第六步：确认并 API 直发布',
     },
   },
   crm: {
@@ -374,7 +404,7 @@ export const zh = {
     contactSupplier: '联系供应商',
   },
   demo: {
-    title: '观看XiSync演示',
+    title: '观看犀同步演示',
     subtitle: '与我们的团队预约个性化演示',
     form: {
       title: '预约演示',
@@ -431,7 +461,7 @@ export const zh = {
       },
       testimonials: [
         {
-          quote: 'XiSync改变了我们管理国际买家的方式。仅实时翻译就为我们节省了无数时间。',
+          quote: '犀同步改变了我们管理国际买家的方式。仅实时翻译就为我们节省了无数时间。',
           author: '张伟',
           role: '深圳电子公司出口经理',
         },
@@ -446,7 +476,7 @@ export const zh = {
       crm: {
         title: '客户关系管理',
         subtitle: '管理您的整个买家之旅',
-        description: '从首次接触到重复购买，XiSync CRM帮助您追踪每一次互动、管理销售管道并与全球买家建立长期关系。',
+        description: '从首次接触到重复购买，犀同步 CRM帮助您追踪每一次互动、管理销售管道并与全球买家建立长期关系。',
       },
       messaging: {
         title: '全渠道消息',
@@ -507,6 +537,29 @@ export const zh = {
       terms: '通过创建账户，您同意我们的',
       termsLink: '服务条款',
       privacyLink: '隐私政策',
+    },
+    ultra: {
+      toggleButton: 'ULTRA 模式',
+      badge: '犀同步 ULTRA AI 引擎 v4.5',
+      greetingPrefix: '您好',
+      greetingSub: '您的外贸与数字营销全效沉浸式 AI 工作台已就绪。',
+      searchPlaceholder: '发送指令给 犀同步.ai 或查询外贸数据分析...',
+      agentTitle: '犀同步.ai 多智能体助理',
+      agentSub: '实时外贸获客、业绩预测与供应链风险分析',
+      leadAgent: '获客与广告归因智能体',
+      leadAgentDetail: '过去24小时新增48条海外线索（转化率24%）。检测到37条待跟进未合格线索，建议东北区团队优先处理。',
+      forecastAgent: '商机与业绩预测智能体',
+      forecastAgentDetail: '周环比增长 +12%，新增26个商机，胜率31%。距本季目标还需完成5单（$130万美元）。',
+      riskAgent: '供应链与出口合规风险智能体',
+      riskAgentDetail: '清关状态正常。检测到12批次出口欧盟货物需补充 CE 资质审核。',
+      openForecast: '打开业绩预测',
+      optimizeCampaigns: '自动优化广告投放',
+      syncLeads: '同步 CRM 线索',
+      wallpapers: '切换壁纸主题',
+      wpLightTrails: '光影流光极速',
+      wpMountain: '日出雪山之巅',
+      wpCyber: '深邃科技蓝',
+      wpGlass: '极简透明玻璃',
     },
   },
 };

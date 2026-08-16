@@ -10,33 +10,39 @@
   }
 
   body {
-    @apply font-sans antialiased text-gray-900 bg-white;
+    @apply font-sans antialiased text-slate-900 bg-slate-50/50 dark:bg-slate-900 dark:text-slate-100;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-sans tracking-tight;
+    letter-spacing: -0.025em;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-white rounded-lg bg-gradient-to-r from-xisync-blue-900 via-xisync-cyan-500 to-xisync-lime-500 hover:opacity-90 transition-all duration-200 shadow-lg hover:shadow-xl;
+    @apply inline-flex items-center justify-center px-5 py-2.5 text-xs font-semibold text-white rounded-xl bg-gradient-to-r from-xisync-blue-900 via-xisync-cyan-600 to-xisync-lime-500 hover:opacity-90 transition-all duration-150 shadow-sm;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-xisync-blue-900 bg-white border-2 border-xisync-blue-900 rounded-lg hover:bg-xisync-blue-50 transition-all duration-200;
+    @apply inline-flex items-center justify-center px-5 py-2.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all duration-150 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-600 hover:text-xisync-blue-900 hover:bg-gray-100 rounded-lg transition-all duration-200;
+    @apply inline-flex items-center justify-center px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all duration-150 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800;
   }
 
   .input-field {
-    @apply w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-xisync-cyan-500 focus:border-transparent transition-all duration-200;
+    @apply w-full px-3.5 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-xisync-cyan-500 focus:border-transparent transition-all duration-150 dark:bg-slate-800 dark:border-slate-700 dark:text-white;
   }
 
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6;
+    @apply bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-700/80 p-6;
   }
 
   .card-hover {
-    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-lg hover:border-xisync-cyan-200 transition-all duration-300;
+    @apply bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-700/80 p-6 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-150;
   }
 
   .gradient-text {
@@ -56,17 +62,190 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  .animate-logo-gradient {
+    background-size: 200% 200%;
+    animation: logoGradientShift 5s ease infinite;
+  }
+}
+
+@keyframes logoGradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-gray-100;
+  @apply bg-transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 rounded-full hover:bg-gray-400;
+  @apply bg-slate-200 dark:bg-slate-700 rounded-full hover:bg-slate-300 dark:hover:bg-slate-600;
+}
+
+/* ULTRA Theme Comprehensive Blending & High-Contrast Readability Overhaul */
+.ultra-theme-container {
+  color: #ffffff;
+}
+
+/* Preserve Gradient Text Colors (e.g. Logo & Gradient Headings) */
+.ultra-theme-container .bg-clip-text,
+.ultra-theme-container .gradient-text {
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.ultra-theme-container .bg-white,
+.ultra-theme-container .bg-slate-50,
+.ultra-theme-container .bg-slate-100,
+.ultra-theme-container .bg-slate-200,
+.ultra-theme-container .bg-gray-50,
+.ultra-theme-container .bg-gray-100,
+.ultra-theme-container .bg-slate-800,
+.ultra-theme-container .bg-slate-900,
+.ultra-theme-container .bg-slate-800\/90,
+.ultra-theme-container .bg-slate-900\/80,
+.ultra-theme-container .bg-slate-900\/60,
+.ultra-theme-container .bg-slate-900\/40,
+.ultra-theme-container .bg-slate-50\/60,
+.ultra-theme-container .bg-slate-50\/80 {
+  background-color: rgba(15, 23, 42, 0.75) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+}
+
+.ultra-theme-container h1,
+.ultra-theme-container h2,
+.ultra-theme-container h3,
+.ultra-theme-container h4,
+.ultra-theme-container h5,
+.ultra-theme-container h6,
+.ultra-theme-container td,
+.ultra-theme-container th {
+  color: #ffffff !important;
+}
+
+.ultra-theme-container p,
+.ultra-theme-container span,
+.ultra-theme-container div,
+.ultra-theme-container label {
+  color: inherit;
+}
+
+.ultra-theme-container .text-slate-900,
+.ultra-theme-container .text-slate-800,
+.ultra-theme-container .text-slate-700,
+.ultra-theme-container .text-gray-900,
+.ultra-theme-container .text-gray-800,
+.ultra-theme-container .text-gray-700,
+.ultra-theme-container .text-xisync-blue-900 {
+  color: #ffffff !important;
+}
+
+.ultra-theme-container .text-slate-600,
+.ultra-theme-container .text-slate-500,
+.ultra-theme-container .text-gray-600,
+.ultra-theme-container .text-gray-500 {
+  color: #cbd5e1 !important;
+  font-weight: 500 !important;
+}
+
+.ultra-theme-container .text-slate-400,
+.ultra-theme-container .text-gray-400 {
+  color: #94a3b8 !important;
+}
+
+.ultra-theme-container .border-slate-200,
+.ultra-theme-container .border-slate-100,
+.ultra-theme-container .border-slate-300,
+.ultra-theme-container .border-slate-700,
+.ultra-theme-container .border-slate-800,
+.ultra-theme-container .border-gray-200,
+.ultra-theme-container .border-gray-300 {
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+/* Light Status Pill Overrides inside ULTRA Mode */
+.ultra-theme-container .bg-emerald-50,
+.ultra-theme-container .bg-emerald-100 {
+  background-color: rgba(6, 78, 59, 0.75) !important;
+  color: #6ee7b7 !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+}
+
+.ultra-theme-container .bg-amber-50,
+.ultra-theme-container .bg-amber-100 {
+  background-color: rgba(120, 53, 15, 0.75) !important;
+  color: #fcd34d !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+
+.ultra-theme-container .bg-blue-50,
+.ultra-theme-container .bg-blue-100,
+.ultra-theme-container .bg-cyan-50 {
+  background-color: rgba(12, 74, 110, 0.75) !important;
+  color: #7dd3fc !important;
+  border-color: rgba(14, 165, 233, 0.4) !important;
+}
+
+.ultra-theme-container .bg-purple-50,
+.ultra-theme-container .bg-purple-100 {
+  background-color: rgba(88, 28, 135, 0.75) !important;
+  color: #d8b4fe !important;
+  border-color: rgba(168, 85, 247, 0.4) !important;
+}
+
+/* Input & Select Controls in ULTRA Mode */
+.ultra-theme-container input[type="text"],
+.ultra-theme-container input[type="search"],
+.ultra-theme-container input[type="email"],
+.ultra-theme-container select,
+.ultra-theme-container textarea,
+.ultra-theme-container .input-field {
+  background-color: rgba(15, 23, 42, 0.85) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.ultra-theme-container input::placeholder,
+.ultra-theme-container textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Table Styling in ULTRA Mode */
+.ultra-theme-container table {
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(16px) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.ultra-theme-container thead tr,
+.ultra-theme-container th {
+  background-color: rgba(30, 41, 59, 0.8) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.ultra-theme-container tbody tr {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.ultra-theme-container tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
 }

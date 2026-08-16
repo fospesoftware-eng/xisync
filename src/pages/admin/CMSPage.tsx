@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { useI18n } from '../../lib/i18n';
-import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
+import { Plus, Edit, Trash2, Save } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 
 interface CMSPage {
@@ -24,11 +23,9 @@ interface CMSSection {
 }
 
 export function CMSPage() {
-  const { t } = useI18n();
   const [pages, setPages] = useState<CMSPage[]>([]);
   const [selectedPage, setSelectedPage] = useState<CMSPage | null>(null);
   const [sections, setSections] = useState<CMSSection[]>([]);
-  const [loading, setLoading] = useState(false);
   const [editingSection, setEditingSection] = useState<CMSSection | null>(null);
   const [showNewPageForm, setShowNewPageForm] = useState(false);
   const [newPageData, setNewPageData] = useState({ slug: '', title: '', description: '' });
@@ -38,7 +35,6 @@ export function CMSPage() {
   }, []);
 
   const fetchPages = async () => {
-    setLoading(true);
     const { data, error } = await supabase
       .from('cms_pages')
       .select('*')
@@ -51,7 +47,6 @@ export function CMSPage() {
         fetchSections(data[0].id);
       }
     }
-    setLoading(false);
   };
 
   const fetchSections = async (pageId: string) => {

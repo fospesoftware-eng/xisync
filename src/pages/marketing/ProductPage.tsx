@@ -12,8 +12,6 @@ import {
   Check,
   Zap,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { Button } from '../../components/ui/Button';
 
 const modules = [
   {

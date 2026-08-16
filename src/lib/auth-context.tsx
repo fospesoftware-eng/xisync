@@ -74,6 +74,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    const demoEmails = ['admin@xisync.com', 'demo@exportco.com', 'buyer@abccorp.com'];
+    const cleanEmail = email.toLowerCase().trim();
+
+    if (demoEmails.includes(cleanEmail)) {
+      // Mock demo user session
+      const mockUser = {
+        id: cleanEmail === 'admin@xisync.com' ? 'demo-admin-id' : cleanEmail === 'buyer@abccorp.com' ? 'demo-buyer-id' : 'demo-exporter-id',
+        email: cleanEmail,
+        user_metadata: { full_name: cleanEmail === 'admin@xisync.com' ? 'SaaS Admin' : cleanEmail === 'buyer@abccorp.com' ? 'ABC Buyer' : 'Exporter Admin' },
+      } as unknown as User;
+
+      setUser(mockUser);
+      setProfile({
+        id: mockUser.id,
+        tenant_id: 'demo-tenant-id',
+        full_name: mockUser.user_metadata.full_name,
+        full_name_cn: null,
+        phone: null,
+        avatar_url: null,
+        role: cleanEmail === 'admin@xisync.com' ? 'super_admin' : cleanEmail === 'buyer@abccorp.com' ? 'viewer' : 'admin',
+        language: 'en',
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as Profile);
+      setLoading(false);
+      return { error: null };
+    }
+
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error: error as Error | null };
   };

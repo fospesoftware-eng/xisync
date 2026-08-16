@@ -100,7 +100,7 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-gray-500">
-              2024 XiSync. {t.footer.rights}
+              © 2024 {language === 'zh' ? '犀同步' : 'XiSync'}. {t.footer.rights}
             </p>
             <div className="flex items-center gap-6">
               <Link to="/privacy" className="text-sm text-gray-500 hover:text-gray-300">

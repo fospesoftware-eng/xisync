@@ -22,8 +22,6 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored === 'en' || stored === 'zh') return stored;
-      const browserLang = navigator.language.toLowerCase();
-      if (browserLang.startsWith('zh')) return 'zh';
     }
     return 'zh';
   });

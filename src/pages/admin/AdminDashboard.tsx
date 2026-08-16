@@ -6,8 +6,6 @@ import {
   DollarSign,
   TrendingUp,
   AlertTriangle,
-  Activity,
-  Server,
 } from 'lucide-react';
 
 const stats = [

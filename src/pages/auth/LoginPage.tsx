@@ -6,7 +6,7 @@ import { Input } from '../../components/ui/Input';
 import { LanguageSwitcher } from '../../components/ui/LanguageSwitcher';
 import { useAuth } from '../../lib/auth-context';
 import { useI18n } from '../../lib/i18n';
-import { Mail, Lock, AlertCircle, Shield, Building2, Users } from 'lucide-react';
+import { Mail, Lock, AlertCircle } from 'lucide-react';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -14,57 +14,29 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { signIn } = useAuth();
-  const { t, language } = useI18n();
+  const { t } = useI18n();
   const navigate = useNavigate();
-
-  const demoAccounts = [
-    {
-      title: t.auth.demoItems[0].title,
-      description: t.auth.demoItems[0].description,
-      email: 'admin@xisync.com',
-      password: 'Demo@123456',
-      redirect: '/admin',
-      icon: Shield,
-      color: 'bg-xisync-blue-100 text-xisync-blue-600',
-    },
-    {
-      title: t.auth.demoItems[1].title,
-      description: t.auth.demoItems[1].description,
-      email: 'demo@exportco.com',
-      password: 'Demo@123456',
-      redirect: '/dashboard',
-      icon: Building2,
-      color: 'bg-xisync-cyan-100 text-xisync-cyan-600',
-    },
-    {
-      title: t.auth.demoItems[2].title,
-      description: t.auth.demoItems[2].description,
-      email: 'buyer@abccorp.com',
-      password: 'Demo@123456',
-      redirect: '/portal',
-      icon: Users,
-      color: 'bg-xisync-green-100 text-xisync-green-600',
-    },
-  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    const { error } = await signIn(email, password);
+    const cleanEmail = email.toLowerCase().trim();
+    const { error } = await signIn(cleanEmail, password);
 
     if (error) {
       setError(error.message);
       setLoading(false);
     } else {
-      const account = demoAccounts.find(a => a.email === email);
-      navigate(account?.redirect || '/dashboard');
+      if (cleanEmail === 'admin@xisync.com') {
+        navigate('/admin');
+      } else if (cleanEmail === 'buyer@abccorp.com') {
+        navigate('/portal');
+      } else {
+        navigate('/dashboard');
+      }
     }
-  };
-
-  const handleQuickAccess = (redirect: string) => {
-    navigate(redirect);
   };
 
   return (
@@ -108,12 +80,12 @@ export function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 icon={<Lock className="w-4 h-4" />}
-                placeholder="•••••••"
+                placeholder="••••••••"
               />
               <div className="mt-2 text-right">
                 <Link
                   to="/forgot-password"
-                  className="text-sm text-xisync-cyan-600 hover:text-xisync-cyan-700"
+                  className="text-sm text-xisync-cyan-600 hover:text-xisync-cyan-700 font-semibold"
                 >
                   {t.auth.forgotPassword}
                 </Link>
@@ -134,36 +106,6 @@ export function LoginPage() {
               {t.nav.startFreeTrial}
             </Link>
           </p>
-
-          <div className="mt-8 pt-8 border-t border-gray-200">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
-              {t.auth.demoAccounts} ({t.auth.demoInfo})
-            </p>
-            <div className="space-y-3">
-              {demoAccounts.map((account) => (
-                <button
-                  key={account.email}
-                  type="button"
-                  onClick={() => handleQuickAccess(account.redirect)}
-                  className="w-full flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-xisync-cyan-300 hover:bg-gray-50 transition-all text-left group"
-                >
-                  <div className={`p-2 rounded-lg ${account.color}`}>
-                    <account.icon className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-900 text-sm group-hover:text-xisync-cyan-700">
-                      {account.title}
-                    </div>
-                    <div className="text-xs text-gray-500">{account.description}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xs text-gray-400 font-mono">{account.email}</div>
-                    <div className="text-xs text-gray-400 font-mono">{account.password}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
 

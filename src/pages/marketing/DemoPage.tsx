@@ -6,7 +6,6 @@ import { Input } from '../../components/ui/Input';
 import {
   Check,
   Building2,
-  Users,
   Globe,
   MessageSquare,
   ArrowRight,
