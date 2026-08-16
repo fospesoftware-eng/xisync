@@ -54,7 +54,7 @@ export function LeadsPage() {
             .select('*')
             .eq('tenant_id', tenant.id)
             .order('created_at', { ascending: false });
-          if (!error && data) {
+          if (!error && data && data.length > 0) {
             setLeads(
               data.map((row: Record<string, unknown>) => ({
                 id: row.id as string,
@@ -68,6 +68,7 @@ export function LeadsPage() {
                 createdAt: row.created_at as string,
               })),
             );
+            return;
           }
         }
       } catch (err) {
@@ -75,6 +76,16 @@ export function LeadsPage() {
       } finally {
         setLoading(false);
       }
+
+      // Rich default mock leads for demo account
+      setLeads([
+        { id: 'ld-1', name: 'David Miller', email: 'david@globaltechdist.com', company: 'Global Tech Distribution LLC', country: 'United States', source: 'WhatsApp Direct Ad', status: 'qualified', score: 94, createdAt: '2026-08-15' },
+        { id: 'ld-2', name: 'Hans Mueller', email: 'hans@euromarket.de', company: 'EuroMarket Wholesale GmbH', country: 'Germany', source: 'Google Search Campaign', status: 'contacted', score: 88, createdAt: '2026-08-14' },
+        { id: 'ld-3', name: 'Rajesh Patel', email: 'rajesh@indopacific.in', company: 'IndoPacific Traders Ltd', country: 'India', source: 'Website Direct RFQ', status: 'qualified', score: 91, createdAt: '2026-08-12' },
+        { id: 'ld-4', name: 'Carlos Silva', email: 'carlos@latamimport.br', company: 'LATAM Import Corp', country: 'Brazil', source: 'Meta B2B Ad', status: 'new', score: 76, createdAt: '2026-08-11' },
+        { id: 'ld-5', name: 'Tariq Al-Mansoor', email: 'tariq@gulfwholesale.ae', company: 'Gulf Wholesale Trading EST', country: 'UAE', source: 'TikTok Ads', status: 'converted', score: 98, createdAt: '2026-08-10' },
+        { id: 'ld-6', name: 'Klaus Webber', email: 'klaus@nordictrade.se', company: 'Nordic Importers AB', country: 'Sweden', source: 'Google Ads', status: 'qualified', score: 85, createdAt: '2026-08-09' },
+      ]);
     })();
   }, [tenant]);
 

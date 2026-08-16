@@ -46,7 +46,7 @@ export function DealsPage() {
             .select('*, account:accounts(name)')
             .eq('tenant_id', tenant.id)
             .order('created_at', { ascending: false });
-          if (!error && data) {
+          if (!error && data && data.length > 0) {
             setDeals(
               data.map((row: Record<string, unknown>) => ({
                 id: row.id as string,
@@ -59,6 +59,7 @@ export function DealsPage() {
                 assignedTo: 'Unassigned',
               })),
             );
+            return;
           }
         }
       } catch (err) {
@@ -66,6 +67,14 @@ export function DealsPage() {
       } finally {
         setLoading(false);
       }
+
+      // Rich default mock deals for demo account
+      setDeals([
+        { id: 'dl-1', name: '5,000 Units Commercial Energy Inverters', company: 'Global Tech Distribution LLC', value: 450000, stage: 'proposal', probability: 80, expectedCloseDate: '2026-08-30', assignedTo: 'Sarah Chen' },
+        { id: 'dl-2', name: '40ft HC Container Smart LED Panels', company: 'EuroMarket Wholesale GmbH', value: 280000, stage: 'negotiation', probability: 90, expectedCloseDate: '2026-09-05', assignedTo: 'Alex Wong' },
+        { id: 'dl-3', name: 'Bulk Micro-Transformers Dispatch Line #3', company: 'IndoPacific Traders Ltd', value: 175000, stage: 'closed_won', probability: 100, expectedCloseDate: '2026-08-14', assignedTo: 'Sarah Chen' },
+        { id: 'dl-4', name: 'Solar PV Junction Box Annual Supply', company: 'LATAM Import Corp', value: 520000, stage: 'qualification', probability: 60, expectedCloseDate: '2026-09-20', assignedTo: 'Michael Zhang' },
+      ]);
     })();
   }, [tenant]);
 

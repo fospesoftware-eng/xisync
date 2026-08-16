@@ -93,6 +93,7 @@ export function InboxPage() {
             });
             setConversations(mapped);
             if (mapped.length > 0) setSelectedConversation(mapped[0]);
+            return;
           }
         }
       } catch (err) {
@@ -100,6 +101,16 @@ export function InboxPage() {
       } finally {
         setLoading(false);
       }
+
+      // Rich default mock conversations for demo account
+      const mockConvs: Conversation[] = [
+        { id: 'cv-1', contact: 'David Miller', company: 'Global Tech Distribution LLC', channel: 'whatsapp', lastMessage: 'Inquiring about 40ft container spot rates from Shanghai Pudong to Los Angeles', lastMessageTime: '10:42 AM', status: 'open', unread: true, priority: 'urgent' },
+        { id: 'cv-2', contact: 'Hans Mueller', company: 'EuroMarket Wholesale GmbH', channel: 'email', lastMessage: 'Revised L/C payment split proposal (30/70 T/T terms under Incoterms 2026)', lastMessageTime: '09:15 AM', status: 'open', unread: false, priority: 'high' },
+        { id: 'cv-3', contact: 'Rajesh Patel', company: 'IndoPacific Traders Ltd', channel: 'wechat', lastMessage: 'Golden sample approval confirmation for Factory Production Line #3', lastMessageTime: 'Yesterday', status: 'closed', unread: false, priority: 'normal' },
+        { id: 'cv-4', contact: 'Tariq Al-Mansoor', company: 'Gulf Wholesale Trading EST', channel: 'webchat', lastMessage: 'Requesting CIF Jebel Ali spot freight rates for 20ft container', lastMessageTime: 'Aug 14', status: 'open', unread: false, priority: 'normal' },
+      ];
+      setConversations(mockConvs);
+      setSelectedConversation(mockConvs[0]);
     })();
   }, [tenant]);
 

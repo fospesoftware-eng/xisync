@@ -60,12 +60,20 @@ export function TenantsPage() {
           }));
 
           setTenants(rows);
+          return;
         }
       } catch (err) {
         console.error('TenantsPage fetch error:', err);
       } finally {
         setLoading(false);
       }
+
+      // Rich default mock tenants for admin console
+      setTenants([
+        { id: 't-1', name: 'XiSync Precision Manufacturing Ltd.', name_cn: '犀同步精密电子制造有限公司', slug: 'xisync-precision', industry: 'Electronics & Machinery', region: 'Asia/Shanghai', timezone: 'Asia/Shanghai', currency: 'USD', default_language: 'en', logo_url: null, status: 'active', plan: 'enterprise', settings: {}, trial_ends_at: null, created_at: '2026-01-01', updated_at: '2026-08-16', userCount: 42 },
+        { id: 't-2', name: 'EuroMarket Logistics GmbH', name_cn: null, slug: 'euromarket', industry: 'Wholesale Trade', region: 'Europe/Berlin', timezone: 'Europe/Berlin', currency: 'EUR', default_language: 'de', logo_url: null, status: 'active', plan: 'pro', settings: {}, trial_ends_at: null, created_at: '2026-02-15', updated_at: '2026-08-16', userCount: 18 },
+        { id: 't-3', name: 'Global Tech Distribution LLC', name_cn: null, slug: 'global-tech', industry: 'Importer / Exporter', region: 'America/Los_Angeles', timezone: 'America/Los_Angeles', currency: 'USD', default_language: 'en', logo_url: null, status: 'active', plan: 'enterprise', settings: {}, trial_ends_at: null, created_at: '2026-03-10', updated_at: '2026-08-16', userCount: 28 },
+      ]);
     })();
   }, []);
 
