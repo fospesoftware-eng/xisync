@@ -48,29 +48,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    let isSubscribed = true;
+
+    // Safety timeout: Ensure loading state resolves smoothly within 300ms
+    const safetyTimeout = setTimeout(() => {
+      if (isSubscribed) {
+        setLoading(false);
+      }
+    }, 300);
+
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        if (!isSubscribed) return;
+        setSession(session);
+        setUser((prev) => prev ?? session?.user ?? null);
+        if (session?.user) {
+          fetchProfile(session.user.id);
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        if (isSubscribed) setLoading(false);
+      });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!isSubscribed) return;
       setSession(session);
-      setUser(session?.user ?? null);
       if (session?.user) {
+        setUser(session.user);
         fetchProfile(session.user.id);
       }
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        (async () => {
-          await fetchProfile(session.user.id);
-        })();
-      } else {
-        setProfile(null);
-        setTenant(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    return () => {
+      isSubscribed = false;
+      clearTimeout(safetyTimeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {

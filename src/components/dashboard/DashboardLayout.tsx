@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { Logo } from '../ui/Logo';
 import { LanguageSwitcher } from '../ui/LanguageSwitcher';
-import { CurrencySwitcher } from '../ui/CurrencySwitcher';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { useAuth } from '../../lib/auth-context';
 import { useI18n } from '../../lib/i18n';
@@ -348,7 +347,6 @@ export function DashboardLayout({ variant = 'client' }: DashboardLayoutProps) {
                 <span>{(t as any).ultra?.toggleButton || 'ULTRA'}</span>
               </Link>
 
-              <CurrencySwitcher />
               <LanguageSwitcher variant="compact" className={theme === 'dark' ? 'text-gray-300' : ''} />
               <ThemeToggle variant="compact" />
 
