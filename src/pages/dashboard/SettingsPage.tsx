@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
-import { CurrencySwitcher } from '../../components/ui/CurrencySwitcher';
 import { VisualWorkflowBuilder } from '../../components/workflow/VisualWorkflowBuilder';
 import {
   Settings,
@@ -74,15 +73,12 @@ export function SettingsPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <CurrencySwitcher />
-          <Button
-            onClick={() => triggerToast('Global System Settings & Active Currency updated successfully!')}
-            icon={<Check className="w-4 h-4" />}
-          >
-            Save All Settings
-          </Button>
-        </div>
+        <Button
+          onClick={() => triggerToast('Global System Settings & Base Currency preferences saved!')}
+          icon={<Check className="w-4 h-4" />}
+        >
+          Save All Settings
+        </Button>
       </div>
 
       {/* Settings Sub-Navigation Tabs */}
@@ -200,6 +196,32 @@ export function SettingsPage() {
                   onChange={(e) => setTaxId(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold text-slate-900 dark:text-white outline-none"
                 />
+              </div>
+
+              <div>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">System Base Accounting Currency</label>
+                <select className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold text-slate-900 dark:text-white outline-none">
+                  <option>USD ($) - United States Dollar (Default Base)</option>
+                  <option>EUR (€) - Eurozone Settlement Currency</option>
+                  <option>GBP (£) - British Pound Sterling</option>
+                  <option>CNY (¥) - Chinese Yuan Renminbi Direct</option>
+                </select>
+                <p className="text-[10px] text-slate-400 font-medium mt-1">
+                  Default base system currency (USD $) used for ledger accounting & pricing benchmarks.
+                </p>
+              </div>
+
+              <div>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Client Onboarding Default Currency</label>
+                <select className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold text-slate-900 dark:text-white outline-none">
+                  <option>USD ($) - US & International Standard</option>
+                  <option>EUR (€) - European Union Exporters</option>
+                  <option>GBP (£) - UK & Commonwealth Import Buyers</option>
+                  <option>CNY (¥) - Chinese Domestic Direct Settlement</option>
+                </select>
+                <p className="text-[10px] text-slate-400 font-medium mt-1">
+                  Assigned automatically to new international buyer accounts during client onboarding.
+                </p>
               </div>
 
               <div>
