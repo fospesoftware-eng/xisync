@@ -48,60 +48,68 @@ export function DashboardHome() {
   const [shipmentAlerts, setShipmentAlerts] = useState<{ id: string; number: string; status: string; message: string }[]>([]);
 
   useEffect(() => {
-    if (!tenant) return;
     (async () => {
       setLoading(true);
+      try {
+        if (tenant) {
+          const [leadsRes, convsRes, shipsRes, dealsRes, exceptionsRes] = await Promise.all([
+            supabase.from('leads').select('id,contact_name,company_name,source,status,created_at').eq('tenant_id', tenant.id).order('created_at', { ascending: false }).limit(5),
+            supabase.from('conversations').select('id,subject,channel_type,last_message_at,contact:contacts(first_name,last_name)').eq('tenant_id', tenant.id).order('last_message_at', { ascending: false }).limit(3),
+            supabase.from('shipments').select('id,status,shipment_number').eq('tenant_id', tenant.id),
+            supabase.from('deals').select('value,stage').eq('tenant_id', tenant.id),
+            supabase.from('shipments').select('id,shipment_number,status').eq('tenant_id', tenant.id).eq('status', 'exception'),
+          ]);
 
-      const [leadsRes, convsRes, shipsRes, dealsRes, exceptionsRes] = await Promise.all([
-        supabase.from('leads').select('id,contact_name,company_name,source,status,created_at').eq('tenant_id', tenant.id).order('created_at', { ascending: false }).limit(5),
-        supabase.from('conversations').select('id,subject,channel_type,last_message_at,contact:contacts(first_name,last_name)').eq('tenant_id', tenant.id).order('last_message_at', { ascending: false }).limit(3),
-        supabase.from('shipments').select('id,status,shipment_number').eq('tenant_id', tenant.id),
-        supabase.from('deals').select('value,stage').eq('tenant_id', tenant.id),
-        supabase.from('shipments').select('id,shipment_number,status').eq('tenant_id', tenant.id).eq('status', 'exception'),
-      ]);
+          if (leadsRes.data && leadsRes.data.length > 0) {
+            setLeadCount(leadsRes.data.length);
+            setRecentLeads((leadsRes.data as Record<string, unknown>[]).map(row => ({
+              id: row.id as string,
+              name: (row.contact_name as string) || 'Unknown',
+              company: (row.company_name as string) || '—',
+              source: (row.source as string) || '—',
+              status: (row.status as string) || 'new',
+            })));
+          }
 
-      setLeadCount((leadsRes.data as { id: string }[] | null)?.length || 0);
-      setConversationCount((convsRes.data as { id: string }[] | null)?.length || 0);
-      setShipmentCount((shipsRes.data as { id: string }[] | null)?.length || 0);
+          if (convsRes.data && convsRes.data.length > 0) {
+            setConversationCount(convsRes.data.length);
+            setRecentConversations((convsRes.data as Record<string, unknown>[]).map(row => {
+              const contact = row.contact as { first_name?: string; last_name?: string } | null;
+              return {
+                id: row.id as string,
+                contact: contact ? `${contact.first_name || ''} ${contact.last_name || ''}`.trim() || 'Unknown' : 'Unknown',
+                channel: (row.channel_type as string) || 'email',
+                preview: (row.subject as string) || '—',
+                time: row.last_message_at ? new Date(row.last_message_at as string).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+              };
+            }));
+          }
 
-      const deals = (dealsRes.data as { value: number; stage: string }[] | null) || [];
-      const active = deals.filter(d => d.stage !== 'closed_lost');
-      setPipelineValue(active.reduce((sum, d) => sum + Number(d.value || 0), 0));
-      setActiveDeals(active.length);
+          if (shipsRes.data) {
+            setShipmentCount(shipsRes.data.length);
+          }
 
-      if (leadsRes.data) {
-        setRecentLeads((leadsRes.data as Record<string, unknown>[]).map(row => ({
-          id: row.id as string,
-          name: (row.contact_name as string) || 'Unknown',
-          company: (row.company_name as string) || '—',
-          source: (row.source as string) || '—',
-          status: (row.status as string) || 'new',
-        })));
+          if (dealsRes.data && dealsRes.data.length > 0) {
+            const deals = (dealsRes.data as { value: number; stage: string }[]) || [];
+            const active = deals.filter(d => d.stage !== 'closed_lost');
+            setPipelineValue(active.reduce((sum, d) => sum + Number(d.value || 0), 0));
+            setActiveDeals(active.length);
+          }
+
+          if (exceptionsRes.data) {
+            setShipmentAlerts((exceptionsRes.data as Record<string, unknown>[]).map(row => ({
+              id: row.id as string,
+              number: (row.shipment_number as string) || '—',
+              status: language === 'zh' ? '异常' : 'Exception',
+              message: language === 'zh' ? '需要关注' : 'Needs attention',
+            })));
+          }
+        }
+      } catch (err) {
+        console.error('DashboardHome fetch error:', err);
+      } finally {
+        setLoading(false);
       }
-
-      if (convsRes.data) {
-        setRecentConversations((convsRes.data as Record<string, unknown>[]).map(row => {
-          const contact = row.contact as { first_name?: string; last_name?: string } | null;
-          return {
-            id: row.id as string,
-            contact: contact ? `${contact.first_name || ''} ${contact.last_name || ''}`.trim() || 'Unknown' : 'Unknown',
-            channel: (row.channel_type as string) || 'email',
-            preview: (row.subject as string) || '—',
-            time: row.last_message_at ? new Date(row.last_message_at as string).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
-          };
-        }));
-      }
-
-      if (exceptionsRes.data) {
-        setShipmentAlerts((exceptionsRes.data as Record<string, unknown>[]).map(row => ({
-          id: row.id as string,
-          number: (row.shipment_number as string) || '—',
-          status: language === 'zh' ? '异常' : 'Exception',
-          message: language === 'zh' ? '需要关注' : 'Needs attention',
-        })));
-      }
-
-      setLoading(false);
     })();
   }, [tenant, language]);
 

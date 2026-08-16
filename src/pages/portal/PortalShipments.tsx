@@ -58,32 +58,38 @@ export function PortalShipments() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!tenant) return;
     (async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('shipments')
-        .select('*')
-        .eq('tenant_id', tenant.id)
-        .order('created_at', { ascending: false });
-      if (!error && data) {
-        setShipments(
-          data.map((row: Record<string, unknown>) => ({
-            id: row.id as string,
-            number: (row.shipment_number as string) || '—',
-            order: (row.order_id as string) || '—',
-            mode: (row.mode as Shipment['mode']) || 'sea',
-            status: (row.status as Shipment['status']) || 'booked',
-            origin: `${row.origin_port || '—'}, ${row.origin_country || ''}`.trim(),
-            destination: `${row.destination_port || '—'}, ${row.destination_country || ''}`.trim(),
-            etd: (row.etd as string) || '',
-            eta: (row.eta as string) || '',
-            carrier: (row.carrier as string) || '—',
-            tracking: (row.tracking_number as string) || '—',
-          })),
-        );
+      try {
+        if (tenant) {
+          const { data, error } = await supabase
+            .from('shipments')
+            .select('*')
+            .eq('tenant_id', tenant.id)
+            .order('created_at', { ascending: false });
+          if (!error && data) {
+            setShipments(
+              data.map((row: Record<string, unknown>) => ({
+                id: row.id as string,
+                number: (row.shipment_number as string) || '—',
+                order: (row.order_id as string) || '—',
+                mode: (row.mode as Shipment['mode']) || 'sea',
+                status: (row.status as Shipment['status']) || 'booked',
+                origin: `${row.origin_port || '—'}, ${row.origin_country || ''}`.trim(),
+                destination: `${row.destination_port || '—'}, ${row.destination_country || ''}`.trim(),
+                etd: (row.etd as string) || '',
+                eta: (row.eta as string) || '',
+                carrier: (row.carrier as string) || '—',
+                tracking: (row.tracking_number as string) || '—',
+              })),
+            );
+          }
+        }
+      } catch (err) {
+        console.error('PortalShipments fetch error:', err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     })();
   }, [tenant]);
 

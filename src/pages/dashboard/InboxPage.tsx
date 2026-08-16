@@ -67,33 +67,39 @@ export function InboxPage() {
   const [loadingMessages, setLoadingMessages] = useState(false);
 
   useEffect(() => {
-    if (!tenant) return;
     (async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('conversations')
-        .select('*, contact:contacts(first_name,last_name,account:accounts(name))')
-        .eq('tenant_id', tenant.id)
-        .order('last_message_at', { ascending: false });
-      if (!error && data) {
-        const mapped: Conversation[] = data.map((row: Record<string, unknown>) => {
-          const contact = row.contact as { first_name?: string; last_name?: string; account?: { name?: string } | null } | null;
-          return {
-            id: row.id as string,
-            contact: contact ? `${contact.first_name || ''} ${contact.last_name || ''}`.trim() || 'Unknown' : 'Unknown',
-            company: contact?.account?.name || '—',
-            channel: (row.channel_type as Conversation['channel']) || 'email',
-            lastMessage: (row.subject as string) || '—',
-            lastMessageTime: row.last_message_at ? new Date(row.last_message_at as string).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
-            status: row.status as Conversation['status'],
-            unread: false,
-            priority: (row.priority as Conversation['priority']) || 'normal',
-          };
-        });
-        setConversations(mapped);
-        if (mapped.length > 0) setSelectedConversation(mapped[0]);
+      try {
+        if (tenant) {
+          const { data, error } = await supabase
+            .from('conversations')
+            .select('*, contact:contacts(first_name,last_name,account:accounts(name))')
+            .eq('tenant_id', tenant.id)
+            .order('last_message_at', { ascending: false });
+          if (!error && data && data.length > 0) {
+            const mapped: Conversation[] = data.map((row: Record<string, unknown>) => {
+              const contact = row.contact as { first_name?: string; last_name?: string; account?: { name?: string } | null } | null;
+              return {
+                id: row.id as string,
+                contact: contact ? `${contact.first_name || ''} ${contact.last_name || ''}`.trim() || 'Unknown' : 'Unknown',
+                company: contact?.account?.name || '—',
+                channel: (row.channel_type as Conversation['channel']) || 'email',
+                lastMessage: (row.subject as string) || '—',
+                lastMessageTime: row.last_message_at ? new Date(row.last_message_at as string).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+                status: row.status as Conversation['status'],
+                unread: false,
+                priority: (row.priority as Conversation['priority']) || 'normal',
+              };
+            });
+            setConversations(mapped);
+            if (mapped.length > 0) setSelectedConversation(mapped[0]);
+          }
+        }
+      } catch (err) {
+        console.error('InboxPage fetch error:', err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     })();
   }, [tenant]);
 

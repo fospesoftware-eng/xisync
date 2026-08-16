@@ -32,49 +32,40 @@ export function TenantsPage() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('tenants')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (!error && data) {
-        const rows: TenantRow[] = data.map((row: Record<string, unknown>) => ({
-          id: row.id as string,
-          name: (row.name as string) || '—',
-          name_cn: (row.name_cn as string) || null,
-          slug: (row.slug as string) || '',
-          industry: (row.industry as string) || '—',
-          region: (row.region as string) || '—',
-          timezone: (row.timezone as string) || 'Asia/Shanghai',
-          currency: (row.currency as string) || 'USD',
-          default_language: (row.default_language as string) || 'zh',
-          logo_url: (row.logo_url as string) || null,
-          status: row.status as Tenant['status'],
-          plan: row.plan as Tenant['plan'],
-          settings: (row.settings as Record<string, unknown>) || {},
-          trial_ends_at: (row.trial_ends_at as string) || null,
-          created_at: row.created_at as string,
-          updated_at: row.updated_at as string,
-          userCount: 0,
-        }));
+      try {
+        const { data, error } = await supabase
+          .from('tenants')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      const tenantIds = rows.map(r => r.id);
-      if (tenantIds.length > 0) {
-        const { data: profileCounts } = await supabase
-          .from('profiles')
-          .select('tenant_id')
-          .in('tenant_id', tenantIds);
-        if (profileCounts) {
-          const countMap: Record<string, number> = {};
-          for (const p of profileCounts as { tenant_id: string }[]) {
-            countMap[p.tenant_id] = (countMap[p.tenant_id] || 0) + 1;
-          }
-          rows.forEach(r => { r.userCount = countMap[r.id] || 0; });
+        if (!error && data && data.length > 0) {
+          const rows: TenantRow[] = data.map((row: Record<string, unknown>) => ({
+            id: row.id as string,
+            name: (row.name as string) || '—',
+            name_cn: (row.name_cn as string) || null,
+            slug: (row.slug as string) || '',
+            industry: (row.industry as string) || '—',
+            region: (row.region as string) || '—',
+            timezone: (row.timezone as string) || 'Asia/Shanghai',
+            currency: (row.currency as string) || 'USD',
+            default_language: (row.default_language as string) || 'zh',
+            logo_url: (row.logo_url as string) || null,
+            status: row.status as Tenant['status'],
+            plan: row.plan as Tenant['plan'],
+            settings: (row.settings as Record<string, unknown>) || {},
+            trial_ends_at: (row.trial_ends_at as string) || null,
+            created_at: row.created_at as string,
+            updated_at: row.updated_at as string,
+            userCount: 0,
+          }));
+
+          setTenants(rows);
         }
+      } catch (err) {
+        console.error('TenantsPage fetch error:', err);
+      } finally {
+        setLoading(false);
       }
-
-      setTenants(rows);
-      }
-      setLoading(false);
     })();
   }, []);
 

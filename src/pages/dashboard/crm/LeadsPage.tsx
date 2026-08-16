@@ -45,30 +45,36 @@ export function LeadsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!tenant) return;
     (async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('leads')
-        .select('*')
-        .eq('tenant_id', tenant.id)
-        .order('created_at', { ascending: false });
-      if (!error && data) {
-        setLeads(
-          data.map((row: Record<string, unknown>) => ({
-            id: row.id as string,
-            name: (row.contact_name as string) || 'Unknown',
-            email: (row.email as string) || '',
-            company: (row.company_name as string) || '—',
-            country: (row.country as string) || '—',
-            source: (row.source as string) || '—',
-            status: row.status as Lead['status'],
-            score: (row.score as number) || 0,
-            createdAt: row.created_at as string,
-          })),
-        );
+      try {
+        if (tenant) {
+          const { data, error } = await supabase
+            .from('leads')
+            .select('*')
+            .eq('tenant_id', tenant.id)
+            .order('created_at', { ascending: false });
+          if (!error && data) {
+            setLeads(
+              data.map((row: Record<string, unknown>) => ({
+                id: row.id as string,
+                name: (row.contact_name as string) || 'Unknown',
+                email: (row.email as string) || '',
+                company: (row.company_name as string) || '—',
+                country: (row.country as string) || '—',
+                source: (row.source as string) || '—',
+                status: row.status as Lead['status'],
+                score: (row.score as number) || 0,
+                createdAt: row.created_at as string,
+              })),
+            );
+          }
+        }
+      } catch (err) {
+        console.error('LeadsPage fetch error:', err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     })();
   }, [tenant]);
 
