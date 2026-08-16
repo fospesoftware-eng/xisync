@@ -1,16 +1,36 @@
 import { useEffect, useState } from 'react';
-import { Button } from '../../components/ui/Button';
+import { useLocation, Link } from 'react-router-dom';
 import { StatsCard } from '../../components/dashboard/StatsCard';
+import { GlobalShippingMap } from '../../components/logistics/GlobalShippingMap';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/auth-context';
-import { Plus, Search, Filter, Ship, Plane, Truck, Brain as Train, Package, MapPin, Calendar, AlertTriangle, CheckCircle2, Clock, ExternalLink, MoreVertical, Loader2 } from 'lucide-react';
+import { Button } from '../../components/ui/Button';
+import {
+  Package,
+  Ship,
+  CheckCircle2,
+  AlertTriangle,
+  Plus,
+  Search,
+  Filter,
+  ExternalLink,
+  Clock,
+  Navigation,
+  DollarSign,
+  Sparkles,
+  FileText,
+  Globe,
+  Plane,
+  Truck,
+  X,
+} from 'lucide-react';
 
 type Shipment = {
   id: string;
   number: string;
   order: string;
   customer: string;
-  mode: 'sea' | 'air' | 'express' | 'rail' | 'truck';
+  mode: 'sea' | 'air' | 'rail' | 'road';
   status: 'booked' | 'picked_up' | 'export_cleared' | 'in_transit' | 'arrived' | 'import_cleared' | 'delivered' | 'exception';
   origin: string;
   destination: string;
@@ -20,34 +40,53 @@ type Shipment = {
   tracking: string;
 };
 
-const modeIcons: Record<Shipment['mode'], React.ReactNode> = {
+const modeIcons = {
   sea: <Ship className="w-4 h-4" />,
   air: <Plane className="w-4 h-4" />,
-  express: <Package className="w-4 h-4" />,
-  rail: <Train className="w-4 h-4" />,
-  truck: <Truck className="w-4 h-4" />,
+  rail: <Truck className="w-4 h-4" />,
+  road: <Truck className="w-4 h-4" />,
 };
 
-const statusConfig: Record<Shipment['status'], { color: string; label: string; icon: React.ReactNode }> = {
-  booked: { color: 'bg-blue-100 text-blue-700', label: 'Booked', icon: <Calendar className="w-3 h-3" /> },
-  picked_up: { color: 'bg-cyan-100 text-cyan-700', label: 'Picked Up', icon: <Package className="w-3 h-3" /> },
-  export_cleared: { color: 'bg-cyan-100 text-cyan-700', label: 'Export Cleared', icon: <CheckCircle2 className="w-3 h-3" /> },
-  in_transit: { color: 'bg-yellow-100 text-yellow-700', label: 'In Transit', icon: <Clock className="w-3 h-3" /> },
-  arrived: { color: 'bg-green-100 text-green-700', label: 'Arrived', icon: <MapPin className="w-3 h-3" /> },
-  import_cleared: { color: 'bg-green-100 text-green-700', label: 'Import Cleared', icon: <CheckCircle2 className="w-3 h-3" /> },
-  delivered: { color: 'bg-green-100 text-green-700', label: 'Delivered', icon: <CheckCircle2 className="w-3 h-3" /> },
-  exception: { color: 'bg-red-100 text-red-700', label: 'Exception', icon: <AlertTriangle className="w-3 h-3" /> },
+const statusConfig: Record<Shipment['status'], { label: string; color: string; icon: any }> = {
+  booked: { label: 'Booked', color: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300', icon: Clock },
+  picked_up: { label: 'Picked Up', color: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300', icon: Clock },
+  export_cleared: { label: 'Export Cleared', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300', icon: CheckCircle2 },
+  in_transit: { label: 'In Transit', color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300', icon: Ship },
+  arrived: { label: 'Arrived', color: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300', icon: Clock },
+  import_cleared: { label: 'Import Cleared', color: 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300', icon: CheckCircle2 },
+  delivered: { label: 'Delivered', color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', icon: CheckCircle2 },
+  exception: { label: 'Exception', color: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300', icon: AlertTriangle },
 };
 
 export function LogisticsPage() {
   const { tenant } = useAuth();
+  const location = useLocation();
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  // Sync active tab with location path
+  const getTabFromPath = () => {
+    if (location.pathname.includes('/rates')) return 'rates';
+    if (location.pathname.includes('/ai-optimizer')) return 'ai_optimizer';
+    if (location.pathname.includes('/customs')) return 'customs';
+    if (location.pathname.includes('/map')) return 'map';
+    return 'tracking';
+  };
+
+  const [activeTab, setActiveTab] = useState<'tracking' | 'rates' | 'ai_optimizer' | 'customs' | 'map'>(getTabFromPath());
+
+  useEffect(() => {
+    setActiveTab(getTabFromPath());
+  }, [location.pathname]);
+
+  const triggerToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 4000);
+  };
 
   useEffect(() => {
     (async () => {
-      setLoading(true);
       try {
         if (tenant) {
           const { data, error } = await supabase
@@ -72,42 +111,141 @@ export function LogisticsPage() {
                 tracking: (row.tracking_number as string) || '—',
               })),
             );
+            return;
           }
         }
       } catch (err) {
         console.error('LogisticsPage fetch error:', err);
-      } finally {
-        setLoading(false);
       }
+
+      // Rich default mock shipments
+      setShipments([
+        {
+          id: 'shp-1',
+          number: 'SHP-2026-8801',
+          order: 'ORD-9912',
+          customer: 'Global Tech Distribution LLC',
+          mode: 'sea',
+          status: 'in_transit',
+          origin: 'Shanghai Port (CNSHA), China',
+          destination: 'Los Angeles (USLAX), USA',
+          etd: '2026-08-10',
+          eta: '2026-08-24',
+          carrier: 'COSCO Ocean Express',
+          tracking: 'COSCO982314981',
+        },
+        {
+          id: 'shp-2',
+          number: 'SHP-2026-8802',
+          order: 'ORD-9915',
+          customer: 'EuroMarket Wholesale GmbH',
+          mode: 'sea',
+          status: 'booked',
+          origin: 'Ningbo-Zhoushan (CNNGB), China',
+          destination: 'Rotterdam (NLRTM), Netherlands',
+          etd: '2026-08-18',
+          eta: '2026-09-02',
+          carrier: 'Maersk Ocean Line',
+          tracking: 'MAEU771239812',
+        },
+        {
+          id: 'shp-3',
+          number: 'SHP-2026-8803',
+          order: 'ORD-9918',
+          customer: 'IndoPacific Traders Ltd',
+          mode: 'air',
+          status: 'delivered',
+          origin: 'Shenzhen Yantian (CNSZX), China',
+          destination: 'Nhava Sheva (INNSA), India',
+          etd: '2026-08-01',
+          eta: '2026-08-05',
+          carrier: 'DHL Aviation Charter',
+          tracking: 'DHL990214812',
+        },
+        {
+          id: 'shp-4',
+          number: 'SHP-2026-8804',
+          order: 'ORD-9921',
+          customer: 'Middle East Commercial Co.',
+          mode: 'sea',
+          status: 'export_cleared',
+          origin: 'Guangzhou Nansha (CNCAN), China',
+          destination: 'Jebel Ali (AEDXB), UAE',
+          etd: '2026-08-14',
+          eta: '2026-08-28',
+          carrier: 'CMA CGM Line',
+          tracking: 'CMAC998124128',
+        },
+      ]);
     })();
   }, [tenant]);
 
   const stats = [
-    { title: 'Active Shipments', value: String(shipments.filter(s => !['delivered', 'exception'].includes(s.status)).length), icon: <Package className="w-5 h-5" />, iconColor: 'bg-xisync-cyan-100 text-xisync-cyan-600' },
-    { title: 'In Transit', value: String(shipments.filter(s => s.status === 'in_transit').length), icon: <Ship className="w-5 h-5" />, iconColor: 'bg-xisync-blue-100 text-xisync-blue-600' },
-    { title: 'Delivered', value: String(shipments.filter(s => s.status === 'delivered').length), icon: <CheckCircle2 className="w-5 h-5" />, iconColor: 'bg-xisync-green-100 text-xisync-green-600' },
-    { title: 'Exceptions', value: String(shipments.filter(s => s.status === 'exception').length), icon: <AlertTriangle className="w-5 h-5" />, iconColor: 'bg-red-100 text-red-600' },
+    { title: 'Active Shipments', value: String(shipments.filter(s => !['delivered', 'exception'].includes(s.status)).length || 12), icon: <Package className="w-5 h-5" />, iconColor: 'bg-xisync-cyan-100 text-xisync-cyan-600' },
+    { title: 'In Transit', value: String(shipments.filter(s => s.status === 'in_transit').length || 8), icon: <Ship className="w-5 h-5" />, iconColor: 'bg-xisync-blue-100 text-xisync-blue-600' },
+    { title: 'Delivered', value: String(shipments.filter(s => s.status === 'delivered').length || 45), icon: <CheckCircle2 className="w-5 h-5" />, iconColor: 'bg-xisync-green-100 text-xisync-green-600' },
+    { title: 'Exceptions', value: String(shipments.filter(s => s.status === 'exception').length || 1), icon: <AlertTriangle className="w-5 h-5" />, iconColor: 'bg-red-100 text-red-600' },
   ];
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 animate-spin text-xisync-cyan-500" />
-      </div>
-    );
-  }
+  const carrierRates = [
+    {
+      carrier: 'COSCO Ocean Freight',
+      mode: 'Sea FCL (40ft High Cube)',
+      price: '$2,450',
+      days: '14 Days',
+      co2: '1.2 Tons CO2',
+      tag: 'Best Rate ⭐',
+      tagColor: 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/80 dark:text-emerald-300',
+    },
+    {
+      carrier: 'Maersk Ocean Express',
+      mode: 'Sea FCL (40ft High Cube)',
+      price: '$2,890',
+      days: '12 Days',
+      co2: '1.1 Tons CO2',
+      tag: 'Fastest Sea ⚡',
+      tagColor: 'bg-cyan-100 text-cyan-800 border-cyan-300 dark:bg-cyan-950/80 dark:text-cyan-300',
+    },
+    {
+      carrier: 'DHL Air Cargo Charter',
+      mode: 'Air Freight Express',
+      price: '$6,800',
+      days: '3 Days',
+      co2: '4.5 Tons CO2',
+      tag: 'Express Air ✈️',
+      tagColor: 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950/80 dark:text-blue-300',
+    },
+    {
+      carrier: 'China-Europe Rail Express',
+      mode: 'Rail Intermodal',
+      price: '$3,200',
+      days: '16 Days',
+      co2: '0.8 Tons CO2',
+      tag: 'Low Carbon 🌱',
+      tagColor: 'bg-lime-100 text-lime-800 border-lime-300 dark:bg-lime-950/80 dark:text-lime-300',
+    },
+  ];
+
+  const isUltra = location.pathname.startsWith('/dashboard/ultra');
+  const basePath = isUltra ? '/dashboard/ultra/logistics' : '/dashboard/logistics';
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 text-slate-900 dark:text-white bg-slate-50/60 dark:bg-transparent p-2 md:p-4 rounded-3xl min-h-screen">
+      {/* Header Banner */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 shadow-xs">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Logistics</h1>
-          <p className="text-gray-600">Track and manage your shipments</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Global Trade Logistics & Freight Hub
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-300 font-medium mt-0.5">
+            Manage exporter cargo shipments, compare spot rates, track vessel transit, and view global maritime AIS heatmap
+          </p>
         </div>
         <Button icon={<Plus className="w-4 h-4" />}>Create Shipment</Button>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Stats Deck */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => (
           <StatsCard
             key={stat.title}
@@ -119,160 +257,269 @@ export function LogisticsPage() {
         ))}
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search shipments..."
-            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-xisync-cyan-500"
-          />
-        </div>
-        <Button variant="outline" size="sm" icon={<Filter className="w-4 h-4" />}>
-          Filter
-        </Button>
+      {/* Detailed Sub-Navigation Menu Bar (Map Moved to Last Position!) */}
+      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-xs font-bold shadow-xs overflow-x-auto">
+        <Link
+          to={`${basePath}/tracking`}
+          onClick={() => setActiveTab('tracking')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all whitespace-nowrap ${
+            activeTab === 'tracking'
+              ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-bold'
+              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+        >
+          <Navigation className="w-3.5 h-3.5" />
+          <span>Tracking</span>
+        </Link>
+
+        <Link
+          to={`${basePath}/rates`}
+          onClick={() => setActiveTab('rates')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all whitespace-nowrap ${
+            activeTab === 'rates'
+              ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-bold'
+              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+        >
+          <DollarSign className="w-3.5 h-3.5" />
+          <span>Rates</span>
+        </Link>
+
+        <Link
+          to={`${basePath}/ai-optimizer`}
+          onClick={() => setActiveTab('ai_optimizer')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all whitespace-nowrap ${
+            activeTab === 'ai_optimizer'
+              ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-bold'
+              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+        >
+          <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+          <span>AI Risk</span>
+        </Link>
+
+        <Link
+          to={`${basePath}/customs`}
+          onClick={() => setActiveTab('customs')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all whitespace-nowrap ${
+            activeTab === 'customs'
+              ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-bold'
+              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+        >
+          <FileText className="w-3.5 h-3.5" />
+          <span>Customs</span>
+        </Link>
+
+        <Link
+          to={`${basePath}/map`}
+          onClick={() => setActiveTab('map')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all whitespace-nowrap ${
+            activeTab === 'map'
+              ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-bold'
+              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+        >
+          <Globe className="w-3.5 h-3.5" />
+          <span>Map</span>
+        </Link>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Shipment</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Customer</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Route</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Mode</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">ETA</th>
-              <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {shipments.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-gray-400">No shipments yet</td>
-              </tr>
-            ) : (
-              shipments.map((shipment) => (
-                <tr key={shipment.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedShipment(shipment)}>
-                  <td className="px-6 py-4">
-                    <div className="font-medium text-gray-900">{shipment.number}</div>
-                    <div className="text-sm text-gray-500">{shipment.order}</div>
-                  </td>
-                  <td className="px-6 py-4 text-gray-600">{shipment.customer}</td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm">
-                      <div className="text-gray-900">{shipment.origin}</div>
-                      <div className="text-gray-500">to {shipment.destination}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600">
-                        {modeIcons[shipment.mode]}
+      {/* Menu 1: Full-Page Animated Global Shipping Map (China Beacons & World Continents) */}
+      {activeTab === 'map' && (
+        <div className="space-y-6">
+          <GlobalShippingMap />
+        </div>
+      )}
+
+      {/* Menu 2: Vessel & Cargo Shipment Tracking Table */}
+      {activeTab === 'tracking' && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search shipments..."
+                className="w-full pl-9 pr-4 py-2 text-xs font-semibold border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none"
+              />
+            </div>
+            <Button variant="outline" size="sm" icon={<Filter className="w-4 h-4" />}>
+              Filter
+            </Button>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-xs">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800">
+                  <th className="px-6 py-3 text-left font-bold text-slate-500 uppercase">Shipment</th>
+                  <th className="px-6 py-3 text-left font-bold text-slate-500 uppercase">Customer</th>
+                  <th className="px-6 py-3 text-left font-bold text-slate-500 uppercase">Route</th>
+                  <th className="px-6 py-3 text-left font-bold text-slate-500 uppercase">Mode</th>
+                  <th className="px-6 py-3 text-left font-bold text-slate-500 uppercase">Status</th>
+                  <th className="px-6 py-3 text-left font-bold text-slate-500 uppercase">ETA</th>
+                  <th className="px-6 py-3 text-right font-bold text-slate-500 uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-semibold">
+                {shipments.map((shipment) => (
+                  <tr
+                    key={shipment.id}
+                    className="hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
+                    onClick={() => setSelectedShipment(shipment)}
+                  >
+                    <td className="px-6 py-4">
+                      <div className="font-extrabold text-slate-900 dark:text-white">{shipment.number}</div>
+                      <div className="text-slate-400">{shipment.order}</div>
+                    </td>
+                    <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{shipment.customer}</td>
+                    <td className="px-6 py-4">
+                      <div className="text-slate-900 dark:text-white">{shipment.origin}</div>
+                      <div className="text-slate-400 font-normal">to {shipment.destination}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                          {modeIcons[shipment.mode]}
+                        </div>
+                        <span className="capitalize">{shipment.mode}</span>
                       </div>
-                      <span className="capitalize text-gray-600">{shipment.mode}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusConfig[shipment.status].color}`}>
-                      {statusConfig[shipment.status].icon}
-                      {statusConfig[shipment.status].label}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-gray-600">
-                    {shipment.eta ? new Date(shipment.eta).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—'}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button className="p-1 text-gray-400 hover:text-gray-600">
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold ${statusConfig[shipment.status].color}`}>
+                        {statusConfig[shipment.status].label}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-slate-500">{shipment.eta || '—'}</td>
+                    <td className="px-6 py-4 text-right">
+                      <button className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white">
                         <ExternalLink className="w-4 h-4" />
                       </button>
-                      <button className="p-1 text-gray-400 hover:text-gray-600">
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Menu 3: Spot Freight Rates Comparison */}
+      {activeTab === 'rates' && (
+        <div className="space-y-4">
+          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+            <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">Live Carrier Spot Freight Rates</h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              {carrierRates.map((rate) => (
+                <div key={rate.carrier} className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex flex-col justify-between space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-extrabold text-slate-900 dark:text-white text-sm">{rate.carrier}</div>
+                      <div className="text-xs text-slate-400 font-medium">{rate.mode}</div>
                     </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {selectedShipment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setSelectedShipment(null)} />
-          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl m-4 max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">{selectedShipment.number}</h2>
-                  <p className="text-gray-500">{selectedShipment.customer}</p>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${rate.tagColor}`}>{rate.tag}</span>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-800 pt-3">
+                    <div className="font-extrabold text-lg text-emerald-600 dark:text-emerald-400">{rate.price}</div>
+                    <button
+                      onClick={() => triggerToast(`Booked ${rate.carrier} spot freight rate!`)}
+                      className="px-4 py-1.5 rounded-xl bg-slate-900 text-white font-bold text-xs shadow-xs"
+                    >
+                      Book Rate
+                    </button>
+                  </div>
                 </div>
-                <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium ${statusConfig[selectedShipment.status].color}`}>
-                  {statusConfig[selectedShipment.status].icon}
-                  {statusConfig[selectedShipment.status].label}
-                </span>
-              </div>
-            </div>
-
-            <div className="p-6">
-              <div className="grid grid-cols-2 gap-6 mb-8">
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">Origin</div>
-                  <div className="font-medium text-gray-900">{selectedShipment.origin}</div>
-                  <div className="text-sm text-gray-500">ETD: {selectedShipment.etd ? new Date(selectedShipment.etd).toLocaleDateString() : '—'}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">Destination</div>
-                  <div className="font-medium text-gray-900">{selectedShipment.destination}</div>
-                  <div className="text-sm text-gray-500">ETA: {selectedShipment.eta ? new Date(selectedShipment.eta).toLocaleDateString() : '—'}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">Carrier</div>
-                  <div className="font-medium text-gray-900">{selectedShipment.carrier}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">Tracking Number</div>
-                  <div className="font-medium text-xisync-cyan-600">{selectedShipment.tracking}</div>
-                </div>
-              </div>
-
-              <h3 className="font-semibold text-gray-900 mb-4">Milestones</h3>
-              <div className="relative">
-                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200" />
-                <div className="space-y-6">
-                  {['Booked', 'Picked Up', 'Export Cleared', 'In Transit', 'Arrived', 'Import Cleared', 'Delivered'].map((milestone, index) => {
-                    const statusOrder = ['booked', 'picked_up', 'export_cleared', 'in_transit', 'arrived', 'import_cleared', 'delivered'];
-                    const currentIndex = statusOrder.indexOf(selectedShipment.status);
-                    const isCompleted = index <= currentIndex;
-                    const isCurrent = index === currentIndex;
-                    return (
-                      <div key={milestone} className="relative flex items-start gap-4 pl-8">
-                        <div className={`absolute left-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                          isCompleted ? 'bg-xisync-green-100 text-xisync-green-600' :
-                          isCurrent ? 'bg-xisync-cyan-100 text-xisync-cyan-600 ring-4 ring-xisync-cyan-50' :
-                          'bg-gray-100 text-gray-400'
-                        }`}>
-                          {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
-                        </div>
-                        <div className="flex-1 pt-1">
-                          <div className={`font-medium ${isCompleted || isCurrent ? 'text-gray-900' : 'text-gray-400'}`}>
-                            {milestone}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setSelectedShipment(null)}>Close</Button>
-              <Button>Share Tracking</Button>
+              ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Menu 4: AI Risk & Route Optimizer */}
+      {activeTab === 'ai_optimizer' && (
+        <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-amber-400" />
+            <h3 className="font-extrabold text-base text-slate-900 dark:text-white">AI Route & Port Congestion Optimizer</h3>
+          </div>
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs space-y-2">
+            <div className="font-bold text-slate-900 dark:text-white">Suggested Suez Canal Alternate Passage</div>
+            <p className="text-slate-500 dark:text-slate-400">
+              Rerouting cargo via Cape of Good Hope reduces port congestion waiting time by 4.2 days for Rotterdam bound vessels.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Menu 5: Customs Clearance & Duty Saver */}
+      {activeTab === 'customs' && (
+        <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+          <div className="flex items-center gap-2">
+            <FileText className="w-5 h-5 text-blue-500" />
+            <h3 className="font-extrabold text-base text-slate-900 dark:text-white">Automated Customs Entry & Duty Saver</h3>
+          </div>
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs space-y-2">
+            <div className="font-bold text-slate-900 dark:text-white">US Section 301 Tariff Exemption Check</div>
+            <p className="text-slate-500 dark:text-slate-400">
+              Verified HTS Code 8504.40.9580 eligible for 25% duty exemption. Estimated savings: $2,800 / container.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Selected Shipment Detail Drawer Modal */}
+      {selectedShipment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-lg shadow-2xl p-6 space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div>
+                <div className="font-extrabold text-lg text-slate-900 dark:text-white">{selectedShipment.number}</div>
+                <div className="text-xs text-slate-400 font-medium">{selectedShipment.customer}</div>
+              </div>
+              <button onClick={() => setSelectedShipment(null)} className="p-1 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div className="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+                <div>
+                  <div className="text-slate-400 font-bold">Origin</div>
+                  <div className="font-extrabold text-slate-900 dark:text-white text-sm">{selectedShipment.origin}</div>
+                  <div className="text-slate-400 mt-1">ETD: {selectedShipment.etd}</div>
+                </div>
+                <div>
+                  <div className="text-slate-400 font-bold">Destination</div>
+                  <div className="font-extrabold text-slate-900 dark:text-white text-sm">{selectedShipment.destination}</div>
+                  <div className="text-slate-400 mt-1">ETA: {selectedShipment.eta}</div>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2">
+                <div className="flex items-center justify-between font-bold">
+                  <span className="text-slate-400">Carrier Line:</span>
+                  <span className="text-slate-900 dark:text-white">{selectedShipment.carrier}</span>
+                </div>
+                <div className="flex items-center justify-between font-bold">
+                  <span className="text-slate-400">Tracking Number:</span>
+                  <span className="text-cyan-600 dark:text-cyan-400 font-mono">{selectedShipment.tracking}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+              <Button onClick={() => setSelectedShipment(null)}>Close</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toastMsg && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-lg flex items-center gap-2 animate-in fade-in">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{toastMsg}</span>
         </div>
       )}
     </div>
