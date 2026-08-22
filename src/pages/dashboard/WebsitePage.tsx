@@ -136,7 +136,15 @@ const DEFAULT_DEMO_WEBSITE: Website = {
     bounce_rate_pct: 32.4,
     avg_session_duration: '3m 45s',
     language_preference_ratio: { en: 68, zh: 32 },
-    seo_indexing_status: { google_indexed_pages: 14, baidu_indexed_pages: 12, health_score: 96 },
+    seo_indexing_status: {
+      google_indexed_pages: 14,
+      baidu_indexed_pages: 12,
+      health_score: 96,
+      audit_checks: [
+        { id: 'seo-1', rule: 'H1-H3 Semantic Heading Structure', status: 'passed', score: 100, recommendation: 'H1 & H2 tags validated on all pages.' },
+        { id: 'seo-2', rule: 'Bilingual Meta Titles & Descriptions', status: 'passed', score: 100, recommendation: 'EN & ZH meta tags present and indexed.' },
+      ],
+    },
     top_clicked_inventory_items: [
       { sku: 'INV-4000-HE', product_name: '5,000W Hybrid Solar Inverter', clicks: 1240 },
       { sku: 'LED-8800-HC', product_name: 'Smart Industrial LED Panel', clicks: 890 },

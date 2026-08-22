@@ -9,9 +9,21 @@ export interface BilingualText {
   zh: string;
 }
 
+export type SectionType =
+  | 'hero'
+  | 'features'
+  | 'products'
+  | 'about'
+  | 'cta'
+  | 'contact'
+  | 'certifications'
+  | 'faq'
+  | 'testimonials'
+  | 'footer';
+
 export interface PageSection {
   id: string;
-  type: 'hero' | 'features' | 'products' | 'about' | 'cta' | 'contact' | 'footer';
+  type: SectionType;
   title: BilingualText;
   subtitle?: BilingualText;
   content?: BilingualText;
@@ -20,19 +32,29 @@ export interface PageSection {
     label: BilingualText;
     link: string;
   };
+  items?: {
+    id: string;
+    title: BilingualText;
+    description: BilingualText;
+    icon?: string;
+  }[];
+}
+
+export interface SeoMetadata {
+  meta_title: BilingualText;
+  meta_description: BilingualText;
+  keywords: string[];
+  og_image: string;
+  canonical_url?: string;
+  json_ld_schema?: string;
 }
 
 export interface WebsitePage {
   id: string;
   website_id: string;
-  slug: string;
+  slug: string; // 'index', 'products', 'about', 'contact', 'rfq'
   title: BilingualText;
-  seo_metadata: {
-    meta_title: BilingualText;
-    meta_description: BilingualText;
-    keywords: string[];
-    og_image: string;
-  };
+  seo_metadata: SeoMetadata;
   sections: PageSection[];
 }
 
@@ -93,6 +115,14 @@ export interface InventoryItemSync {
   sync_enabled: boolean;
 }
 
+export interface SeoAuditCheck {
+  id: string;
+  rule: string;
+  status: 'passed' | 'warning' | 'failed';
+  score: number;
+  recommendation: string;
+}
+
 export interface SiteAnalytics {
   website_id: string;
   total_pageviews: number;
@@ -107,6 +137,7 @@ export interface SiteAnalytics {
     google_indexed_pages: number;
     baidu_indexed_pages: number;
     health_score: number; // 0 - 100
+    audit_checks: SeoAuditCheck[];
   };
   top_clicked_inventory_items: {
     sku: string;
