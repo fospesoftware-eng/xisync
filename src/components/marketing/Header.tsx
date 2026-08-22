@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { Logo } from '../ui/Logo';
@@ -9,8 +9,16 @@ import { useI18n } from '../../lib/i18n';
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const { t } = useI18n();
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 32);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const navigation = [
     { name: t.nav.product, href: '/product' },
@@ -27,10 +35,18 @@ export function Header() {
     },
   ];
 
+  // Transparent header over the dark hero on the homepage, solid after scroll
+  const overHero = location.pathname === '/' && !scrolled && !mobileMenuOpen;
   const isActive = (href: string) => location.pathname === href;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        overHero
+          ? 'bg-transparent border-b border-transparent'
+          : 'bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-[0_1px_12px_rgba(2,6,23,0.06)]'
+      }`}
+    >
       <nav className="container-custom">
         <div className="flex items-center justify-between h-16 lg:h-20">
           <div className="flex items-center gap-8">
@@ -51,7 +67,13 @@ export function Header() {
                       className={`
                         flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg
                         transition-colors duration-200
-                        ${activeDropdown === item.name ? 'text-xisync-blue-900 bg-gray-100' : 'text-gray-600 hover:text-xisync-blue-900'}
+                        ${
+                          overHero
+                            ? 'text-white/85 hover:text-white hover:bg-white/10'
+                            : activeDropdown === item.name
+                              ? 'text-xisync-blue-900 bg-gray-100'
+                              : 'text-gray-600 hover:text-xisync-blue-900'
+                        }
                       `}
                     >
                       {item.name}
@@ -63,7 +85,15 @@ export function Header() {
                       className={`
                         px-4 py-2 text-sm font-medium rounded-lg
                         transition-colors duration-200
-                        ${isActive(item.href) ? 'text-xisync-blue-900 bg-xisync-blue-50' : 'text-gray-600 hover:text-xisync-blue-900'}
+                        ${
+                          overHero
+                            ? isActive(item.href)
+                              ? 'text-white bg-white/10'
+                              : 'text-white/85 hover:text-white hover:bg-white/10'
+                            : isActive(item.href)
+                              ? 'text-xisync-blue-900 bg-xisync-blue-50'
+                              : 'text-gray-600 hover:text-xisync-blue-900'
+                        }
                       `}
                     >
                       {item.name}
@@ -91,9 +121,14 @@ export function Header() {
           </div>
 
           <div className="hidden lg:flex items-center gap-4">
-            <LanguageSwitcher variant="compact" />
+            <LanguageSwitcher
+              variant="compact"
+              className={overHero ? 'text-white/85 hover:bg-white/10 hover:text-white' : ''}
+            />
             <Link to="/login">
-              <Button variant="ghost">{t.auth.signIn}</Button>
+              <Button variant="ghost" className={overHero ? 'text-white/90 hover:text-white hover:bg-white/10' : ''}>
+                {t.auth.signIn}
+              </Button>
             </Link>
             <Link to="/demo">
               <Button>{t.nav.bookDemo}</Button>
@@ -101,9 +136,12 @@ export function Header() {
           </div>
 
           <div className="flex items-center gap-2 lg:hidden">
-            <LanguageSwitcher variant="compact" />
+            <LanguageSwitcher
+              variant="compact"
+              className={overHero ? 'text-white/85 hover:bg-white/10 hover:text-white' : ''}
+            />
             <button
-              className="p-2 text-gray-600"
+              className={`p-2 transition-colors ${overHero ? 'text-white' : 'text-gray-600'}`}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -112,7 +150,7 @@ export function Header() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-gray-100 animate-slide-down">
+          <div className="lg:hidden py-4 border-t border-gray-100 animate-slide-down bg-white rounded-b-2xl">
             {navigation.map((item) => (
               <div key={item.name}>
                 {item.children ? (

@@ -28,6 +28,7 @@ import {
   Zap,
   FileText,
   Megaphone,
+  Wand2,
   Sparkles,
   Calendar,
 } from 'lucide-react';
@@ -74,6 +75,17 @@ export function DashboardLayout({ variant = 'client' }: DashboardLayoutProps) {
         { name: t.dashboard.nav.accounts, href: '/dashboard/crm/accounts' },
         { name: t.dashboard.nav.contacts, href: '/dashboard/crm/contacts' },
         { name: t.dashboard.nav.deals, href: '/dashboard/crm/deals' },
+      ],
+    },
+    {
+      name: language === 'zh' ? '独立站建站 AI' : 'Website Builder',
+      href: '/dashboard/website-builder',
+      icon: Wand2,
+      children: [
+        { name: language === 'zh' ? '建站与内容编辑' : 'Build', href: '/dashboard/website-builder/build' },
+        { name: language === 'zh' ? '主题与视觉风格' : 'Themes', href: '/dashboard/website-builder/themes' },
+        { name: language === 'zh' ? '域名与 DNS 解析' : 'Domains', href: '/dashboard/website-builder/domains' },
+        { name: language === 'zh' ? '数据与 SEO 分析' : 'Statistics', href: '/dashboard/website-builder/statistics' },
       ],
     },
     { name: t.dashboard.nav.inbox, href: '/dashboard/inbox', icon: MessageSquare },

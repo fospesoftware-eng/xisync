@@ -29,6 +29,7 @@ import { MarketingChannelsPage } from './pages/dashboard/marketing/MarketingChan
 import { MarketingCreativeStudioPage } from './pages/dashboard/marketing/MarketingCreativeStudioPage';
 import { MarketingAttributionPage } from './pages/dashboard/marketing/MarketingAttributionPage';
 import { UltraDashboardPage } from './pages/dashboard/UltraDashboardPage';
+import { WebsitePage } from './pages/dashboard/WebsitePage';
 
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { TenantsPage } from './pages/admin/TenantsPage';
@@ -75,6 +76,11 @@ function App() {
                 <Route path="crm/accounts" element={<LeadsPage />} />
                 <Route path="crm/contacts" element={<LeadsPage />} />
                 <Route path="crm/deals" element={<DealsPage />} />
+                <Route path="website-builder" element={<WebsitePage />} />
+                <Route path="website-builder/build" element={<WebsitePage />} />
+                <Route path="website-builder/themes" element={<WebsitePage />} />
+                <Route path="website-builder/domains" element={<WebsitePage />} />
+                <Route path="website-builder/statistics" element={<WebsitePage />} />
                 <Route path="inbox" element={<InboxPage />} />
                 <Route path="products" element={<ProductsPage />} />
                 <Route path="logistics" element={<LogisticsPage />} />
@@ -110,6 +116,11 @@ function App() {
                 <Route path="crm/accounts" element={<LeadsPage />} />
                 <Route path="crm/contacts" element={<LeadsPage />} />
                 <Route path="crm/deals" element={<DealsPage />} />
+                <Route path="website-builder" element={<WebsitePage />} />
+                <Route path="website-builder/build" element={<WebsitePage />} />
+                <Route path="website-builder/themes" element={<WebsitePage />} />
+                <Route path="website-builder/domains" element={<WebsitePage />} />
+                <Route path="website-builder/statistics" element={<WebsitePage />} />
                 <Route path="inbox" element={<InboxPage />} />
                 <Route path="products" element={<ProductsPage />} />
                 <Route path="logistics" element={<LogisticsPage />} />
