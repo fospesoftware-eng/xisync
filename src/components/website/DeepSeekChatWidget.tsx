@@ -184,8 +184,8 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteN
       sender: 'ai',
       text:
         lang === 'zh'
-          ? `👋 您好！我是工坊客户顾问。请问您想了解哪些实木玩具、有机毛绒玩偶，或是需要我为您核算批发价格与交期？`
-          : `👋 Hello! Welcome to our workshop. Looking for specific wooden toys, organic plush items, or need a wholesale quote for your store?`,
+          ? `👋 您好！我是 Eco-Toys 工坊的业务助理。很高兴为您服务！请问您是在寻找特定款式的玩具，还是想了解我们的批发与定制政策？`
+          : `👋 Hi there! I'm here from Eco-Toys Workshop. Great to meet you! Are you looking for specific toys for your store, or would you like to explore wholesale pricing and custom orders?`,
       timestamp: 'Just now',
     },
   ]);
@@ -411,11 +411,55 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteN
     setTimeout(() => setDownloadToast(null), 4000);
   };
 
-  // Natural Conversational Reasoning
+  // Natural Human Conversational Reasoning Engine
   const processDeepSeekAiResponse = (userQuery: string): Partial<ChatMessage> => {
     const q = userQuery.toLowerCase().trim();
 
-    // 1. Human Escalation
+    // 1. Identity & Name Questions ("who are you", "what is your name", "what's your name")
+    if (
+      q.includes('your name') ||
+      q.includes("what's your name") ||
+      q.includes('who are you') ||
+      q.includes('who am i talking to') ||
+      q.includes('what is this') ||
+      q.includes('你叫什么') ||
+      q.includes('你是谁') ||
+      q.includes('名字') ||
+      q.includes('称呼')
+    ) {
+      return {
+        text:
+          lang === 'zh'
+            ? '我是 Eco-Toys 手作工坊的业务助理！我们的团队位于浙江宁波和上海，专门从事出口级有机亚麻玩偶和 FSC 实木蒙氏玩具的制造与贸易。很高兴认识您！请问怎么称呼您？'
+            : "I'm the wholesale consultant here at Eco-Toys Workshop! Our craft team is based out of Ningbo and Shanghai, specializing in handcrafted organic linen plush toys and FSC beechwood Montessori sets for global retailers. Nice to meet you! How can I help you today?",
+      };
+    }
+
+    // 2. Greetings & Politeness ("hi", "hello", "good morning", "hey", "how are you")
+    if (
+      q === 'hi' ||
+      q === 'hello' ||
+      q === 'hey' ||
+      q.startsWith('hi ') ||
+      q.startsWith('hello ') ||
+      q.includes('good morning') ||
+      q.includes('good afternoon') ||
+      q.includes('good evening') ||
+      q.includes('how are you') ||
+      q === '你好' ||
+      q === '您好' ||
+      q === '早' ||
+      q === '嗨'
+    ) {
+      return {
+        text:
+          lang === 'zh'
+            ? '您好！今天有什么可以协助您的？无论是想了解具体产品材质、询价，还是咨询海运时效，我都随时为您效劳。'
+            : "Hello! Great to connect with you. How can I help you today? Feel free to ask about our toy collection, request sample pricing, or discuss shipping schedules.",
+      };
+    }
+
+    // 3. Human Escalation
     if (
       q.includes('human') ||
       q.includes('agent') ||
@@ -423,6 +467,7 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteN
       q.includes('person') ||
       q.includes('representative') ||
       q.includes('talk to someone') ||
+      q.includes('speak to human') ||
       q.includes('人工') ||
       q.includes('客服') ||
       q.includes('经理') ||
@@ -432,13 +477,13 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteN
       return {
         text:
           lang === 'zh'
-            ? '好的，已为您接通我们的大客户经理 Sarah Chen。她已加入当前对话，您可以直接在此沟通打样与批量订货事宜。'
+            ? '没问题！已为您接通我们的大客户经理 Sarah Chen。她已进入会话，您可以直接在此沟通打样、定制模具或信用账期事宜。'
             : 'Certainly! Sarah Chen from our wholesale team is here with you now. How can we help with your custom order or shipping plans?',
         isEscalated: true,
       };
     }
 
-    // 2. Product Specific Inquiries
+    // 4. Product Specific Inquiries
     const matchedProduct = TOY_CATALOG.find((item) =>
       item.keywords.some((kw) => q.includes(kw)) ||
       item.name.en.toLowerCase().includes(q) ||
@@ -458,6 +503,7 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteN
         q.includes('discount') ||
         q.includes('wholesale') ||
         q.includes('moq') ||
+        q.includes('how much') ||
         q.includes('报价') ||
         q.includes('价格') ||
         q.includes('批发') ||
@@ -466,7 +512,7 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteN
       if (wantsPrice) {
         return {
           text: isZh
-            ? `关于 **${productName}**，我们的常规批发起订量是 ${matchedProduct.moq} 件，单价 $${matchedProduct.wholesaleTier1} 美元；如果订购 500 件以上，工厂直供单价为 **$${matchedProduct.wholesaleTier2} 美元**（包含 OEM 包装定制）。\n\n我已为您整理好正式 Proforma 报价单，您可以直接点击下方按钮下载/打印：`
+            ? `关于 **${productName}**，常规起订量为 ${matchedProduct.moq} 件（单价 $${matchedProduct.wholesaleTier1} 美元）；如果订购 500 件以上，工厂直供特惠价为 **$${matchedProduct.wholesaleTier2} 美元/件**（包含 OEM 包装与 Logo 定制）。\n\n我已为您生成初步的 Proforma 报价单，您可以直接预览或点击下方按钮导出：`
             : `For the **${productName}**, our wholesale MOQ starts at ${matchedProduct.moq} units ($${matchedProduct.wholesaleTier1}/unit). For orders of 500 units or more, our direct factory price is **$${matchedProduct.wholesaleTier2} USD/unit** with custom packaging included.\n\nHere is your official Proforma Quote summary:`,
           isQuoteCard: true,
           quoteData: {
@@ -487,7 +533,7 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteN
       // Natural Product Introduction
       return {
         text: isZh
-          ? `有的！这款 **${productName}** 是我们工坊的热门款。采用纯天然有机亚麻与植物棉手工缝制，不仅触感温润亲肤，还通过了欧盟 CE EN71 和北美 ASTM 认证。\n\n目前样品和小批量订单 3-5 天即可出库，批发起订量为 ${matchedProduct.moq} 件。需要我为您出具一份详细的批发报价单吗？`
+          ? `有的！这款 **${productName}** 是我们工坊最受海外客户欢迎的产品之一。采用纯天然有机亚麻与植物棉手工缝制，质感柔软温润，通过了欧盟 CE EN71 与北美 ASTM 认证。\n\n目前样品 3-5 天即可出运，批发起订量为 ${matchedProduct.moq} 件。需要我为您按预估订购量核算一份详细报价吗？`
           : `Yes, absolutely! Our **${productName}** is handcrafted using 100% natural organic flax linen and hypoallergenic plant cotton. It meets full CE EN71 and ASTM F963 safety standards for baby and toddler use.\n\nWe have stock ready to ship in 3-5 days, with wholesale MOQ starting at just ${matchedProduct.moq} units. Would you like me to prepare a quick quote for your expected volume?`,
         isProductCard: true,
         productData: {
@@ -506,13 +552,16 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteN
       };
     }
 
-    // 3. General Wholesale & Pricing
+    // 5. General Wholesale & Pricing
     if (
       q.includes('price') ||
       q.includes('quote') ||
       q.includes('discount') ||
       q.includes('cost') ||
       q.includes('moq') ||
+      q.includes('how much') ||
+      q.includes('catalogue') ||
+      q.includes('catalog') ||
       q.includes('报价') ||
       q.includes('价格') ||
       q.includes('折扣') ||
@@ -521,8 +570,8 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteN
       return {
         text:
           lang === 'zh'
-            ? '我们工坊所有玩具均支持阶梯批发折扣（500件以上享优惠工厂价，2000件以上支持整柜特惠），且免费提供品牌定制打样。\n\n以我们的畅销有机小兔为例，500件起订单价为 $24.50 美元，您可以点击下方下载正式 Proforma 报价单：'
-            : 'We offer flexible wholesale volume tiers across our entire catalog (15% off for 500+ units, and 25% off for 20ft container orders), with custom branding included.\n\nHere is an official Proforma Quote for 500 units of our bestselling Organic Plush Bunny:',
+            ? '我们工坊所有玩具均支持阶梯批量批发折扣（500件以上享优惠出厂价，2000件以上支持整柜特惠），且支持免费品牌打样。\n\n以畅销的有机安抚小兔为例，500件批量单价为 $24.50 美元，您可以参考下方报价单：'
+            : 'We offer tiered wholesale pricing across our entire catalog (15% off for 500+ units, and 25% off for 20ft container orders), with custom branding included.\n\nHere is an official Proforma Quote for 500 units of our bestselling Organic Plush Bunny:',
         isQuoteCard: true,
         quoteData: {
           quoteNumber: `PI-2026-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -539,7 +588,7 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteN
       };
     }
 
-    // 4. Shipping & Logistics
+    // 6. Shipping & Logistics
     if (
       q.includes('ship') ||
       q.includes('freight') ||
@@ -547,6 +596,7 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteN
       q.includes('delivery') ||
       q.includes('fob') ||
       q.includes('cif') ||
+      q.includes('ddp') ||
       q.includes('port') ||
       q.includes('海运') ||
       q.includes('运输') ||
@@ -555,12 +605,12 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteN
       return {
         text:
           lang === 'zh'
-            ? '我们主要从上海港或宁波舟山港装船出运，与中远海运 (COSCO) 和马士基 (Maersk) 长期合作。到美西洛杉矶约 14 天，到欧洲鹿特丹约 24 天，支持 FOB、CIF 及双清包税送仓 (DDP)。'
+            ? '我们主要从上海港或宁波舟山港起运，与中远海运 (COSCO) 和马士基 (Maersk) 长期合作。到美西洛杉矶约 14 天，到欧洲鹿特丹约 24 天，支持 FOB、CIF 及双清包税送仓 (DDP)。'
             : 'We ship regularly from Shanghai and Ningbo ports via COSCO and Maersk. Typical transit times are ~14 days to US West Coast and ~24 days to Rotterdam (EU). We support FOB, CIF, and DDP (door-to-door delivery).',
       };
     }
 
-    // 5. Safety & Certifications
+    // 7. Safety & Certifications
     if (
       q.includes('safety') ||
       q.includes('cert') ||
@@ -580,12 +630,12 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteN
       };
     }
 
-    // 6. Default Friendly Fallback
+    // 8. Default Natural Human Response
     return {
       text:
         lang === 'zh'
-          ? '请问您是对我们哪款玩具（如有机亚麻小兔、实木木马、蒙氏叠叠塔）感兴趣，还是想了解具体订货量与海运方案？随时告诉我，我来为您解答。'
-          : 'Are you interested in a specific toy (like our organic plush bunny, wooden rocking horse, or Montessori stacker), or would you like to discuss shipping and bulk order quantities?',
+          ? `收到！关于您的需求，我随时可以为您出具各款玩具的批发样品价、核算集装箱装柜量或出具正式报价单。您也可以直接告诉我您计划采购的数量或目的港口！`
+          : `Got it! I can help you with wholesale sample rates, packing volume calculations, or prepare a formal Proforma Invoice. Feel free to let me know your target order quantity or destination port!`,
     };
   };
 
