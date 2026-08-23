@@ -69,9 +69,16 @@ export function SettingsPage() {
     navigate(`${baseRoute}/${tab}`);
   };
 
-  // Form states
+  // AI Chatbot Builder & Negotiation Engine States
+  const [botName, setBotName] = useState('Sarah Chen');
+  const [botRole, setBotRole] = useState('Senior Export Account Director');
+  const [botTone, setBotTone] = useState('warm_professional');
   const [minMargin, setMinMargin] = useState('25.0');
-  const [maxDiscount, setMaxDiscount] = useState('5.0');
+  const [maxDiscount, setMaxDiscount] = useState('15.0');
+  const [maxShipmentDays, setMaxShipmentDays] = useState('15');
+  const [sampleDispatchDays, setSampleDispatchDays] = useState('2');
+  const [freeSampleEnabled, setFreeSampleEnabled] = useState(true);
+  const [autoEscalateAfter, setAutoEscalateAfter] = useState('3');
   const [defaultIncoterms, setDefaultIncoterms] = useState('FOB Shanghai (CNSHA)');
   const [paymentTerm, setPaymentTerm] = useState('30/70 T/T Split');
   const [minCreditScore, setMinCreditScore] = useState('75');
@@ -253,7 +260,7 @@ export function SettingsPage() {
           }`}
         >
           <Bot className="w-3.5 h-3.5" />
-          <span>AI Copilot & Pricing</span>
+          <span>AI Chatbot & Negotiation Rules</span>
         </button>
 
         <button
@@ -476,38 +483,166 @@ export function SettingsPage() {
         </div>
       )}
 
-      {/* 4. SEPARATE SUB-MENU: AI Copilot & Pricing */}
+      {/* 4. SEPARATE SUB-MENU: AI Chatbot Builder & Negotiation Rules */}
       {activeTab === 'ai-rules' && (
         <div className="space-y-6">
+          {/* Card 1: Chatbot Personality & Identity Customizer */}
+          <div className="p-6 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Bot className="w-5 h-5 text-cyan-500" />
+                <div>
+                  <h2 className="font-extrabold text-base text-slate-900 dark:text-white">AI Chatbot Profile & Persona Builder</h2>
+                  <p className="text-xs text-slate-400">Configure your storefront AI consultant name, tone, role, and human escalation triggers</p>
+                </div>
+              </div>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-cyan-100 text-cyan-800 dark:bg-cyan-950/80 dark:text-cyan-300">
+                DEEPSEEK AI INTEGRATED
+              </span>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4 text-xs">
+              <div>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Chatbot / Agent Name</label>
+                <input
+                  type="text"
+                  value={botName}
+                  onChange={(e) => setBotName(e.target.value)}
+                  placeholder="e.g. Sarah Chen"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold text-slate-900 dark:text-white outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Agent Official Title / Role</label>
+                <input
+                  type="text"
+                  value={botRole}
+                  onChange={(e) => setBotRole(e.target.value)}
+                  placeholder="e.g. Senior Export Account Director"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold text-slate-900 dark:text-white outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Conversational Tone</label>
+                <select
+                  value={botTone}
+                  onChange={(e) => setBotTone(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold text-slate-900 dark:text-white outline-none focus:border-cyan-500"
+                >
+                  <option value="warm_professional">Warm, Natural & Professional (Recommended)</option>
+                  <option value="luxury_executive">High-End Luxury Concierge</option>
+                  <option value="friendly_casual">Friendly & Approachable Retailer</option>
+                  <option value="direct_b2b">Direct Factory Wholesale / Technical</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4 text-xs pt-2 border-t border-slate-100 dark:border-slate-800">
+              <div>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">
+                  Auto-Escalate to Human Agent After (Complex Inquiries)
+                </label>
+                <select
+                  value={autoEscalateAfter}
+                  onChange={(e) => setAutoEscalateAfter(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold text-slate-900 dark:text-white outline-none"
+                >
+                  <option value="1">Instant Escalation on Custom OEM / Tooling</option>
+                  <option value="3">After 3 Unresolved Technical Questions</option>
+                  <option value="manual">Only on Explicit Buyer Request ("Human / Manager")</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">
+                  Sample Policy Offer in Chat
+                </label>
+                <div className="flex items-center gap-3 pt-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={freeSampleEnabled}
+                      onChange={(e) => setFreeSampleEnabled(e.target.checked)}
+                      className="w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500"
+                    />
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">
+                      Enable "Free Quality Samples (Freight Collect)"
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: Autonomous Negotiation & Dynamic Pricing Engine */}
           <div className="p-6 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-6">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <Bot className="w-5 h-5 text-purple-500" />
-                <h2 className="font-extrabold text-base text-slate-900 dark:text-white">AI Autonomous Negotiation & Dynamic Pricing Rules</h2>
+                <div>
+                  <h2 className="font-extrabold text-base text-slate-900 dark:text-white">AI Autonomous Negotiation & Shipping Constraints</h2>
+                  <p className="text-xs text-slate-400">Set hard financial guardrails for automatic quoting, discount margins, and shipment deadlines</p>
+                </div>
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4 text-xs">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
               <div>
-                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Minimum Target Gross Margin (%)</label>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">
+                  Target Profit Margin Floor (%)
+                </label>
                 <input
                   type="number"
                   value={minMargin}
                   onChange={(e) => setMinMargin(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold text-slate-900 dark:text-white outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold text-slate-900 dark:text-white outline-none focus:border-purple-500"
                 />
+                <span className="text-[10px] text-slate-400 mt-1 block">Bot will never quote below this margin</span>
               </div>
 
               <div>
-                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Max Autonomous Discount Floor (%)</label>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">
+                  Max Autonomous Discount (%)
+                </label>
                 <input
                   type="number"
                   value={maxDiscount}
                   onChange={(e) => setMaxDiscount(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold text-slate-900 dark:text-white outline-none"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold text-slate-900 dark:text-white outline-none focus:border-purple-500"
                 />
+                <span className="text-[10px] text-slate-400 mt-1 block">Maximum tier-2 volume discount allowed</span>
               </div>
 
+              <div>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">
+                  Max Production Lead Time (Days)
+                </label>
+                <input
+                  type="number"
+                  value={maxShipmentDays}
+                  onChange={(e) => setMaxShipmentDays(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold text-slate-900 dark:text-white outline-none focus:border-purple-500"
+                />
+                <span className="text-[10px] text-slate-400 mt-1 block">Maximum promised manufacturing days</span>
+              </div>
+
+              <div>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">
+                  Sample Dispatch Lead Time (Days)
+                </label>
+                <input
+                  type="number"
+                  value={sampleDispatchDays}
+                  onChange={(e) => setSampleDispatchDays(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold text-slate-900 dark:text-white outline-none focus:border-purple-500"
+                />
+                <span className="text-[10px] text-slate-400 mt-1 block">Promised courier dispatch time</span>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4 text-xs pt-2 border-t border-slate-100 dark:border-slate-800">
               <div>
                 <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Default International Incoterms</label>
                 <select
@@ -524,7 +659,7 @@ export function SettingsPage() {
               </div>
 
               <div>
-                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Accepted Payment Terms</label>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Standard Payment Terms</label>
                 <select
                   value={paymentTerm}
                   onChange={(e) => setPaymentTerm(e.target.value)}
@@ -539,10 +674,10 @@ export function SettingsPage() {
 
             <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
               <button
-                onClick={() => triggerToast('AI Negotiation rules and margin thresholds saved!')}
-                className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs"
+                onClick={() => triggerToast(`AI Chatbot rules saved! Bot: ${botName} (${botRole}), Max Discount: ${maxDiscount}%, Max Lead Time: ${maxShipmentDays} days.`)}
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-bold text-xs shadow-md transition-all"
               >
-                Save AI Rules
+                Save Chatbot & Negotiation Rules
               </button>
             </div>
           </div>
