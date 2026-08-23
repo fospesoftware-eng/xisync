@@ -18,6 +18,8 @@ import { RegisterPage } from './pages/auth/RegisterPage';
 import { DashboardLayout } from './components/dashboard/DashboardLayout';
 import { DashboardHome } from './pages/dashboard/DashboardHome';
 import { LeadsPage } from './pages/dashboard/crm/LeadsPage';
+import { AccountsPage } from './pages/dashboard/crm/AccountsPage';
+import { ContactsPage } from './pages/dashboard/crm/ContactsPage';
 import { DealsPage } from './pages/dashboard/crm/DealsPage';
 import { InboxPage } from './pages/dashboard/InboxPage';
 import { LogisticsPage } from './pages/dashboard/LogisticsPage';
@@ -80,8 +82,8 @@ function App() {
                 <Route path="marketing/creatives" element={<MarketingCreativeStudioPage />} />
                 <Route path="marketing/attribution" element={<MarketingAttributionPage />} />
                 <Route path="crm/leads" element={<LeadsPage />} />
-                <Route path="crm/accounts" element={<LeadsPage />} />
-                <Route path="crm/contacts" element={<LeadsPage />} />
+                <Route path="crm/accounts" element={<AccountsPage />} />
+                <Route path="crm/contacts" element={<ContactsPage />} />
                 <Route path="crm/deals" element={<DealsPage />} />
                 <Route path="website-builder" element={<WebsitePage />} />
                 <Route path="website-builder/build" element={<WebsitePage />} />
@@ -122,8 +124,8 @@ function App() {
                 <Route path="marketing/creatives" element={<MarketingCreativeStudioPage />} />
                 <Route path="marketing/attribution" element={<MarketingAttributionPage />} />
                 <Route path="crm/leads" element={<LeadsPage />} />
-                <Route path="crm/accounts" element={<LeadsPage />} />
-                <Route path="crm/contacts" element={<LeadsPage />} />
+                <Route path="crm/accounts" element={<AccountsPage />} />
+                <Route path="crm/contacts" element={<ContactsPage />} />
                 <Route path="crm/deals" element={<DealsPage />} />
                 <Route path="website-builder" element={<WebsitePage />} />
                 <Route path="website-builder/build" element={<WebsitePage />} />
