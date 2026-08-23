@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Website, LanguageCode, InventoryItemSync } from '../../types/websiteBuilder';
 import { WebsiteInventorySyncService } from '../../lib/services/websiteInventorySync';
+import { EcoToysTemplate } from '../../components/website/templates/EcoToysTemplate';
 import {
   Globe,
   Phone,
@@ -24,31 +25,31 @@ const LOCAL_STORAGE_KEY = 'xisync_website_builder_state';
 const DEFAULT_DEMO_WEBSITE: Website = {
   id: 'web-default-1',
   tenant_id: 'tenant-demo',
-  name: 'ExportCo International',
-  subdomain: 'exportco.xisync.site',
-  custom_domain: 'exportco-global.com',
-  active_theme_id: 'theme-enterprise',
+  name: 'Eco-Toys Craft Workshop',
+  subdomain: 'ecotoys.xisync.site',
+  custom_domain: 'eco-toys.com',
+  active_theme_id: 'theme-ecotoys',
   has_active_site: true,
   creation_mode: 'url_conversion',
-  source_url: 'https://demo.exportco.com',
+  source_url: 'https://eco-toys.com',
   primary_language: 'en',
   inventory_sync_enabled: true,
   status: 'published',
   theme_config: {
-    id: 'theme-enterprise',
-    name: 'Enterprise Sleek',
-    name_zh: '商务科技精英',
-    description: 'High-contrast sapphire theme tailored for global industrial machinery & B2B exporters.',
-    preview_image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=600&q=80',
+    id: 'theme-ecotoys',
+    name: 'Eco-Toys Pastel (Soft Craft)',
+    name_zh: '生态玩具 / 婴童木作 (莫兰迪柔蓝)',
+    description: 'Bespoke soft pastel sky-blue theme with rounded cards, cloud accents, and circular CTA badges tailored for toys, kids & crafts.',
+    preview_image: 'https://images.unsplash.com/photo-1559454403-b8fb88521f11?auto=format&fit=crop&w=600&q=80',
     color_palette: {
-      primary: '#0284c7',
-      secondary: '#0f172a',
-      background: '#020617',
-      text: '#f8fafc',
-      accent: '#38bdf8',
+      primary: '#1E3A5F',
+      secondary: '#DDECF0',
+      background: '#DDECF0',
+      text: '#1E3A5F',
+      accent: '#A9D0E4',
     },
-    typography: { font_family_en: 'Inter', font_family_zh: 'PingFang SC', base_font_size: '15px' },
-    component_style: { border_radius: 'rounded-2xl', shadow: 'shadow-md' },
+    typography: { font_family_en: 'Playfair Display', font_family_zh: 'Noto Serif SC', base_font_size: '15px' },
+    component_style: { border_radius: 'rounded-2xl', shadow: 'shadow-sm' },
   },
   pages: [
     {
@@ -187,6 +188,19 @@ export function PublishedWebsiteView() {
       setRfqSubmitted(false);
     }, 2500);
   };
+
+  // If active theme is Eco-Toys, render the bespoke Eco-Toys storefront template!
+  if (website.active_theme_id === 'theme-ecotoys' || website.name.toLowerCase().includes('toy')) {
+    return (
+      <EcoToysTemplate
+        website={website}
+        lang={lang}
+        onLanguageChange={setLang}
+        currency={currency}
+        onCurrencyChange={setCurrency}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-cyan-500 selection:text-white">

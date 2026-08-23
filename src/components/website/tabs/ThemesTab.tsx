@@ -9,6 +9,22 @@ interface ThemesTabProps {
 
 const AVAILABLE_THEMES: ThemeConfig[] = [
   {
+    id: 'theme-ecotoys',
+    name: 'Eco-Toys Pastel (Soft Craft)',
+    name_zh: '生态玩具 / 婴童木作 (莫兰迪柔蓝)',
+    description: 'Bespoke soft pastel sky-blue theme with rounded cards, cloud accents, and circular CTA badges tailored for toys, kids & crafts.',
+    preview_image: 'https://images.unsplash.com/photo-1559454403-b8fb88521f11?auto=format&fit=crop&w=600&q=80',
+    color_palette: {
+      primary: '#1E3A5F',
+      secondary: '#DDECF0',
+      background: '#DDECF0',
+      text: '#1E3A5F',
+      accent: '#A9D0E4',
+    },
+    typography: { font_family_en: 'Playfair Display', font_family_zh: 'Noto Serif SC', base_font_size: '15px' },
+    component_style: { border_radius: 'rounded-2xl', shadow: 'shadow-sm' },
+  },
+  {
     id: 'theme-enterprise',
     name: 'Enterprise Sleek',
     name_zh: '商务科技精英',
