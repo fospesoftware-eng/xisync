@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Website, LanguageCode } from '../../../types/websiteBuilder';
 import { SeoHead } from '../seo/SeoHead';
+import { DeepSeekChatWidget } from '../DeepSeekChatWidget';
 import {
   Search,
   User,
@@ -1044,6 +1045,13 @@ export function EcoToysTemplate({
           </div>
         </div>
       )}
+
+      {/* Floating 24/7 DeepSeek AI Trade Assistant & Escalation Bot */}
+      <DeepSeekChatWidget
+        lang={lang}
+        currency={currency}
+        siteName={website.name || (lang === 'zh' ? 'Eco-Toys 手工实木与有机玩具' : 'Eco-Toys Workshop')}
+      />
     </div>
   );
 }
