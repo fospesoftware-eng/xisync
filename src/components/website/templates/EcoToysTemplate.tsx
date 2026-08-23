@@ -13,6 +13,12 @@ import {
   Smile,
   X,
   ChevronRight,
+  Phone,
+  Mail,
+  MapPin,
+  Clock,
+  Package,
+  Award,
 } from 'lucide-react';
 
 interface EcoToysTemplateProps {
@@ -22,6 +28,8 @@ interface EcoToysTemplateProps {
   currency: string;
   onCurrencyChange: (curr: any) => void;
 }
+
+type InnerPageSlug = 'home' | 'catalog' | 'about' | 'wholesale' | 'eco' | 'safety' | 'contact';
 
 interface ToyProduct {
   id: string;
@@ -34,6 +42,8 @@ interface ToyProduct {
   rating: number;
   reviews: number;
   isNew?: boolean;
+  leadTime: string;
+  materials: string;
 }
 
 const TOY_PRODUCTS: ToyProduct[] = [
@@ -45,7 +55,7 @@ const TOY_PRODUCTS: ToyProduct[] = [
       zh: '天然有机亚麻安抚小兔',
     },
     description: {
-      en: 'Handmade organic linen rabbit doll with hypoallergenic plant-based cotton filling. CE & ASTM certified.',
+      en: 'Handmade organic linen rabbit doll with hypoallergenic plant-based cotton filling. Certified CE & ASTM.',
       zh: '手工缝制纯天然亚麻小兔，采用防过敏植物纤维填充。',
     },
     price: 34,
@@ -54,6 +64,8 @@ const TOY_PRODUCTS: ToyProduct[] = [
     rating: 4.9,
     reviews: 128,
     isNew: true,
+    leadTime: '3-5 Days',
+    materials: '100% Organic Flax Linen & Plant Cotton',
   },
   {
     id: 'toy-2',
@@ -63,7 +75,7 @@ const TOY_PRODUCTS: ToyProduct[] = [
       zh: '手工实木摇摇木马',
     },
     description: {
-      en: 'Solid European beechwood rocking horse with food-grade beeswax polish. Smooth ergonomic edges.',
+      en: 'Solid European beechwood rocking horse with food-grade beeswax polish. Smooth ergonomic anti-collision edges.',
       zh: '精选欧洲山毛榉实木制作，天然蜂蜡抛光打磨，圆润防撞。',
     },
     price: 89,
@@ -71,6 +83,8 @@ const TOY_PRODUCTS: ToyProduct[] = [
     category: { en: 'Wooden Toys', zh: '实木益智' },
     rating: 5.0,
     reviews: 94,
+    leadTime: '5-7 Days',
+    materials: 'FSC Solid Beechwood & Natural Beeswax',
   },
   {
     id: 'toy-3',
@@ -89,6 +103,8 @@ const TOY_PRODUCTS: ToyProduct[] = [
     rating: 4.8,
     reviews: 215,
     isNew: true,
+    leadTime: '3-5 Days',
+    materials: 'Solid Hardwood & Non-toxic Water Paint',
   },
   {
     id: 'toy-4',
@@ -106,6 +122,8 @@ const TOY_PRODUCTS: ToyProduct[] = [
     category: { en: 'Wooden Toys', zh: '实木益智' },
     rating: 4.9,
     reviews: 76,
+    leadTime: '2-4 Days',
+    materials: 'Natural Beechwood & Rubber Tires',
   },
   {
     id: 'toy-5',
@@ -123,6 +141,8 @@ const TOY_PRODUCTS: ToyProduct[] = [
     category: { en: 'Plush & Dolls', zh: '毛绒与玩偶' },
     rating: 5.0,
     reviews: 142,
+    leadTime: '4-6 Days',
+    materials: 'Organic Wool, Cotton & Linen',
   },
   {
     id: 'toy-6',
@@ -140,6 +160,8 @@ const TOY_PRODUCTS: ToyProduct[] = [
     category: { en: 'Montessori', zh: '蒙特梭利早教' },
     rating: 4.9,
     reviews: 88,
+    leadTime: '5-8 Days',
+    materials: 'Birch Plywood & Metal Latches',
   },
 ];
 
@@ -150,23 +172,26 @@ export function EcoToysTemplate({
   currency,
   onCurrencyChange,
 }: EcoToysTemplateProps) {
+  const [currentPage, setCurrentPage] = useState<InnerPageSlug>('home');
   const [activeCategory, setActiveCategory] = useState('all');
   const [cartCount, setCartCount] = useState(2);
   const [wishlistCount, setWishlistCount] = useState(3);
   const [selectedProduct, setSelectedProduct] = useState<ToyProduct | null>(null);
   const [rfqModalOpen, setRfqModalOpen] = useState(false);
   const [rfqSuccess, setRfqSuccess] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const activeLangKey = (lang === 'zh' ? 'zh' : 'en') as 'en' | 'zh';
   const siteUrl = `https://${website.custom_domain || website.subdomain || 'ecotoys.xisync.site'}`;
 
-  const navLinks = [
-    { name: { en: 'Catalog', zh: '商品目录' }, href: '#catalog' },
-    { name: { en: 'About Us', zh: '品牌故事' }, href: '#about' },
-    { name: { en: 'Wholesale & B2B', zh: '批发与采购' }, href: '#wholesale' },
-    { name: { en: 'Eco Materials', zh: '环保天然材质' }, href: '#eco' },
-    { name: { en: 'Safety Standards', zh: '安全认证' }, href: '#safety' },
-    { name: { en: 'Contact', zh: '联系我们' }, href: '#contact' },
+  const navLinks: { slug: InnerPageSlug; name: { en: string; zh: string } }[] = [
+    { slug: 'home', name: { en: 'Home', zh: '首页' } },
+    { slug: 'catalog', name: { en: 'Catalog', zh: '商品画册' } },
+    { slug: 'about', name: { en: 'About Workshop', zh: '品牌手作' } },
+    { slug: 'wholesale', name: { en: 'Wholesale & B2B', zh: '大宗采购' } },
+    { slug: 'eco', name: { en: 'Eco Materials', zh: '天然原材' } },
+    { slug: 'safety', name: { en: 'Safety Standards', zh: '安全认证' } },
+    { slug: 'contact', name: { en: 'Contact Us', zh: '联系我们' } },
   ];
 
   const categories = [
@@ -176,30 +201,52 @@ export function EcoToysTemplate({
     { id: 'montessori', label: { en: 'Montessori Early Learning', zh: '蒙氏早教益智' } },
   ];
 
-  const filteredProducts =
-    activeCategory === 'all'
-      ? TOY_PRODUCTS
-      : TOY_PRODUCTS.filter((p) => {
-          if (activeCategory === 'plush') return p.category.en.includes('Plush');
-          if (activeCategory === 'wooden') return p.category.en.includes('Wooden');
-          if (activeCategory === 'montessori') return p.category.en.includes('Montessori');
-          return true;
-        });
+  const filteredProducts = TOY_PRODUCTS.filter((p) => {
+    const matchCategory =
+      activeCategory === 'all'
+        ? true
+        : activeCategory === 'plush'
+        ? p.category.en.includes('Plush')
+        : activeCategory === 'wooden'
+        ? p.category.en.includes('Wooden')
+        : activeCategory === 'montessori'
+        ? p.category.en.includes('Montessori')
+        : true;
+
+    const matchSearch =
+      !searchQuery.trim() ||
+      p.name[activeLangKey].toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.sku.toLowerCase().includes(searchQuery.toLowerCase());
+
+    return matchCategory && matchSearch;
+  });
+
+  const getPageTitle = () => {
+    switch (currentPage) {
+      case 'catalog':
+        return `${website.name} — Full B2B Toy Catalog & Stock`;
+      case 'about':
+        return `${website.name} — Our Handcrafted Story & Artisans`;
+      case 'wholesale':
+        return `${website.name} — Wholesale Partnerships & Ocean Shipping`;
+      case 'eco':
+        return `${website.name} — Organic Linen & FSC Wood Standards`;
+      case 'safety':
+        return `${website.name} — CE EN71 & ASTM F963 Lab Certifications`;
+      case 'contact':
+        return `${website.name} — Contact Exporter Sales Desk`;
+      case 'home':
+      default:
+        return `${website.name} — Organic & Montessori Wooden Toys Manufacturer`;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#DDECF0] text-[#1E3A5F] font-sans antialiased selection:bg-[#BCE0FD] selection:text-[#0A2540]">
-      {/* 1. GOOGLE SEO METADATA & STRUCTURED JSON-LD SCHEMA */}
+    <div className="min-h-screen bg-[#DDECF0] text-[#1E3A5F] font-sans antialiased selection:bg-[#BCE0FD] selection:text-[#0A2540] flex flex-col justify-between">
+      {/* 1. GOOGLE SEO METADATA & STRUCTURED DATA */}
       <SeoHead
-        title={
-          lang === 'zh'
-            ? `${website.name} — 天然有机儿童木作与益智玩具出口制造`
-            : `${website.name} — Organic & Montessori Wooden Toys Manufacturer`
-        }
-        description={
-          lang === 'zh'
-            ? '专注于 100% 纯天然有机亚麻安抚玩偶、手工欧洲山毛榉木质玩具及蒙特梭利早教教具。通过欧盟 CE (EN71) 与北美 ASTM F963 严苛儿童玩具安全认证。'
-            : 'Official B2B storefront for Eco-Toys Craft Workshop. Certified manufacturer of 100% organic linen dolls, sustainable FSC beechwood toys, and Montessori educational sets. CE & ASTM F963 compliant.'
-        }
+        title={getPageTitle()}
+        description="Official B2B storefront for Eco-Toys Craft Workshop. Certified manufacturer of 100% organic linen dolls, sustainable FSC beechwood toys, and Montessori educational sets. CE & ASTM F963 compliant."
         keywords={[
           'Organic Toys',
           'Wooden Toys Manufacturer',
@@ -210,7 +257,7 @@ export function EcoToysTemplate({
           'ASTM F963 Toy Exporter',
           'B2B Wholesale Toys',
         ]}
-        canonicalUrl={siteUrl}
+        canonicalUrl={`${siteUrl}/${currentPage === 'home' ? '' : currentPage}`}
         ogImage="https://images.unsplash.com/photo-1543332164-6e82f355badc?auto=format&fit=crop&w=1200&q=80"
         siteName={website.name}
         locale={lang === 'zh' ? 'zh_CN' : 'en_US'}
@@ -234,394 +281,627 @@ export function EcoToysTemplate({
       />
 
       {/* 2. TOP FLOATING PILL NAVBAR */}
-      <div className="pt-6 px-4 md:px-10 max-w-7xl mx-auto">
-        <header className="bg-white/90 backdrop-blur-md rounded-full px-6 md:px-8 py-3.5 shadow-sm border border-white/60 flex items-center justify-between gap-4">
-          {/* Logo with Brand Name or Custom Logo */}
-          <a href="#" className="flex items-center gap-2.5 group" aria-label={`${website.name} Home`}>
-            {website.logo_url ? (
-              <img
-                src={website.logo_url}
-                alt={website.name}
-                className="h-9 w-auto max-w-[120px] object-contain rounded-lg"
-              />
-            ) : (
-              <div
-                className="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm group-hover:scale-105 transition-transform shadow-xs"
-                style={{
-                  backgroundColor: website.theme_config?.color_palette?.accent || '#BCE0FD',
-                  color: website.theme_config?.color_palette?.primary || '#1E3A5F',
-                }}
-              >
-                🧸
-              </div>
-            )}
-            <span
-              className="font-extrabold text-base md:text-lg tracking-tight uppercase"
-              style={{ color: website.theme_config?.color_palette?.primary || '#1E3A5F' }}
+      <div>
+        <div className="pt-6 px-4 md:px-10 max-w-7xl mx-auto">
+          <header className="bg-white/90 backdrop-blur-md rounded-full px-6 md:px-8 py-3.5 shadow-sm border border-white/60 flex items-center justify-between gap-4">
+            {/* Logo */}
+            <button
+              onClick={() => setCurrentPage('home')}
+              className="flex items-center gap-2.5 group text-left"
+              aria-label={`${website.name} Home`}
             >
-              {website.logo_text || website.name.toUpperCase()}
-            </span>
-          </a>
-
-          {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-6 text-[13px] font-semibold text-[#4A6B82]" aria-label="Main Navigation">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="hover:text-[#1E3A5F] transition-colors whitespace-nowrap"
-              >
-                {link.name[activeLangKey]}
-              </a>
-            ))}
-          </nav>
-
-          {/* Right Action Icons & Controls */}
-          <div className="flex items-center gap-3">
-            {/* Language Switcher */}
-            <div className="flex items-center bg-[#EDF5F8] p-1 rounded-full text-xs font-bold" role="group" aria-label="Language selection">
-              <button
-                onClick={() => onLanguageChange('en')}
-                className={`px-2.5 py-0.5 rounded-full transition-all ${
-                  lang === 'en' ? 'bg-white text-[#1E3A5F] shadow-xs' : 'text-[#7B9CAB]'
-                }`}
-                aria-pressed={lang === 'en'}
-              >
-                EN
-              </button>
-              <button
-                onClick={() => onLanguageChange('zh')}
-                className={`px-2.5 py-0.5 rounded-full transition-all ${
-                  lang === 'zh' ? 'bg-white text-[#1E3A5F] shadow-xs' : 'text-[#7B9CAB]'
-                }`}
-                aria-pressed={lang === 'zh'}
-              >
-                中文
-              </button>
-            </div>
-
-            {/* Currency Selector */}
-            <select
-              value={currency}
-              onChange={(e) => onCurrencyChange(e.target.value)}
-              className="bg-[#EDF5F8] border-none text-[#1E3A5F] text-xs font-bold rounded-full px-2.5 py-1.5 outline-none cursor-pointer hidden sm:block"
-              aria-label="Currency selection"
-            >
-              <option value="USD">USD ($)</option>
-              <option value="EUR">EUR (€)</option>
-              <option value="CNY">CNY (¥)</option>
-              <option value="GBP">GBP (£)</option>
-            </select>
-
-            <div className="flex items-center gap-1.5 text-[#4A6B82]">
-              <button
-                className="w-8 h-8 rounded-full bg-[#EDF5F8] hover:bg-[#D4E8EE] flex items-center justify-center transition-colors"
-                title="Search Products"
-                aria-label="Search catalog"
-              >
-                <Search className="w-3.5 h-3.5" />
-              </button>
-
-              <button
-                className="w-8 h-8 rounded-full bg-[#EDF5F8] hover:bg-[#D4E8EE] flex items-center justify-center transition-colors"
-                title="User Account"
-                aria-label="User account"
-              >
-                <User className="w-3.5 h-3.5" />
-              </button>
-
-              <button
-                className="w-8 h-8 rounded-full bg-[#EDF5F8] hover:bg-[#D4E8EE] flex items-center justify-center transition-colors relative"
-                title="Wishlist"
-                aria-label="Saved wishlist"
-              >
-                <Heart className="w-3.5 h-3.5" />
-                {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#A3CBE0] text-[#1E3A5F] rounded-full text-[9px] font-bold flex items-center justify-center">
-                    {wishlistCount}
-                  </span>
-                )}
-              </button>
-
-              <button
-                onClick={() => setRfqModalOpen(true)}
-                className="w-8 h-8 rounded-full bg-[#BCE0FD] hover:bg-[#A9D5FA] text-[#1E3A5F] flex items-center justify-center transition-colors relative"
-                title="Wholesale Cart & RFQ"
-                aria-label="Wholesale inquiry cart"
-              >
-                <ShoppingBag className="w-3.5 h-3.5" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#1E3A5F] text-white rounded-full text-[9px] font-bold flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
-              </button>
-            </div>
-          </div>
-        </header>
-      </div>
-
-      {/* 3. HERO SECTION (Split-Frame Reference Composition in Clean English) */}
-      <main>
-        <section className="pt-8 pb-12 px-4 md:px-10 max-w-7xl mx-auto" aria-labelledby="main-heading">
-          <div className="relative">
-            <div className="grid lg:grid-cols-12 gap-5 items-stretch">
-              {/* Left Hero Card (Clean Typography & Miniature Product) */}
-              <article className="lg:col-span-6 bg-white rounded-[36px] p-8 md:p-12 shadow-sm border border-white/80 flex flex-col justify-between relative overflow-hidden">
-                <div className="space-y-4">
-                  <span className="inline-block px-3.5 py-1 rounded-full bg-[#EDF5F8] text-[#4A6B82] text-xs font-bold tracking-wide uppercase">
-                    {lang === 'zh' ? '100% 纯天然环保安全材质' : '100% Organic & Non-Toxic'}
-                  </span>
-
-                  <h1 id="main-heading" className="text-4xl md:text-5xl lg:text-6xl font-black text-[#1E3A5F] tracking-tight font-serif uppercase leading-tight">
-                    {lang === 'zh' ? '生态有机玩具' : 'ECO-TOYS'}
-                  </h1>
-
-                  <p className="text-sm md:text-base text-[#688599] font-medium max-w-md leading-relaxed">
-                    {lang === 'zh'
-                      ? '专为宝宝健康成长研发：采用天然有机亚麻、山毛榉实木与植物安全水性漆制作。'
-                      : 'Ecologically pure, hypoallergenic, and safe children toys crafted from 100% natural organic materials.'}
-                  </p>
-                </div>
-
-                {/* Miniature Thumbnail Badge */}
-                <div className="pt-8 flex items-center justify-between">
-                  <figure className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden bg-[#F4FAFC] border-2 border-white shadow-xs p-1">
-                    <img
-                      src="https://images.unsplash.com/photo-1559454403-b8fb88521f11?auto=format&fit=crop&w=300&q=80"
-                      alt="Organic Linen Plush Bunny Miniature Preview"
-                      width="120"
-                      height="120"
-                      className="w-full h-full object-cover rounded-xl"
-                    />
-                  </figure>
-
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-bold text-[#7B9CAB]">
-                      {lang === 'zh' ? '德国 TÜV 莱茵认证' : 'TÜV Rheinland & CE Certified'}
-                    </span>
-                    <div className="w-8 h-8 rounded-full bg-[#E5F2F7] flex items-center justify-center text-[#1E3A5F]">
-                      🌿
-                    </div>
-                  </div>
-                </div>
-              </article>
-
-              {/* Right Hero Card (Warm Lifestyle Girl with Dolls Photography) */}
-              <article className="lg:col-span-6 bg-white rounded-[36px] overflow-hidden shadow-sm border border-white/80 relative min-h-[380px] md:min-h-[460px]">
+              {website.logo_url ? (
                 <img
-                  src="https://images.unsplash.com/photo-1543332164-6e82f355badc?auto=format&fit=crop&w=1200&q=80"
-                  alt="Happy toddler girl playing with organic handcrafted Waldorf dolls"
-                  className="w-full h-full object-cover"
+                  src={website.logo_url}
+                  alt={website.name}
+                  className="h-9 w-auto max-w-[120px] object-contain rounded-lg"
                 />
-
-                {/* Circular Overlapping CTA Badge (Catalog / RFQ) */}
-                <a
-                  href="#catalog"
-                  className="absolute left-[-28px] top-1/2 -translate-y-1/2 hidden lg:flex w-24 h-24 rounded-full bg-[#A9D0E4] hover:bg-[#97C5DC] text-[#1E3A5F] font-bold text-xs shadow-md border-4 border-[#DDECF0] items-center justify-center text-center transition-all hover:scale-105 z-20"
-                  aria-label="Jump to Product Catalog"
+              ) : (
+                <div
+                  className="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm group-hover:scale-105 transition-transform shadow-xs"
+                  style={{
+                    backgroundColor: website.theme_config?.color_palette?.accent || '#BCE0FD',
+                    color: website.theme_config?.color_palette?.primary || '#1E3A5F',
+                  }}
                 >
-                  <span className="font-extrabold uppercase tracking-wide">
-                    {lang === 'zh' ? '进入\n画册' : 'Catalog'}
-                  </span>
-                </a>
-
-                {/* Cloud Shape Visual Element on Bottom Right */}
-                <div className="absolute -bottom-4 -right-4 w-52 h-28 bg-[#DDECF0] rounded-tl-[80px] rounded-tr-[50px] pointer-events-none opacity-90 flex items-center justify-center">
-                  <div className="w-32 h-16 bg-[#DDECF0] rounded-full absolute -top-6 left-6" />
+                  🧸
                 </div>
-              </article>
-            </div>
-          </div>
-        </section>
-
-        {/* 4. POPULAR PRODUCTS CATALOG GRID */}
-        <section id="catalog" className="pt-8 pb-16 px-4 md:px-10 max-w-7xl mx-auto space-y-8" aria-labelledby="catalog-heading">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div className="space-y-1">
-              <span className="text-xs font-extrabold text-[#7B9CAB] uppercase tracking-widest">
-                {lang === 'zh' ? '热销精选' : 'POPULAR PRODUCTS'}
+              )}
+              <span
+                className="font-extrabold text-base md:text-lg tracking-tight uppercase"
+                style={{ color: website.theme_config?.color_palette?.primary || '#1E3A5F' }}
+              >
+                {website.logo_text || website.name.toUpperCase()}
               </span>
-              <h2 id="catalog-heading" className="text-3xl font-serif font-black text-[#1E3A5F] tracking-tight uppercase">
-                {lang === 'zh' ? '最受全球买家欢迎的产品' : 'FEATURED BESTSELLERS'}
-              </h2>
-            </div>
+            </button>
 
-            {/* Category Filter Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1" role="tablist">
-              {categories.map((cat) => (
+            {/* Desktop Navigation Links */}
+            <nav className="hidden lg:flex items-center gap-6 text-[13px] font-semibold text-[#4A6B82]" aria-label="Main Navigation">
+              {navLinks.map((link) => (
                 <button
-                  key={cat.id}
-                  onClick={() => setActiveCategory(cat.id)}
-                  role="tab"
-                  aria-selected={activeCategory === cat.id}
-                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
-                    activeCategory === cat.id
-                      ? 'bg-white text-[#1E3A5F] shadow-sm font-extrabold'
-                      : 'bg-white/40 text-[#5F8094] hover:bg-white/70'
+                  key={link.slug}
+                  onClick={() => setCurrentPage(link.slug)}
+                  className={`transition-all whitespace-nowrap pb-0.5 ${
+                    currentPage === link.slug
+                      ? 'text-[#1E3A5F] font-extrabold border-b-2 border-[#1E3A5F]'
+                      : 'hover:text-[#1E3A5F]'
                   }`}
                 >
-                  {cat.label[activeLangKey]}
+                  {link.name[activeLangKey]}
                 </button>
               ))}
-            </div>
-          </div>
+            </nav>
 
-          {/* Product Cards — Soft Rounded Pill Frames */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {filteredProducts.map((product) => (
-              <article
-                key={product.id}
-                onClick={() => setSelectedProduct(product)}
-                className="bg-white rounded-[28px] p-3 shadow-xs border border-white/80 hover:shadow-md transition-all duration-300 flex flex-col justify-between group cursor-pointer"
-              >
-                <div>
-                  {/* Product Image Frame */}
-                  <figure className="h-36 md:h-44 rounded-[22px] overflow-hidden bg-[#F3F8FA] relative mb-3">
-                    <img
-                      src={product.image}
-                      alt={`${product.name[activeLangKey]} — Natural ${product.category[activeLangKey]}`}
-                      loading="lazy"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    {product.isNew && (
-                      <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#A9D0E4] text-[#1E3A5F]">
-                        NEW
-                      </span>
-                    )}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setWishlistCount((prev) => prev + 1);
-                      }}
-                      className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/80 hover:bg-white text-[#4A6B82] flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 shadow-xs"
-                      aria-label="Add to wishlist"
-                    >
-                      <Heart className="w-3 h-3" />
-                    </button>
-                  </figure>
-
-                  <div className="space-y-1 px-1">
-                    <div className="text-[10px] font-bold text-[#8EAAB8] uppercase truncate">
-                      {product.category[activeLangKey]}
-                    </div>
-                    <h3 className="font-extrabold text-xs text-[#1E3A5F] line-clamp-2 leading-snug group-hover:text-[#0D6292] transition-colors">
-                      {product.name[activeLangKey]}
-                    </h3>
-                  </div>
-                </div>
-
-                <div className="pt-3 px-1 flex items-center justify-between border-t border-[#EDF4F7] mt-3">
-                  <div>
-                    <span className="text-sm font-black text-[#1E3A5F] font-serif">
-                      ${product.price}
-                    </span>
-                    <span className="text-[10px] text-[#7B9CAB] block font-mono">MOQ: 50 pcs</span>
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedProduct(product);
-                      setCartCount((c) => c + 1);
-                      setRfqModalOpen(true);
-                    }}
-                    className="w-7 h-7 rounded-full bg-[#EDF5F8] group-hover:bg-[#BCE0FD] text-[#1E3A5F] flex items-center justify-center transition-colors"
-                    aria-label={`Inquire about ${product.name[activeLangKey]}`}
-                  >
-                    <ShoppingBag className="w-3 h-3" />
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {/* 5. BRAND VALUES & CRAFTSMANSHIP */}
-        <section id="eco" className="py-12 px-4 md:px-10 max-w-7xl mx-auto" aria-labelledby="values-heading">
-          <div className="bg-white/80 backdrop-blur-md rounded-[36px] p-8 md:p-12 border border-white/80 shadow-sm grid md:grid-cols-4 gap-6">
-            {[
-              {
-                icon: <Leaf className="w-6 h-6 text-[#5EA880]" />,
-                title: lang === 'zh' ? '100% 天然环保木质' : '100% Natural Beechwood',
-                desc: lang === 'zh' ? '选用德国可持续林场原木，无甲醛无异味。' : 'Sustainably sourced FSC certified hardwood with smooth splinter-free finish.',
-              },
-              {
-                icon: <ShieldCheck className="w-6 h-6 text-[#4A8EB8]" />,
-                title: lang === 'zh' ? '欧盟 CE 与 EN71 安全认证' : 'CE & ASTM F963 Certified',
-                desc: lang === 'zh' ? '全线通过国际儿童玩具安全检测标准。' : 'Tested and certified compliant with US & EU strict child safety directives.',
-              },
-              {
-                icon: <Smile className="w-6 h-6 text-[#D49845]" />,
-                title: lang === 'zh' ? '食品级植物水性漆' : 'Organic Food-Grade Dyes',
-                desc: lang === 'zh' ? '宝宝可安心啃咬，色彩柔和不伤眼睛。' : 'Natural water-based non-toxic dyes safe for toddler chewing & oral exploration.',
-              },
-              {
-                icon: <Truck className="w-6 h-6 text-[#7F74B0]" />,
-                title: lang === 'zh' ? '全球大宗海运直发' : 'Direct Export Dispatch',
-                desc: lang === 'zh' ? '支持整柜海运、小批量试单与 OEM 定制。' : 'Direct sea freight container shipping with custom OEM branding options.',
-              },
-            ].map((feature, i) => (
-              <div key={i} className="space-y-2">
-                <div className="w-12 h-12 rounded-2xl bg-[#F0F7FA] flex items-center justify-center">
-                  {feature.icon}
-                </div>
-                <h3 className="font-bold text-sm text-[#1E3A5F]">{feature.title}</h3>
-                <p className="text-xs text-[#7B9CAB] leading-relaxed">{feature.desc}</p>
+            {/* Right Action Icons & Controls */}
+            <div className="flex items-center gap-3">
+              {/* Language Switcher */}
+              <div className="flex items-center bg-[#EDF5F8] p-1 rounded-full text-xs font-bold" role="group">
+                <button
+                  onClick={() => onLanguageChange('en')}
+                  className={`px-2.5 py-0.5 rounded-full transition-all ${
+                    lang === 'en' ? 'bg-white text-[#1E3A5F] shadow-xs' : 'text-[#7B9CAB]'
+                  }`}
+                >
+                  EN
+                </button>
+                <button
+                  onClick={() => onLanguageChange('zh')}
+                  className={`px-2.5 py-0.5 rounded-full transition-all ${
+                    lang === 'zh' ? 'bg-white text-[#1E3A5F] shadow-xs' : 'text-[#7B9CAB]'
+                  }`}
+                >
+                  中文
+                </button>
               </div>
-            ))}
-          </div>
-        </section>
 
-        {/* 6. FACTORY & ABOUT SECTION */}
-        <section id="about" className="py-12 px-4 md:px-10 max-w-7xl mx-auto" aria-labelledby="about-heading">
-          <div className="grid lg:grid-cols-12 gap-8 items-center">
-            <div className="lg:col-span-6 space-y-6">
-              <span className="px-3.5 py-1 rounded-full bg-white text-[#4A6B82] text-xs font-bold tracking-wide uppercase">
-                {lang === 'zh' ? '匠心手作 工厂溯源' : 'ABOUT OUR WORKSHOP'}
-              </span>
-              <h2 id="about-heading" className="text-3xl md:text-4xl font-serif font-black text-[#1E3A5F] leading-tight">
-                {lang === 'zh' ? '传递给下一代的天然纯粹与陪伴' : 'Pure natural companionship crafted for the next generation'}
-              </h2>
-              <p className="text-sm text-[#688599] leading-relaxed">
-                {lang === 'zh'
-                  ? '我们坚信，给孩子最好的玩具，来自大自然本身。每一件毛绒娃娃均由有机棉麻手工缝制，每一只积木均经由 3 道手工精细打磨，保留木质原本的温润触感。'
-                  : 'We believe that the best toys come from nature itself. Every plush doll is hand-stitched with organic linen, and every wooden block is hand-sanded to perfection to preserve the authentic tactile warmth of wood.'}
-              </p>
-              <div className="flex items-center gap-4 pt-2">
+              {/* Currency Selector */}
+              <select
+                value={currency}
+                onChange={(e) => onCurrencyChange(e.target.value)}
+                className="bg-[#EDF5F8] border-none text-[#1E3A5F] text-xs font-bold rounded-full px-2.5 py-1.5 outline-none cursor-pointer hidden sm:block"
+              >
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="CNY">CNY (¥)</option>
+                <option value="GBP">GBP (£)</option>
+              </select>
+
+              <div className="flex items-center gap-1.5 text-[#4A6B82]">
+                <button
+                  onClick={() => setCurrentPage('catalog')}
+                  className="w-8 h-8 rounded-full bg-[#EDF5F8] hover:bg-[#D4E8EE] flex items-center justify-center transition-colors"
+                  title="Search Catalog"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                </button>
+
+                <button
+                  onClick={() => setCurrentPage('contact')}
+                  className="w-8 h-8 rounded-full bg-[#EDF5F8] hover:bg-[#D4E8EE] flex items-center justify-center transition-colors"
+                  title="User Account / Support"
+                >
+                  <User className="w-3.5 h-3.5" />
+                </button>
+
+                <button
+                  onClick={() => {
+                    setWishlistCount((c) => c + 1);
+                    setCurrentPage('catalog');
+                  }}
+                  className="w-8 h-8 rounded-full bg-[#EDF5F8] hover:bg-[#D4E8EE] flex items-center justify-center transition-colors relative"
+                  title="Wishlist"
+                >
+                  <Heart className="w-3.5 h-3.5" />
+                  {wishlistCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#A3CBE0] text-[#1E3A5F] rounded-full text-[9px] font-bold flex items-center justify-center">
+                      {wishlistCount}
+                    </span>
+                  )}
+                </button>
+
                 <button
                   onClick={() => setRfqModalOpen(true)}
-                  className="px-6 py-3 rounded-full bg-[#1E3A5F] text-white font-bold text-xs shadow-md hover:bg-[#132842] transition-all flex items-center gap-1.5"
+                  className="w-8 h-8 rounded-full bg-[#BCE0FD] hover:bg-[#A9D5FA] text-[#1E3A5F] flex items-center justify-center transition-colors relative"
+                  title="Wholesale Cart & RFQ"
                 >
-                  <span>{lang === 'zh' ? '申请批发合作' : 'Wholesale Partnership (RFQ)'}</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
+                  <ShoppingBag className="w-3.5 h-3.5" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#1E3A5F] text-white rounded-full text-[9px] font-bold flex items-center justify-center">
+                      {cartCount}
+                    </span>
+                  )}
                 </button>
               </div>
             </div>
+          </header>
+        </div>
 
-            <div className="lg:col-span-6 grid grid-cols-2 gap-4">
-              <figure className="rounded-[32px] overflow-hidden shadow-sm h-64">
-                <img
-                  src="https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=600&q=80"
-                  alt="Artisanal woodwork sanding workshop facility"
-                  loading="lazy"
-                  className="w-full h-full object-cover"
-                />
-              </figure>
-              <figure className="rounded-[32px] overflow-hidden shadow-sm h-64 mt-6">
-                <img
-                  src="https://images.unsplash.com/photo-1587654780291-39c9404d746b?auto=format&fit=crop&w=600&q=80"
-                  alt="Organic doll stitching and textile crafting"
-                  loading="lazy"
-                  className="w-full h-full object-cover"
-                />
-              </figure>
+        {/* 3. DYNAMIC INNER PAGE ROUTING VIEW */}
+        <main className="py-6">
+          {/* ================= PAGE: HOME ================= */}
+          {currentPage === 'home' && (
+            <div className="space-y-12">
+              {/* Split Hero Section */}
+              <section className="pt-4 pb-8 px-4 md:px-10 max-w-7xl mx-auto">
+                <div className="grid lg:grid-cols-12 gap-5 items-stretch">
+                  {/* Left Hero Card */}
+                  <article className="lg:col-span-6 bg-white rounded-[36px] p-8 md:p-12 shadow-sm border border-white/80 flex flex-col justify-between relative overflow-hidden">
+                    <div className="space-y-4">
+                      <span className="inline-block px-3.5 py-1 rounded-full bg-[#EDF5F8] text-[#4A6B82] text-xs font-bold tracking-wide uppercase">
+                        {lang === 'zh' ? '100% 纯天然环保安全材质' : '100% Organic & Non-Toxic'}
+                      </span>
+
+                      <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-[#1E3A5F] tracking-tight font-serif uppercase leading-tight">
+                        {lang === 'zh' ? '生态有机玩具' : 'ECO-TOYS'}
+                      </h1>
+
+                      <p className="text-sm md:text-base text-[#688599] font-medium max-w-md leading-relaxed">
+                        {lang === 'zh'
+                          ? '专为宝宝健康成长研发：采用天然有机亚麻、山毛榉实木与植物安全水性漆制作。'
+                          : 'Ecologically pure, hypoallergenic, and safe children toys crafted from 100% natural organic materials.'}
+                      </p>
+                    </div>
+
+                    <div className="pt-8 flex items-center justify-between">
+                      <figure className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden bg-[#F4FAFC] border-2 border-white shadow-xs p-1">
+                        <img
+                          src="https://images.unsplash.com/photo-1559454403-b8fb88521f11?auto=format&fit=crop&w=300&q=80"
+                          alt="Organic Linen Plush Bunny"
+                          className="w-full h-full object-cover rounded-xl"
+                        />
+                      </figure>
+
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-bold text-[#7B9CAB]">
+                          {lang === 'zh' ? '德国 TÜV 莱茵认证' : 'TÜV Rheinland & CE Certified'}
+                        </span>
+                        <div className="w-8 h-8 rounded-full bg-[#E5F2F7] flex items-center justify-center text-[#1E3A5F]">
+                          🌿
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+
+                  {/* Right Hero Card */}
+                  <article className="lg:col-span-6 bg-white rounded-[36px] overflow-hidden shadow-sm border border-white/80 relative min-h-[380px] md:min-h-[460px]">
+                    <img
+                      src="https://images.unsplash.com/photo-1543332164-6e82f355badc?auto=format&fit=crop&w=1200&q=80"
+                      alt="Toddler girl with dolls"
+                      className="w-full h-full object-cover"
+                    />
+
+                    {/* Circular Overlapping CTA Button */}
+                    <button
+                      onClick={() => setCurrentPage('catalog')}
+                      className="absolute left-[-28px] top-1/2 -translate-y-1/2 hidden lg:flex w-24 h-24 rounded-full bg-[#A9D0E4] hover:bg-[#97C5DC] text-[#1E3A5F] font-bold text-xs shadow-md border-4 border-[#DDECF0] items-center justify-center text-center transition-all hover:scale-105 z-20"
+                    >
+                      <span className="font-extrabold uppercase tracking-wide">
+                        {lang === 'zh' ? '进入\n画册' : 'Catalog'}
+                      </span>
+                    </button>
+
+                    <div className="absolute -bottom-4 -right-4 w-52 h-28 bg-[#DDECF0] rounded-tl-[80px] rounded-tr-[50px] pointer-events-none opacity-90 flex items-center justify-center">
+                      <div className="w-32 h-16 bg-[#DDECF0] rounded-full absolute -top-6 left-6" />
+                    </div>
+                  </article>
+                </div>
+              </section>
+
+              {/* Popular Products Carousel / Grid */}
+              <section className="px-4 md:px-10 max-w-7xl mx-auto space-y-6">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                  <div className="space-y-1">
+                    <span className="text-xs font-extrabold text-[#7B9CAB] uppercase tracking-widest">
+                      {lang === 'zh' ? '热销精选' : 'POPULAR PRODUCTS'}
+                    </span>
+                    <h2 className="text-3xl font-serif font-black text-[#1E3A5F] tracking-tight uppercase">
+                      {lang === 'zh' ? '最受全球买家欢迎的产品' : 'FEATURED BESTSELLERS'}
+                    </h2>
+                  </div>
+
+                  <button
+                    onClick={() => setCurrentPage('catalog')}
+                    className="text-xs font-bold text-[#1E3A5F] hover:text-[#0D6292] flex items-center gap-1 self-start md:self-auto"
+                  >
+                    <span>{lang === 'zh' ? '查看全部 120+ 玩具画册' : 'View Full 120+ Catalog'}</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                  {TOY_PRODUCTS.slice(0, 6).map((product) => (
+                    <div
+                      key={product.id}
+                      onClick={() => {
+                        setSelectedProduct(product);
+                        setRfqModalOpen(true);
+                      }}
+                      className="bg-white rounded-[28px] p-3 shadow-xs border border-white/80 hover:shadow-md transition-all duration-300 flex flex-col justify-between group cursor-pointer"
+                    >
+                      <div>
+                        <div className="h-36 md:h-44 rounded-[22px] overflow-hidden bg-[#F3F8FA] relative mb-3">
+                          <img
+                            src={product.image}
+                            alt={product.name[activeLangKey]}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                          {product.isNew && (
+                            <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#A9D0E4] text-[#1E3A5F]">
+                              NEW
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="space-y-1 px-1">
+                          <div className="text-[10px] font-bold text-[#8EAAB8] uppercase truncate">
+                            {product.category[activeLangKey]}
+                          </div>
+                          <h3 className="font-extrabold text-xs text-[#1E3A5F] line-clamp-2 leading-snug">
+                            {product.name[activeLangKey]}
+                          </h3>
+                        </div>
+                      </div>
+
+                      <div className="pt-3 px-1 flex items-center justify-between border-t border-[#EDF4F7] mt-3">
+                        <span className="text-sm font-black text-[#1E3A5F] font-serif">
+                          ${product.price}
+                        </span>
+                        <div className="w-7 h-7 rounded-full bg-[#EDF5F8] group-hover:bg-[#BCE0FD] text-[#1E3A5F] flex items-center justify-center transition-colors">
+                          <ShoppingBag className="w-3 h-3" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
             </div>
-          </div>
-        </section>
-      </main>
+          )}
 
-      {/* 7. FOOTER */}
-      <footer id="contact" className="mt-16 bg-white border-t border-white/60 pt-12 pb-8 px-4 md:px-10" aria-label="Site Footer">
+          {/* ================= PAGE: CATALOG (FULL PRODUCT BROWSER) ================= */}
+          {currentPage === 'catalog' && (
+            <section className="px-4 md:px-10 max-w-7xl mx-auto space-y-8 animate-in fade-in">
+              <div className="bg-white rounded-[36px] p-8 md:p-10 shadow-sm border border-white/80 space-y-4 text-left">
+                <span className="text-xs font-mono font-bold text-[#7B9CAB] uppercase tracking-wider">
+                  {lang === 'zh' ? '完整商品目录' : 'FULL B2B TOY CATALOG'}
+                </span>
+                <h1 className="text-3xl md:text-4xl font-serif font-black text-[#1E3A5F]">
+                  {lang === 'zh' ? '全系列木质与有机儿童玩具' : 'Complete Handcrafted Eco Toy Catalog'}
+                </h1>
+                <p className="text-xs md:text-sm text-[#688599] max-w-2xl">
+                  {lang === 'zh'
+                    ? '所有产品支持整柜海运、小批量现货批发与 OEM 品牌定制。'
+                    : 'Explore all certified wooden toys and organic plush dolls available for wholesale supply and OEM custom packaging.'}
+                </p>
+
+                {/* Filter & Search Bar */}
+                <div className="pt-4 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-[#EDF4F7]">
+                  <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1">
+                    {categories.map((cat) => (
+                      <button
+                        key={cat.id}
+                        onClick={() => setActiveCategory(cat.id)}
+                        className={`px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+                          activeCategory === cat.id
+                            ? 'bg-[#1E3A5F] text-white shadow-xs font-extrabold'
+                            : 'bg-[#EDF5F8] text-[#5F8094] hover:bg-[#E0EDF2]'
+                        }`}
+                      >
+                        {cat.label[activeLangKey]}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="w-full md:w-72 relative">
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder={lang === 'zh' ? '搜索玩具名称或 SKU...' : 'Search toys or SKU...'}
+                      className="w-full pl-9 pr-4 py-2 rounded-full bg-[#EDF5F8] text-xs font-semibold text-[#1E3A5F] outline-none"
+                    />
+                    <Search className="w-4 h-4 text-[#7B9CAB] absolute left-3 top-2.5" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Product Cards Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {filteredProducts.map((product) => (
+                  <article
+                    key={product.id}
+                    onClick={() => {
+                      setSelectedProduct(product);
+                      setRfqModalOpen(true);
+                    }}
+                    className="bg-white rounded-[32px] p-4 shadow-sm border border-white/80 hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer"
+                  >
+                    <div>
+                      <figure className="h-48 rounded-[24px] overflow-hidden bg-[#F3F8FA] relative mb-3">
+                        <img
+                          src={product.image}
+                          alt={product.name[activeLangKey]}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-[#1E3A5F] text-white">
+                          {product.sku}
+                        </span>
+                      </figure>
+
+                      <div className="space-y-1.5 text-left px-1">
+                        <div className="text-[10px] font-bold text-[#8EAAB8] uppercase">
+                          {product.category[activeLangKey]}
+                        </div>
+                        <h3 className="font-extrabold text-sm text-[#1E3A5F] leading-snug">
+                          {product.name[activeLangKey]}
+                        </h3>
+                        <p className="text-[11px] text-[#7B9CAB] line-clamp-2">
+                          {product.description[activeLangKey]}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 px-1 border-t border-[#EDF4F7] mt-4 flex items-center justify-between">
+                      <div>
+                        <span className="text-base font-black text-[#1E3A5F] font-serif">
+                          ${product.price}
+                        </span>
+                        <span className="text-[10px] text-[#7B9CAB] block font-mono">Lead: {product.leadTime}</span>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedProduct(product);
+                          setCartCount((c) => c + 1);
+                          setRfqModalOpen(true);
+                        }}
+                        className="px-3.5 py-1.5 rounded-full bg-[#BCE0FD] hover:bg-[#A9D5FA] text-[#1E3A5F] font-bold text-xs flex items-center gap-1"
+                      >
+                        <ShoppingBag className="w-3 h-3" />
+                        <span>{lang === 'zh' ? '索样/询价' : 'Quote'}</span>
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* ================= PAGE: ABOUT US ================= */}
+          {currentPage === 'about' && (
+            <section className="px-4 md:px-10 max-w-7xl mx-auto space-y-8 animate-in fade-in text-left">
+              <div className="bg-white rounded-[36px] p-8 md:p-12 shadow-sm border border-white/80 grid lg:grid-cols-12 gap-8 items-center">
+                <div className="lg:col-span-7 space-y-6">
+                  <span className="px-3.5 py-1 rounded-full bg-[#EDF5F8] text-[#4A6B82] text-xs font-bold uppercase tracking-wide">
+                    {lang === 'zh' ? '品牌手作 工厂溯源' : 'OUR ARTISANAL HERITAGE'}
+                  </span>
+                  <h1 className="text-3xl md:text-5xl font-serif font-black text-[#1E3A5F] leading-tight">
+                    {lang === 'zh' ? '守护童年：手工打磨每一件大自然的礼物' : 'Crafting Nature Purest Companionship for Children'}
+                  </h1>
+                  <p className="text-sm text-[#688599] leading-relaxed">
+                    {lang === 'zh'
+                      ? 'Eco-Toys 手工作坊成立于 2016 年。我们坚信儿童玩具应当远离化学塑料与刺鼻异味。每一件实木玩具选用欧洲可持续林场山毛榉木，经由 3 道纯手工砂纸打磨，保留木质的自然温润触感。'
+                      : 'Founded in 2016, Eco-Toys Craft Workshop was created with a single vision: to replace toxic plastics with organic linen and sustainably harvested European beechwood.'}
+                  </p>
+                  <div className="grid grid-cols-3 gap-4 pt-4 border-t border-[#EDF4F7]">
+                    <div>
+                      <div className="text-2xl font-black text-[#1E3A5F] font-serif">100%</div>
+                      <div className="text-xs text-[#7B9CAB]">{lang === 'zh' ? '纯天然材质' : 'Natural Organic'}</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-black text-[#1E3A5F] font-serif">50+</div>
+                      <div className="text-xs text-[#7B9CAB]">{lang === 'zh' ? '出口国家' : 'Export Markets'}</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-black text-[#1E3A5F] font-serif">0%</div>
+                      <div className="text-xs text-[#7B9CAB]">{lang === 'zh' ? '化学添加剂' : 'Chemical Additives'}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="lg:col-span-5 grid grid-cols-2 gap-4">
+                  <img
+                    src="https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=600&q=80"
+                    alt="Woodcarving Workshop"
+                    className="rounded-[28px] h-52 w-full object-cover shadow-xs"
+                  />
+                  <img
+                    src="https://images.unsplash.com/photo-1587654780291-39c9404d746b?auto=format&fit=crop&w=600&q=80"
+                    alt="Doll Stitching"
+                    className="rounded-[28px] h-52 w-full object-cover shadow-xs mt-6"
+                  />
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* ================= PAGE: WHOLESALE & B2B ================= */}
+          {currentPage === 'wholesale' && (
+            <section className="px-4 md:px-10 max-w-7xl mx-auto space-y-8 animate-in fade-in text-left">
+              <div className="bg-white rounded-[36px] p-8 md:p-12 shadow-sm border border-white/80 space-y-6">
+                <span className="px-3.5 py-1 rounded-full bg-[#EDF5F8] text-[#4A6B82] text-xs font-bold uppercase">
+                  {lang === 'zh' ? '外贸批发与 OEM 定制' : 'B2B WHOLESALE & PRIVATE LABEL'}
+                </span>
+                <h1 className="text-3xl md:text-4xl font-serif font-black text-[#1E3A5F]">
+                  {lang === 'zh' ? '全球采购商合作政策与集装箱海运' : 'Wholesale Supply, Container Freight & OEM Branding'}
+                </h1>
+                <p className="text-xs md:text-sm text-[#688599] max-w-3xl leading-relaxed">
+                  {lang === 'zh'
+                    ? '我们为全球 400+ 婴童品牌、连锁百货及早教机构提供整柜 (FCL) 及拼箱 (LCL) 海运直供服务。支持激光雕刻 Logo、定制彩盒及多语种说明书。'
+                    : 'We supply over 400 global retailers and Montessori academies. Supporting FOB/CIF ocean shipping with custom laser-engraved branding and retail packaging.'}
+                </p>
+
+                <div className="grid md:grid-cols-3 gap-6 pt-4">
+                  <div className="p-6 rounded-[28px] bg-[#F0F7FA] space-y-3">
+                    <Package className="w-6 h-6 text-[#1E3A5F]" />
+                    <h3 className="font-bold text-sm text-[#1E3A5F]">{lang === 'zh' ? '小批量试单 (Low MOQ)' : 'Low MOQ Flexibility'}</h3>
+                    <p className="text-xs text-[#7B9CAB]">MOQ starting from 50 units for boutique retailers.</p>
+                  </div>
+                  <div className="p-6 rounded-[28px] bg-[#F0F7FA] space-y-3">
+                    <Truck className="w-6 h-6 text-[#1E3A5F]" />
+                    <h3 className="font-bold text-sm text-[#1E3A5F]">{lang === 'zh' ? '全球港口直达班轮' : 'Direct Port Dispatch'}</h3>
+                    <p className="text-xs text-[#7B9CAB]">FOB Ningbo (CNNGB) & Shanghai (CNSHA) with 14d sea transit to LAX/Rotterdam.</p>
+                  </div>
+                  <div className="p-6 rounded-[28px] bg-[#F0F7FA] space-y-3">
+                    <Award className="w-6 h-6 text-[#1E3A5F]" />
+                    <h3 className="font-bold text-sm text-[#1E3A5F]">{lang === 'zh' ? 'OEM 贴牌与彩盒定制' : 'OEM Custom Branding'}</h3>
+                    <p className="text-xs text-[#7B9CAB]">Laser logo engraving, custom hangtags, and barcode labels.</p>
+                  </div>
+                </div>
+
+                <div className="pt-4 flex justify-start">
+                  <button
+                    onClick={() => setRfqModalOpen(true)}
+                    className="px-8 py-3.5 rounded-full bg-[#1E3A5F] text-white font-bold text-xs shadow-md hover:bg-[#132842] transition-all flex items-center gap-2"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>{lang === 'zh' ? '立即索取 2026 外贸报价单' : 'Request 2026 Wholesale Price List'}</span>
+                  </button>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* ================= PAGE: ECO MATERIALS ================= */}
+          {currentPage === 'eco' && (
+            <section className="px-4 md:px-10 max-w-7xl mx-auto space-y-8 animate-in fade-in text-left">
+              <div className="bg-white rounded-[36px] p-8 md:p-12 shadow-sm border border-white/80 space-y-6">
+                <span className="px-3.5 py-1 rounded-full bg-[#EDF5F8] text-[#4A6B82] text-xs font-bold uppercase">
+                  {lang === 'zh' ? '纯天然选材标准' : 'ORGANIC MATERIAL SOURCING'}
+                </span>
+                <h1 className="text-3xl md:text-4xl font-serif font-black text-[#1E3A5F]">
+                  {lang === 'zh' ? '只选用大自然馈赠的天然纯净原材' : 'Zero Synthetic Plastics: Natural Beechwood & Organic Flax'}
+                </h1>
+                <p className="text-xs md:text-sm text-[#688599] max-w-3xl leading-relaxed">
+                  Every piece of timber is tracked through the Forest Stewardship Council (FSC) chain of custody, ensuring sustainable forestry without chemical fumigation.
+                </p>
+
+                <div className="grid md:grid-cols-2 gap-6 pt-4">
+                  <div className="p-6 rounded-[28px] bg-[#F4FAFC] border border-[#E0EDF2] flex items-start gap-4">
+                    <Leaf className="w-8 h-8 text-[#5EA880] flex-shrink-0" />
+                    <div className="space-y-1">
+                      <h3 className="font-bold text-sm text-[#1E3A5F]">FSC-Certified Solid European Beechwood</h3>
+                      <p className="text-xs text-[#7B9CAB]">Dense grain, splinter-free durability, smooth natural texture.</p>
+                    </div>
+                  </div>
+
+                  <div className="p-6 rounded-[28px] bg-[#F4FAFC] border border-[#E0EDF2] flex items-start gap-4">
+                    <Smile className="w-8 h-8 text-[#D49845] flex-shrink-0" />
+                    <div className="space-y-1">
+                      <h3 className="font-bold text-sm text-[#1E3A5F]">Food-Grade Organic Plant Dyes</h3>
+                      <p className="text-xs text-[#7B9CAB]">100% water-based non-toxic natural pigments safe for infant chewing.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* ================= PAGE: SAFETY STANDARDS ================= */}
+          {currentPage === 'safety' && (
+            <section className="px-4 md:px-10 max-w-7xl mx-auto space-y-8 animate-in fade-in text-left">
+              <div className="bg-white rounded-[36px] p-8 md:p-12 shadow-sm border border-white/80 space-y-6">
+                <span className="px-3.5 py-1 rounded-full bg-[#EDF5F8] text-[#4A6B82] text-xs font-bold uppercase">
+                  {lang === 'zh' ? '国际玩具安全认证' : 'GLOBAL SAFETY CERTIFICATIONS'}
+                </span>
+                <h1 className="text-3xl md:text-4xl font-serif font-black text-[#1E3A5F]">
+                  {lang === 'zh' ? '通过欧盟 CE 与美国 ASTM F963 严苛全检' : 'Rigorous Third-Party Lab Tested Child Safety Standards'}
+                </h1>
+
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
+                  {[
+                    { code: 'CE EN 71-1/2/3', label: 'European Toy Safety Standard' },
+                    { code: 'ASTM F963-17', label: 'United States Consumer Safety' },
+                    { code: 'FSC-STD-40-004', label: '100% Sustainable Wood Custody' },
+                    { code: 'OEKO-TEX 100', label: 'Harmful Substance Free Fabric' },
+                  ].map((cert) => (
+                    <div key={cert.code} className="p-6 rounded-[28px] bg-[#F0F7FA] space-y-2 text-center">
+                      <ShieldCheck className="w-8 h-8 text-[#1E3A5F] mx-auto" />
+                      <div className="font-black text-sm text-[#1E3A5F] font-mono">{cert.code}</div>
+                      <div className="text-[11px] text-[#7B9CAB]">{cert.label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* ================= PAGE: CONTACT US ================= */}
+          {currentPage === 'contact' && (
+            <section className="px-4 md:px-10 max-w-7xl mx-auto space-y-8 animate-in fade-in text-left">
+              <div className="bg-white rounded-[36px] p-8 md:p-12 shadow-sm border border-white/80 grid lg:grid-cols-12 gap-8">
+                <div className="lg:col-span-5 space-y-6">
+                  <span className="px-3.5 py-1 rounded-full bg-[#EDF5F8] text-[#4A6B82] text-xs font-bold uppercase">
+                    {lang === 'zh' ? '联系外销团队' : 'CONTACT EXPORTER DESK'}
+                  </span>
+                  <h1 className="text-3xl font-serif font-black text-[#1E3A5F]">
+                    {lang === 'zh' ? '开启大宗合作洽谈' : 'Get in Touch with Our Craft Workshop'}
+                  </h1>
+
+                  <div className="space-y-4 text-xs text-[#5E8094]">
+                    <div className="flex items-center gap-3">
+                      <Mail className="w-4 h-4 text-[#1E3A5F]" />
+                      <span>wholesale@eco-toys.com</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Phone className="w-4 h-4 text-[#1E3A5F]" />
+                      <span>+1 (800) 492-7962 / +86 (574) 8722-1980</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <MapPin className="w-4 h-4 text-[#1E3A5F]" />
+                      <span>Creative Craft Park, Ningbo Port Industrial Hub, China</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Clock className="w-4 h-4 text-[#1E3A5F]" />
+                      <span>Mon - Fri: 8:00 AM - 6:00 PM (GMT+8)</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="lg:col-span-7">
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      setRfqSuccess(true);
+                      setRfqModalOpen(true);
+                    }}
+                    className="space-y-4 text-xs"
+                  >
+                    <div className="grid grid-cols-2 gap-4">
+                      <input
+                        required
+                        type="text"
+                        placeholder="Your Full Name"
+                        className="w-full p-3.5 rounded-2xl bg-[#F0F7FA] border border-[#E0EDF2] text-[#1E3A5F] font-medium outline-none"
+                      />
+                      <input
+                        required
+                        type="email"
+                        placeholder="Business Email"
+                        className="w-full p-3.5 rounded-2xl bg-[#F0F7FA] border border-[#E0EDF2] text-[#1E3A5F] font-medium outline-none"
+                      />
+                    </div>
+                    <textarea
+                      rows={4}
+                      placeholder="Write your wholesale inquiry, target order quantity or custom OEM requirements..."
+                      className="w-full p-3.5 rounded-2xl bg-[#F0F7FA] border border-[#E0EDF2] text-[#1E3A5F] font-medium outline-none"
+                    />
+                    <button
+                      type="submit"
+                      className="px-8 py-3.5 rounded-full bg-[#1E3A5F] text-white font-bold text-xs shadow-md hover:bg-[#122742] transition-all flex items-center gap-2"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Send Direct Message</span>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </section>
+          )}
+        </main>
+      </div>
+
+      {/* 4. FOOTER */}
+      <footer className="mt-16 bg-white border-t border-white/60 pt-12 pb-8 px-4 md:px-10 text-left" aria-label="Site Footer">
         <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 pb-10 border-b border-[#EDF4F7]">
           <div className="space-y-3">
             <div className="flex items-center gap-2">
@@ -638,15 +918,15 @@ export function EcoToysTemplate({
           </div>
 
           <div className="space-y-2 text-xs text-[#5E8094]">
-            <div className="font-bold text-[#1E3A5F] text-sm mb-2">Toy Collections</div>
-            <div>Organic Plush Bunnies & Dolls</div>
-            <div>Handmade Rocking Horses</div>
-            <div>Montessori Beechwood Blocks</div>
-            <div>Sensory Activity Busy Boards</div>
+            <div className="font-bold text-[#1E3A5F] text-sm mb-2">Quick Navigation</div>
+            <button onClick={() => setCurrentPage('catalog')} className="block hover:text-[#1E3A5F]">Full Catalog</button>
+            <button onClick={() => setCurrentPage('about')} className="block hover:text-[#1E3A5F]">Our Workshop</button>
+            <button onClick={() => setCurrentPage('wholesale')} className="block hover:text-[#1E3A5F]">Wholesale Partnerships</button>
+            <button onClick={() => setCurrentPage('safety')} className="block hover:text-[#1E3A5F]">Safety Certifications</button>
           </div>
 
           <div className="space-y-2 text-xs text-[#5E8094]">
-            <div className="font-bold text-[#1E3A5F] text-sm mb-2">Safety Standards</div>
+            <div className="font-bold text-[#1E3A5F] text-sm mb-2">Safety Directives</div>
             <div>CE Safety Mark (EN71-1/2/3)</div>
             <div>ASTM F963 US Standards</div>
             <div>FSC 100% Sustainable Wood</div>
@@ -670,10 +950,10 @@ export function EcoToysTemplate({
         </div>
       </footer>
 
-      {/* 8. INSTANT WHOLESALE RFQ / SAMPLE MODAL */}
+      {/* 5. INSTANT WHOLESALE RFQ / SAMPLE MODAL */}
       {rfqModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1E3A5F]/40 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="bg-white rounded-[36px] max-w-md w-full p-6 md:p-8 shadow-2xl space-y-4 relative border border-white">
+          <div className="bg-white rounded-[36px] max-w-md w-full p-6 md:p-8 shadow-2xl space-y-4 relative border border-white text-left">
             <button
               onClick={() => {
                 setRfqModalOpen(false);

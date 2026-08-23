@@ -68,6 +68,7 @@ function App() {
 
                     {/* Public Live Website & Preview Routes */}
                     <Route path="/site/:subdomain" element={<PublishedWebsiteView />} />
+                    <Route path="/site/:subdomain/*" element={<PublishedWebsiteView />} />
                     <Route path="/preview/site" element={<PublishedWebsiteView />} />
                     <Route path="/preview/:siteId" element={<PublishedWebsiteView />} />
 
