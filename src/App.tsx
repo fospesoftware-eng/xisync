@@ -43,6 +43,7 @@ import { PortalMessages } from './pages/portal/PortalMessages';
 import { ProductsPage } from './pages/dashboard/ProductsPage';
 import { CompliancePage } from './pages/dashboard/CompliancePage';
 import { CalendarPage } from './pages/dashboard/CalendarPage';
+import { PublishedWebsiteView } from './pages/public/PublishedWebsiteView';
 
 function App() {
   return (
@@ -64,6 +65,11 @@ function App() {
 
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
+
+                    {/* Public Live Website & Preview Routes */}
+                    <Route path="/site/:subdomain" element={<PublishedWebsiteView />} />
+                    <Route path="/preview/site" element={<PublishedWebsiteView />} />
+                    <Route path="/preview/:siteId" element={<PublishedWebsiteView />} />
 
               <Route path="/dashboard/ultra" element={<UltraDashboardPage />}>
                 <Route path="calendar" element={<CalendarPage />} />

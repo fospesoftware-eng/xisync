@@ -4,6 +4,7 @@ import { BuildTab } from './tabs/BuildTab';
 import { ThemesTab } from './tabs/ThemesTab';
 import { DomainsTab } from './tabs/DomainsTab';
 import { StatisticsTab } from './tabs/StatisticsTab';
+import { DevicePreviewModal } from './DevicePreviewModal';
 import {
   Globe,
   Layers,
@@ -12,6 +13,8 @@ import {
   BarChart3,
   ExternalLink,
   Wand2,
+  Eye,
+  Monitor,
 } from 'lucide-react';
 
 interface WebsiteDashboardProps {
@@ -28,8 +31,10 @@ export function WebsiteDashboard({
   initialTab = 'build',
 }: WebsiteDashboardProps) {
   const [activeTab, setActiveTab] = useState<'build' | 'themes' | 'domains' | 'statistics'>(initialTab);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
 
   const activeDomain = website.custom_domain || website.subdomain;
+  const previewPath = `/site/${website.subdomain.split('.')[0] || 'exportco'}`;
 
   return (
     <div className="space-y-6 text-slate-900 dark:text-white bg-slate-50/60 dark:bg-transparent p-2 md:p-4 rounded-3xl min-h-screen">
@@ -47,15 +52,13 @@ export function WebsiteDashboard({
               </span>
             </div>
             <div className="flex items-center gap-3 mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium">
-              <a
-                href={`https://${activeDomain}`}
-                target="_blank"
-                rel="noreferrer"
+              <button
+                onClick={() => setShowPreviewModal(true)}
                 className="font-mono font-bold text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1"
               >
                 <span>https://{activeDomain}</span>
                 <ExternalLink className="w-3 h-3" />
-              </a>
+              </button>
               <span>•</span>
               <span className="capitalize">Theme: {website.theme_config?.name || 'Enterprise Sleek'}</span>
             </div>
@@ -63,6 +66,25 @@ export function WebsiteDashboard({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Live Preview URL Trigger */}
+          <button
+            onClick={() => setShowPreviewModal(true)}
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-xisync-blue-600 to-xisync-cyan-500 hover:opacity-90 text-white font-extrabold text-xs shadow-xs transition-all flex items-center gap-1.5"
+          >
+            <Monitor className="w-3.5 h-3.5" />
+            <span>Open Preview URL</span>
+          </button>
+
+          <a
+            href={previewPath}
+            target="_blank"
+            rel="noreferrer"
+            className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold text-xs transition-all flex items-center gap-1.5"
+          >
+            <Eye className="w-3.5 h-3.5 text-cyan-500" />
+            <span>Fullsite Tab</span>
+          </a>
+
           <button
             onClick={onResetWizard}
             className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold text-xs transition-all flex items-center gap-1.5"
@@ -129,6 +151,14 @@ export function WebsiteDashboard({
       {activeTab === 'themes' && <ThemesTab website={website} onUpdateWebsite={onUpdateWebsite} />}
       {activeTab === 'domains' && <DomainsTab website={website} onUpdateWebsite={onUpdateWebsite} />}
       {activeTab === 'statistics' && <StatisticsTab website={website} />}
+
+      {/* Responsive Device Viewport Preview Modal */}
+      {showPreviewModal && (
+        <DevicePreviewModal
+          website={website}
+          onClose={() => setShowPreviewModal(false)}
+        />
+      )}
     </div>
   );
 }

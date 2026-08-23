@@ -12,7 +12,9 @@ import {
   Trash2,
   ArrowUp,
   ArrowDown,
+  Monitor,
 } from 'lucide-react';
+import { DevicePreviewModal } from '../DevicePreviewModal';
 
 interface BuildTabProps {
   website: Website;
@@ -26,6 +28,7 @@ export function BuildTab({ website, onUpdateWebsite }: BuildTabProps) {
   const [showAddSectionModal, setShowAddSectionModal] = useState(false);
   const [newSectionType, setNewSectionType] = useState<SectionType>('features');
   const [showAddPageModal, setShowAddPageModal] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [newPageTitle, setNewPageTitle] = useState('');
   const [newPageSlug, setNewPageSlug] = useState('');
   const [inventoryItems, setInventoryItems] = useState<InventoryItemSync[]>([]);
@@ -236,6 +239,14 @@ export function BuildTab({ website, onUpdateWebsite }: BuildTabProps) {
               简体中文 🇨🇳
             </button>
           </div>
+
+          <button
+            onClick={() => setShowPreviewModal(true)}
+            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-xisync-blue-600 to-xisync-cyan-500 text-white font-extrabold text-xs shadow-xs hover:opacity-90 transition-all flex items-center gap-1.5"
+          >
+            <Monitor className="w-3.5 h-3.5" />
+            <span>Preview URL</span>
+          </button>
 
           <button
             onClick={() => triggerToast('Published all page edits to live domain!')}
@@ -659,6 +670,14 @@ export function BuildTab({ website, onUpdateWebsite }: BuildTabProps) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Device Viewport Preview Modal */}
+      {showPreviewModal && (
+        <DevicePreviewModal
+          website={website}
+          onClose={() => setShowPreviewModal(false)}
+        />
       )}
 
       {/* Toast Notification */}
