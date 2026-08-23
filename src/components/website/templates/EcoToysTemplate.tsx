@@ -283,49 +283,37 @@ export function EcoToysTemplate({
 
       {/* 2. TOP FLOATING PILL NAVBAR */}
       <div>
-        <div className="pt-6 px-4 md:px-10 max-w-7xl mx-auto">
-          <header className="bg-white/90 backdrop-blur-md rounded-full px-6 md:px-8 py-3.5 shadow-sm border border-white/60 flex items-center justify-between gap-4">
-            {/* Logo */}
+        <div className="pt-6 px-4 md:px-8 max-w-7xl mx-auto">
+          <header className="bg-white/95 backdrop-blur-md rounded-2xl px-6 md:px-8 py-3.5 shadow-sm border border-slate-200/70 flex items-center justify-between gap-6">
+            {/* Brand Logo */}
             <button
               onClick={() => setCurrentPage('home')}
-              className="flex items-center gap-2.5 group text-left"
-              aria-label={`${website.name} Home`}
+              className="flex items-center gap-3 group text-left transition-opacity hover:opacity-90"
+              aria-label="Eco-Toys Home"
             >
-              {website.logo_url ? (
-                <img
-                  src={website.logo_url}
-                  alt={website.name}
-                  className="h-9 w-auto max-w-[120px] object-contain rounded-lg"
-                />
-              ) : (
-                <div
-                  className="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm group-hover:scale-105 transition-transform shadow-xs"
-                  style={{
-                    backgroundColor: website.theme_config?.color_palette?.accent || '#BCE0FD',
-                    color: website.theme_config?.color_palette?.primary || '#1E3A5F',
-                  }}
-                >
-                  🧸
-                </div>
-              )}
-              <span
-                className="font-extrabold text-base md:text-lg tracking-tight uppercase"
-                style={{ color: website.theme_config?.color_palette?.primary || '#1E3A5F' }}
-              >
-                {website.logo_text || website.name.toUpperCase()}
-              </span>
+              <div className="w-10 h-10 rounded-xl bg-[#1E3A5F] text-white flex items-center justify-center font-bold text-lg shadow-sm">
+                🧸
+              </div>
+              <div>
+                <span className="font-extrabold text-base md:text-lg tracking-tight text-[#1E3A5F] block leading-tight font-serif">
+                  ECO-TOYS
+                </span>
+                <span className="text-[10px] text-slate-400 font-mono tracking-wider uppercase block">
+                  Workshop & Craft
+                </span>
+              </div>
             </button>
 
             {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-6 text-[13px] font-semibold text-[#4A6B82]" aria-label="Main Navigation">
+            <nav className="hidden lg:flex items-center gap-7 text-[13px] font-semibold text-slate-600" aria-label="Main Navigation">
               {navLinks.map((link) => (
                 <button
                   key={link.slug}
                   onClick={() => setCurrentPage(link.slug)}
-                  className={`transition-all whitespace-nowrap pb-0.5 ${
+                  className={`transition-all whitespace-nowrap py-1 ${
                     currentPage === link.slug
-                      ? 'text-[#1E3A5F] font-extrabold border-b-2 border-[#1E3A5F]'
-                      : 'hover:text-[#1E3A5F]'
+                      ? 'text-[#1E3A5F] font-bold border-b-2 border-[#1E3A5F]'
+                      : 'text-slate-500 hover:text-[#1E3A5F]'
                   }`}
                 >
                   {link.name[activeLangKey]}
@@ -336,19 +324,19 @@ export function EcoToysTemplate({
             {/* Right Action Icons & Controls */}
             <div className="flex items-center gap-3">
               {/* Language Switcher */}
-              <div className="flex items-center bg-[#EDF5F8] p-1 rounded-full text-xs font-bold" role="group">
+              <div className="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-bold" role="group">
                 <button
                   onClick={() => onLanguageChange('en')}
-                  className={`px-2.5 py-0.5 rounded-full transition-all ${
-                    lang === 'en' ? 'bg-white text-[#1E3A5F] shadow-xs' : 'text-[#7B9CAB]'
+                  className={`px-3 py-1 rounded-lg transition-all ${
+                    lang === 'en' ? 'bg-white text-[#1E3A5F] shadow-xs' : 'text-slate-400 hover:text-slate-600'
                   }`}
                 >
                   EN
                 </button>
                 <button
                   onClick={() => onLanguageChange('zh')}
-                  className={`px-2.5 py-0.5 rounded-full transition-all ${
-                    lang === 'zh' ? 'bg-white text-[#1E3A5F] shadow-xs' : 'text-[#7B9CAB]'
+                  className={`px-3 py-1 rounded-lg transition-all ${
+                    lang === 'zh' ? 'bg-white text-[#1E3A5F] shadow-xs' : 'text-slate-400 hover:text-slate-600'
                   }`}
                 >
                   中文
@@ -359,7 +347,7 @@ export function EcoToysTemplate({
               <select
                 value={currency}
                 onChange={(e) => onCurrencyChange(e.target.value)}
-                className="bg-[#EDF5F8] border-none text-[#1E3A5F] text-xs font-bold rounded-full px-2.5 py-1.5 outline-none cursor-pointer hidden sm:block"
+                className="bg-slate-100 border-none text-[#1E3A5F] text-xs font-bold rounded-xl px-3 py-1.5 outline-none cursor-pointer hidden sm:block hover:bg-slate-200 transition-colors"
               >
                 <option value="USD">USD ($)</option>
                 <option value="EUR">EUR (€)</option>
@@ -367,21 +355,14 @@ export function EcoToysTemplate({
                 <option value="GBP">GBP (£)</option>
               </select>
 
-              <div className="flex items-center gap-1.5 text-[#4A6B82]">
+              {/* Action Icons */}
+              <div className="flex items-center gap-2 text-slate-500">
                 <button
                   onClick={() => setCurrentPage('catalog')}
-                  className="w-8 h-8 rounded-full bg-[#EDF5F8] hover:bg-[#D4E8EE] flex items-center justify-center transition-colors"
+                  className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors"
                   title="Search Catalog"
                 >
-                  <Search className="w-3.5 h-3.5" />
-                </button>
-
-                <button
-                  onClick={() => setCurrentPage('contact')}
-                  className="w-8 h-8 rounded-full bg-[#EDF5F8] hover:bg-[#D4E8EE] flex items-center justify-center transition-colors"
-                  title="User Account / Support"
-                >
-                  <User className="w-3.5 h-3.5" />
+                  <Search className="w-4 h-4" />
                 </button>
 
                 <button
@@ -389,23 +370,34 @@ export function EcoToysTemplate({
                     setWishlistCount((c) => c + 1);
                     setCurrentPage('catalog');
                   }}
-                  className="w-8 h-8 rounded-full bg-[#EDF5F8] hover:bg-[#D4E8EE] flex items-center justify-center transition-colors relative"
+                  className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors relative"
                   title="Wishlist"
                 >
-                  <Heart className="w-3.5 h-3.5" />
+                  <Heart className="w-4 h-4" />
                   {wishlistCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#A3CBE0] text-[#1E3A5F] rounded-full text-[9px] font-bold flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[9px] font-bold flex items-center justify-center">
                       {wishlistCount}
                     </span>
                   )}
                 </button>
 
                 <button
-                  onClick={() => setRfqModalOpen(true)}
-                  className="w-8 h-8 rounded-full bg-[#BCE0FD] hover:bg-[#A9D5FA] text-[#1E3A5F] flex items-center justify-center transition-colors relative"
-                  title="Wholesale Cart & RFQ"
+                  onClick={() => setCurrentPage('contact')}
+                  className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors"
+                  title="Customer Support & Contacts"
                 >
-                  <ShoppingBag className="w-3.5 h-3.5" />
+                  <User className="w-4 h-4" />
+                </button>
+
+                <button
+                  onClick={() => {
+                    setCartCount((c) => c + 1);
+                    setCurrentPage('catalog');
+                  }}
+                  className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors relative"
+                  title="Wholesale Cart"
+                >
+                  <ShoppingBag className="w-4 h-4" />
                   {cartCount > 0 && (
                     <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#1E3A5F] text-white rounded-full text-[9px] font-bold flex items-center justify-center">
                       {cartCount}
