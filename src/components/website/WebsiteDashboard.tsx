@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Website } from '../../types/websiteBuilder';
 import { BuildTab } from './tabs/BuildTab';
 import { ThemesTab } from './tabs/ThemesTab';
@@ -30,11 +31,31 @@ export function WebsiteDashboard({
   onResetWizard,
   initialTab = 'build',
 }: WebsiteDashboardProps) {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'build' | 'themes' | 'domains' | 'statistics'>(initialTab);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
 
+  const isUltra = location.pathname.includes('/dashboard/ultra');
+  const baseRoute = isUltra ? '/dashboard/ultra/website-builder' : '/dashboard/website-builder';
+
+  // Sync tab with URL location
+  useEffect(() => {
+    if (location.pathname.includes('/themes')) setActiveTab('themes');
+    else if (location.pathname.includes('/domains')) setActiveTab('domains');
+    else if (location.pathname.includes('/statistics')) setActiveTab('statistics');
+    else if (location.pathname.includes('/build') || location.pathname.endsWith('/website-builder')) {
+      setActiveTab('build');
+    }
+  }, [location.pathname]);
+
+  const handleTabChange = (tab: 'build' | 'themes' | 'domains' | 'statistics') => {
+    setActiveTab(tab);
+    navigate(`${baseRoute}/${tab}`);
+  };
+
   const activeDomain = website.custom_domain || website.subdomain;
-  const previewPath = `/site/${website.subdomain.split('.')[0] || 'exportco'}`;
+  const previewPath = `/site/${website.subdomain.split('.')[0] || 'ecotoys'}`;
 
   return (
     <div className="space-y-6 text-slate-900 dark:text-white bg-slate-50/60 dark:bg-transparent p-2 md:p-4 rounded-3xl min-h-screen">
@@ -60,7 +81,7 @@ export function WebsiteDashboard({
                 <ExternalLink className="w-3 h-3" />
               </button>
               <span>•</span>
-              <span className="capitalize">Theme: {website.theme_config?.name || 'Enterprise Sleek'}</span>
+              <span className="capitalize">Theme: {website.theme_config?.name || 'Eco-Toys Pastel'}</span>
             </div>
           </div>
         </div>
@@ -95,10 +116,10 @@ export function WebsiteDashboard({
         </div>
       </div>
 
-      {/* 4 Core Sub-Menu Navigation Tabs */}
+      {/* 4 Dedicated URL Sub-Menu Navigation Tabs with Scope Badges */}
       <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-xs font-bold shadow-xs overflow-x-auto">
         <button
-          onClick={() => setActiveTab('build')}
+          onClick={() => handleTabChange('build')}
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all whitespace-nowrap ${
             activeTab === 'build'
               ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-extrabold'
@@ -106,11 +127,11 @@ export function WebsiteDashboard({
           }`}
         >
           <Layers className="w-4 h-4" />
-          <span>Build</span>
+          <span>Build (Pages, Sections & SEO)</span>
         </button>
 
         <button
-          onClick={() => setActiveTab('themes')}
+          onClick={() => handleTabChange('themes')}
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all whitespace-nowrap ${
             activeTab === 'themes'
               ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-extrabold'
@@ -118,11 +139,11 @@ export function WebsiteDashboard({
           }`}
         >
           <Palette className="w-4 h-4" />
-          <span>Themes</span>
+          <span>Themes (CMS Customizer & Colors)</span>
         </button>
 
         <button
-          onClick={() => setActiveTab('domains')}
+          onClick={() => handleTabChange('domains')}
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all whitespace-nowrap ${
             activeTab === 'domains'
               ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-extrabold'
@@ -130,11 +151,11 @@ export function WebsiteDashboard({
           }`}
         >
           <ShieldCheck className="w-4 h-4" />
-          <span>Domains</span>
+          <span>Domains (GoDaddy v3 & DNS Polling)</span>
         </button>
 
         <button
-          onClick={() => setActiveTab('statistics')}
+          onClick={() => handleTabChange('statistics')}
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all whitespace-nowrap ${
             activeTab === 'statistics'
               ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-extrabold'
@@ -142,11 +163,11 @@ export function WebsiteDashboard({
           }`}
         >
           <BarChart3 className="w-4 h-4" />
-          <span>Statistics</span>
+          <span>Statistics (SEO Indexing & Analytics)</span>
         </button>
       </div>
 
-      {/* Render Active Sub-Menu Component */}
+      {/* Render Active Dedicated Page Scope */}
       {activeTab === 'build' && <BuildTab website={website} onUpdateWebsite={onUpdateWebsite} />}
       {activeTab === 'themes' && <ThemesTab website={website} onUpdateWebsite={onUpdateWebsite} />}
       {activeTab === 'domains' && <DomainsTab website={website} onUpdateWebsite={onUpdateWebsite} />}
