@@ -50,7 +50,7 @@ interface DeepSeekChatWidgetProps {
   siteName: string;
 }
 
-// Product Knowledgebase for DeepSeek AI
+// Product Knowledgebase
 const TOY_CATALOG = [
   {
     id: 'toy-1',
@@ -58,18 +58,18 @@ const TOY_CATALOG = [
     name: { en: 'Organic Linen Plush Bunny', zh: '天然有机亚麻安抚小兔' },
     keywords: ['bunny', 'rabbit', 'plush', 'doll', 'linen', 'organic', '兔', '玩偶', '毛绒', '亚麻', '安抚兔'],
     description: {
-      en: 'Handmade organic linen rabbit doll with hypoallergenic plant-based cotton filling. CE & ASTM certified.',
-      zh: '纯手工天然有机亚麻安抚兔，植物棉填充，符合欧盟 CE 及北美 ASTM 婴童标准。',
+      en: 'Handmade from 100% natural organic flax linen with hypoallergenic plant cotton filling. Certified CE EN71 & ASTM F963 for newborn safety.',
+      zh: '选用100%纯天然有机亚麻与防过敏植物纤维手工缝制，通过欧盟 CE EN71 与北美 ASTM 婴童安全认证。',
     },
     retailPrice: 34,
-    wholesaleTier1: 28.9, // 100 - 499 units
-    wholesaleTier2: 24.5, // 500+ units
+    wholesaleTier1: 28.9, // MOQ 50-499
+    wholesaleTier2: 24.5, // MOQ 500+
     moq: 50,
     materials: '100% Organic Flax Linen & Plant Cotton',
-    leadTime: '3-5 Days (In Stock) / 12 Days (Custom OEM Logo)',
+    leadTime: '3-5 Days (In Stock) • 12 Days (Custom OEM Logo)',
     image: 'https://images.unsplash.com/photo-1559454403-b8fb88521f11?auto=format&fit=crop&w=600&q=80',
     category: 'Plush & Dolls',
-    certifications: 'CE EN71-1/2/3, ASTM F963-17, OEKO-TEX 100',
+    certifications: 'CE EN71-1/2/3, ASTM F963-17, OEKO-TEX Standard 100',
   },
   {
     id: 'toy-2',
@@ -77,15 +77,15 @@ const TOY_CATALOG = [
     name: { en: 'Handmade Wooden Rocking Horse', zh: '手工实木摇摇木马' },
     keywords: ['horse', 'rocking', 'wooden', 'beechwood', 'wood', '马', '木马', '实木', '摇马'],
     description: {
-      en: 'Solid European beechwood rocking horse with food-grade beeswax polish. Ergonomic anti-collision edges.',
-      zh: '欧洲进口山毛榉实木纯手工打磨木马，食品级天然蜂蜡抛光，防撞圆角。',
+      en: 'Crafted from sustainable European beechwood with food-grade beeswax polish. Smooth ergonomic anti-collision curves.',
+      zh: '精选欧洲可持续山毛榉实木纯手工打磨，采用食用级天然蜂蜡抛光，温润防撞。',
     },
     retailPrice: 89,
     wholesaleTier1: 72.0,
     wholesaleTier2: 63.5,
     moq: 20,
     materials: 'FSC Solid Beechwood & Natural Beeswax',
-    leadTime: '5-7 Days (In Stock) / 15 Days (Bulk Ocean)',
+    leadTime: '5-7 Days (In Stock) • 15 Days (Bulk Ocean)',
     image: 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=600&q=80',
     category: 'Wooden Toys',
     certifications: 'FSC Certified, CE EN71, ASTM F963-17',
@@ -96,8 +96,8 @@ const TOY_CATALOG = [
     name: { en: 'Pastel Stacking Rings Tower', zh: '莫兰迪色彩虹叠叠塔' },
     keywords: ['stacking', 'rings', 'tower', 'montessori', 'rainbow', 'pastel', '叠叠塔', '套圈', '彩虹', '蒙特梭利'],
     description: {
-      en: 'Montessori early-learning wooden ring stacker dyed with water-based non-toxic natural pigments.',
-      zh: '蒙特梭利早教启蒙叠叠塔，环保植物水性漆着色，锻炼婴幼儿手眼协调。',
+      en: 'Montessori early-learning wooden ring stacker dyed with food-safe non-toxic water pigments.',
+      zh: '蒙特梭利早教启蒙叠叠塔，环保植物水性漆着色，锻炼婴幼儿精细手眼动作。',
     },
     retailPrice: 28,
     wholesaleTier1: 22.5,
@@ -115,8 +115,8 @@ const TOY_CATALOG = [
     name: { en: 'Natural Beechwood Toy Car', zh: '天然山毛榉木质小汽车' },
     keywords: ['car', 'vehicle', 'truck', 'beechwood', 'auto', '车', '小汽车', '木车'],
     description: {
-      en: 'FSC-certified hardwood rolling vehicle with silent rubber-lined smooth wheels.',
-      zh: 'FSC 认证高密度原木小车，配备静音橡胶轮圈。',
+      en: 'Solid beechwood rolling vehicle with silent rubber-lined smooth wheels.',
+      zh: '高密度山毛榉原木小车，配备静音橡胶轮圈与光滑防刮边角。',
     },
     retailPrice: 22,
     wholesaleTier1: 17.5,
@@ -134,8 +134,8 @@ const TOY_CATALOG = [
     name: { en: 'Handcrafted Waldorf Rag Dolls (Pair)', zh: '手工华德福布艺娃娃组合' },
     keywords: ['doll', 'waldorf', 'rag doll', 'plush', 'pair', '布偶', '娃娃', '华德福', '布艺'],
     description: {
-      en: 'Natural OEKO-TEX wool and cotton Waldorf dolls with removable organic cotton clothing.',
-      zh: '天然 OEKO-TEX 认证羊毛棉布华德福布偶，服装可脱换。',
+      en: 'Natural OEKO-TEX wool and cotton Waldorf dolls with removable organic cotton outfits.',
+      zh: '天然 OEKO-TEX 羊毛棉布华德福布偶，服装均可自由脱换。',
     },
     retailPrice: 65,
     wholesaleTier1: 52.0,
@@ -153,8 +153,8 @@ const TOY_CATALOG = [
     name: { en: 'Sensory Wooden Activity Busy Board', zh: '多功能蒙氏实木感官忙碌板' },
     keywords: ['busy board', 'sensory', 'activity', 'montessori', 'board', '忙碌板', '感官板', '早教板'],
     description: {
-      en: 'Interactive multi-sensory educational board for motor skill development in toddlers.',
-      zh: '多功能实木精细动作感官训练板，启发幼儿空间思维。',
+      en: 'Interactive multi-sensory educational board for toddler fine motor skill development.',
+      zh: '多功能实木精细动作感官训练板，启发幼儿空间与逻辑思维。',
     },
     retailPrice: 95,
     wholesaleTier1: 76.0,
@@ -168,7 +168,7 @@ const TOY_CATALOG = [
   },
 ];
 
-export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: DeepSeekChatWidgetProps) {
+export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteName }: DeepSeekChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [inputVal, setInputVal] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -179,8 +179,8 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
       sender: 'ai',
       text:
         lang === 'zh'
-          ? `👋 您好！我是 ${siteName} 的 AI 贸易助手。随时向我咨询有机玩偶、实木玩具、批发报价、MOQ、海运物流及安全认证。`
-          : `👋 Hello! Welcome to ${siteName}. How can I assist you with organic plush toys, wooden games, wholesale pricing, MOQ quotes, or shipping lead times today?`,
+          ? `👋 您好！我是工坊客户顾问。请问您想了解哪些实木玩具、有机毛绒玩偶，或是需要我为您核算批发价格与交期？`
+          : `👋 Hello! Welcome to our workshop. Looking for specific wooden toys, organic plush items, or need a wholesale quote for your store?`,
       timestamp: 'Just now',
     },
   ]);
@@ -197,11 +197,11 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
     }
   }, [messages, isOpen, isTyping]);
 
-  // DeepSeek AI Semantic Knowledge Retrieval & Reasoning Engine
+  // Natural Human-like Conversational Reasoning
   const processDeepSeekAiResponse = (userQuery: string): Partial<ChatMessage> => {
     const q = userQuery.toLowerCase().trim();
 
-    // 1. Human Agent Escalation
+    // 1. Human Escalation
     if (
       q.includes('human') ||
       q.includes('agent') ||
@@ -218,13 +218,13 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
       return {
         text:
           lang === 'zh'
-            ? '🤝 已为您接通资深外贸大客户总监（Sarah Chen）。经理已进入会话，您可以直接在此沟通定制打样或信用账期！'
-            : '🤝 Senior Export Account Director (Sarah Chen) is now connected to this chat. She will review your custom OEM and trade terms directly.',
+            ? '好的，已为您接通我们的大客户经理 Sarah Chen。她已加入当前对话，您可以直接在此沟通打样与批量订货事宜。'
+            : 'Certainly! Sarah Chen from our wholesale team is here with you now. How can we help with your custom order or shipping plans?',
         isEscalated: true,
       };
     }
 
-    // 2. Product Catalog Search & Matching
+    // 2. Product Specific Inquiries
     const matchedProduct = TOY_CATALOG.find((item) =>
       item.keywords.some((kw) => q.includes(kw)) ||
       item.name.en.toLowerCase().includes(q) ||
@@ -235,10 +235,9 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
     if (matchedProduct) {
       const isZh = lang === 'zh';
       const productName = isZh ? matchedProduct.name.zh : matchedProduct.name.en;
-      const desc = isZh ? matchedProduct.description.zh : matchedProduct.description.en;
 
-      // If user is also asking for price/quote/wholesale
-      const wantsQuote =
+      // Price / Quote Request
+      const wantsPrice =
         q.includes('price') ||
         q.includes('quote') ||
         q.includes('cost') ||
@@ -250,11 +249,11 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
         q.includes('批发') ||
         q.includes('多少钱');
 
-      if (wantsQuote) {
+      if (wantsPrice) {
         return {
           text: isZh
-            ? `✨ **${productName}** (货号: \`${matchedProduct.sku}\`)\n\n• **起订量 (MOQ)**: ${matchedProduct.moq} 件\n• **小批量批发价**: $${matchedProduct.wholesaleTier1} USD/件 (100–499件)\n• **大批量工厂直供价**: $${matchedProduct.wholesaleTier2} USD/件 (≥500件)\n• **材质**: ${matchedProduct.materials}\n• **安全认证**: ${matchedProduct.certifications}\n• **生产交期**: ${matchedProduct.leadTime}\n\n已为您生成批量 Proforma 报价单如下：`
-            : `✨ **${productName}** (SKU: \`${matchedProduct.sku}\`)\n\n• **MOQ**: ${matchedProduct.moq} units\n• **Tier 1 (100-499 units)**: $${matchedProduct.wholesaleTier1} USD/unit\n• **Tier 2 (≥500 units Bulk)**: $${matchedProduct.wholesaleTier2} USD/unit\n• **Materials**: ${matchedProduct.materials}\n• **Certifications**: ${matchedProduct.certifications}\n• **Lead Time**: ${matchedProduct.leadTime}\n\nHere is your official Proforma Quote breakdown:`,
+            ? `关于 **${productName}**，我们的常规批发起订量是 ${matchedProduct.moq} 件，单价 $${matchedProduct.wholesaleTier1} 美元；如果订购 500 件以上，工厂直供单价为 **$${matchedProduct.wholesaleTier2} 美元**（包含 OEM 包装定制）。\n\n我已为您整理好初步的 Proforma 报价如下：`
+            : `For the **${productName}**, our wholesale MOQ starts at ${matchedProduct.moq} units ($${matchedProduct.wholesaleTier1}/unit). For orders of 500 units or more, our direct factory price is **$${matchedProduct.wholesaleTier2} USD/unit** with custom packaging included.\n\nHere is your quote summary:`,
           isQuoteCard: true,
           quoteData: {
             productName: `${productName} (${matchedProduct.sku})`,
@@ -262,18 +261,18 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
             quantity: 500,
             unitPrice: matchedProduct.wholesaleTier2,
             totalAmount: Math.round(500 * matchedProduct.wholesaleTier2),
-            incoterm: 'FOB Shanghai (CNSHA)',
+            incoterm: 'FOB Shanghai',
             leadTime: matchedProduct.leadTime,
             shippingPort: 'Shanghai Port (CNSHA) → Rotterdam / Los Angeles',
           },
         };
       }
 
-      // Return Rich Product Card
+      // Natural Product Introduction
       return {
         text: isZh
-          ? `🧸 找到了！我们工坊生产 **${productName}**。\n\n${desc}\n\n• **材质**: ${matchedProduct.materials}\n• **零售指导价**: $${matchedProduct.retailPrice} USD\n• **批发起始 MOQ**: ${matchedProduct.moq} 件 ($${matchedProduct.wholesaleTier1}/件)\n• **国际认证**: ${matchedProduct.certifications}\n• **交期**: ${matchedProduct.leadTime}\n\n需要我为您出具大批量采购的 Proforma 报价单或核算海运箱规吗？`
-          : `🧸 Yes, we manufacture the **${productName}**!\n\n${desc}\n\n• **Materials**: ${matchedProduct.materials}\n• **Sample/Retail Price**: $${matchedProduct.retailPrice} USD\n• **Wholesale MOQ**: ${matchedProduct.moq} units (from $${matchedProduct.wholesaleTier1}/unit)\n• **Certifications**: ${matchedProduct.certifications}\n• **Lead Time**: ${matchedProduct.leadTime}\n\nWould you like me to prepare an official Proforma Invoice or calculate container ocean freight?`,
+          ? `有的！这款 **${productName}** 是我们工坊的热门款。采用纯天然有机亚麻与植物棉手工缝制，不仅触感温润亲肤，还通过了欧盟 CE EN71 和北美 ASTM 认证。\n\n目前样品和小批量订单 3-5 天即可出库，批发起订量为 ${matchedProduct.moq} 件。需要我为您出具一份详细的批发报价单吗？`
+          : `Yes, absolutely! Our **${productName}** is handcrafted using 100% natural organic flax linen and hypoallergenic plant cotton. It meets full CE EN71 and ASTM F963 safety standards for baby and toddler use.\n\nWe have stock ready to ship in 3-5 days, with wholesale MOQ starting at just ${matchedProduct.moq} units. Would you like me to prepare a quick quote for your expected volume?`,
         isProductCard: true,
         productData: {
           name: productName,
@@ -291,28 +290,23 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
       };
     }
 
-    // 3. General Wholesale & Pricing Inquiries
+    // 3. General Wholesale & Pricing
     if (
       q.includes('price') ||
       q.includes('quote') ||
       q.includes('discount') ||
       q.includes('cost') ||
-      q.includes('cheap') ||
-      q.includes('negotiat') ||
-      q.includes('offer') ||
       q.includes('moq') ||
       q.includes('报价') ||
       q.includes('价格') ||
       q.includes('折扣') ||
-      q.includes('优惠') ||
-      q.includes('议价') ||
-      q.includes('便宜')
+      q.includes('批发')
     ) {
       return {
         text:
           lang === 'zh'
-            ? '📊 根据我们的外贸阶梯定价规则，所有玩具产品均支持阶梯批量折扣（≥500件享 8.5 折，≥2000件享 7.5 折），支持 OEM 定制 Logo 与彩盒包装。以下为您生成畅销安抚小兔的即时报价单：'
-            : '📊 Based on our tiered factory export pricing (15% off for ≥500 units, 25% off for 20ft container loads), here is an instant Proforma Quote for our bestselling Organic Linen Bunny:',
+            ? '我们工坊所有玩具均支持阶梯批发折扣（500件以上享优惠工厂价，2000件以上支持整柜特惠），且免费提供品牌定制打样。\n\n以我们的畅销有机小兔为例，500件起订单价为 $24.50 美元，您可以参考以下报价：'
+            : 'We offer flexible wholesale volume tiers across our entire catalog (15% off for 500+ units, and 25% off for 20ft container orders), with custom branding included.\n\nHere is an example quote for 500 units of our bestselling Organic Plush Bunny:',
         isQuoteCard: true,
         quoteData: {
           productName: 'Organic Linen Plush Bunny (Custom OEM / FSC Beechwood)',
@@ -320,14 +314,14 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
           quantity: 500,
           unitPrice: 24.5,
           totalAmount: 12250,
-          incoterm: 'FOB Shanghai (CNSHA)',
+          incoterm: 'FOB Shanghai',
           leadTime: '12-15 Business Days',
           shippingPort: 'Shanghai Port (CNSHA) → Rotterdam / Los Angeles',
         },
       };
     }
 
-    // 4. Shipping & Ocean Freight
+    // 4. Shipping & Logistics
     if (
       q.includes('ship') ||
       q.includes('freight') ||
@@ -335,24 +329,20 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
       q.includes('delivery') ||
       q.includes('fob') ||
       q.includes('cif') ||
-      q.includes('ddp') ||
       q.includes('port') ||
-      q.includes('运输') ||
       q.includes('海运') ||
-      q.includes('运费') ||
-      q.includes('集装箱') ||
-      q.includes('交期') ||
+      q.includes('运输') ||
       q.includes('港口')
     ) {
       return {
         text:
           lang === 'zh'
-            ? '🚢 **海运物流履约详情**：\n• **起运港 (POL)**: 上海港 (CNSHA) / 宁波舟山港 (CNNGB)\n• **合作船司**: 中远海运 (COSCO Direct) & 马士基 (Maersk)\n• **航程时效**: 美西(洛杉矶) 14天 | 欧洲(鹿特丹/汉堡) 24天 | 中东(杰贝阿里) 18天\n• **外箱规格**: 5层高强度加厚防潮瓦楞纸箱 (0.08 CBM/箱)\n• **条款支持**: FOB, CIF, DDP (含目的国清关及送仓)。'
-            : '🚢 **Ocean Freight & Logistics Specifications**:\n• **Port of Loading (POL)**: Shanghai Port (CNSHA) / Ningbo-Zhoushan (CNNGB)\n• **Preferred Carriers**: COSCO Direct Ocean Line & Maersk\n• **Transit Times**: US West Coast (14 Days) | Europe Rotterdam (24 Days) | Middle East (18 Days)\n• **Packaging**: 5-ply reinforced export moisture-proof cartons (0.08 CBM/ctn)\n• **Incoterms**: FOB, CIF, DDP (Delivered Duty Paid to door).',
+            ? '我们主要从上海港或宁波舟山港装船出运，与中远海运 (COSCO) 和马士基 (Maersk) 长期合作。到美西洛杉矶约 14 天，到欧洲鹿特丹约 24 天，支持 FOB、CIF 及双清包税送仓 (DDP)。'
+            : 'We ship regularly from Shanghai and Ningbo ports via COSCO and Maersk. Typical transit times are ~14 days to US West Coast and ~24 days to Rotterdam (EU). We support FOB, CIF, and DDP (door-to-door delivery).',
       };
     }
 
-    // 5. Product Safety & Eco Certification
+    // 5. Safety & Certifications
     if (
       q.includes('safety') ||
       q.includes('cert') ||
@@ -360,29 +350,24 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
       q.includes('en71') ||
       q.includes('astm') ||
       q.includes('oeko') ||
-      q.includes('material') ||
-      q.includes('wood') ||
       q.includes('安全') ||
       q.includes('认证') ||
-      q.includes('检测') ||
-      q.includes('环保') ||
-      q.includes('材质') ||
-      q.includes('木材')
+      q.includes('检测')
     ) {
       return {
         text:
           lang === 'zh'
-            ? '🌿 **国际品质与安全合规认证**：\n• **欧盟标准**: CE EN71-1, EN71-2, EN71-3 重金属无毒析出认证\n• **北美标准**: ASTM F963-17 & CPSIA 儿童玩具安全法案\n• **环保原材料**: 100% FSC 认证欧洲山毛榉木、食品级天然蜂蜡抛光、OEKO-TEX 100 纯天然有机亚麻\n• **质检报告**: 随每批出厂大货附带官方 SGS / TÜV 质检报告。'
-            : '🌿 **International Safety & Compliance Standards**:\n• **European Directives**: CE EN71-1, EN71-2, EN71-3 (Zero heavy metal toxicity)\n• **North American Standards**: ASTM F963-17 & CPSIA Child Safety Act Compliant\n• **Raw Materials**: 100% FSC-Certified European Beechwood, Food-grade beeswax polish, OEKO-TEX Standard 100 organic linen\n• **Inspection**: Official SGS / TÜV batch inspection test reports issued with every bill of lading.',
+            ? '我们的产品均符合国际高标准安全法规：通过了欧盟 CE EN71-1/2/3、北美 ASTM F963-17 及 OEKO-TEX 100 环保认证，所有木制品均使用可持续 FSC 山毛榉与食品级蜂蜡，每批大货均附带 SGS / TÜV 检测报告。'
+            : 'All our products comply strictly with international toy directives: CE EN71-1/2/3 in Europe, ASTM F963-17 in North America, and OEKO-TEX Standard 100 for textiles. We use only FSC-certified beechwood and non-toxic water-based paints, with SGS/TÜV test reports provided.',
       };
     }
 
-    // 6. Default Fallback with Helpful Guidance
+    // 6. Default Friendly Fallback
     return {
       text:
         lang === 'zh'
-          ? `🧸 您可以向我询问任何玩具信息，例如：\n• **“天然有机亚麻安抚小兔的批发价格和材质？”**\n• **“实木摇摇木马起订量多少？”**\n• **“到欧洲鹿特丹港的海运时效？”**\n• 或输入 **“转人工”** 联系客户经理。`
-          : `🧸 You can ask me about any of our handcrafted toy products, such as:\n• **"Tell me about the organic plush bunny and wholesale pricing"**\n• **"What is the MOQ for the wooden rocking horse?"**\n• **"Shipping time and container freight to Rotterdam?"**\n• Or type **"human agent"** to speak with our sales manager.`,
+          ? '请问您是对我们哪款玩具（如有机亚麻小兔、实木木马、蒙氏叠叠塔）感兴趣，还是想了解具体订货量与海运方案？随时告诉我，我来为您解答。'
+          : 'Are you interested in a specific toy (like our organic plush bunny, wooden rocking horse, or Montessori stacker), or would you like to discuss shipping and bulk order quantities?',
     };
   };
 
@@ -448,7 +433,7 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
               </div>
               <div>
                 <h3 className="font-bold text-sm text-white">
-                  {isEscalated ? (lang === 'zh' ? 'Sarah Chen (外贸大客户经理)' : 'Sarah Chen (Account Manager)') : siteName}
+                  {isEscalated ? (lang === 'zh' ? 'Sarah Chen (大客户经理)' : 'Sarah Chen (Account Manager)') : 'Eco-Toys Workshop'}
                 </h3>
                 <p className="text-[11px] text-slate-300">
                   {isEscalated ? (lang === 'zh' ? '人工专员在线' : 'Live Specialist') : (lang === 'zh' ? '通常即时回复' : 'Typically replies instantly')}
@@ -468,8 +453,8 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
                         sender: 'agent',
                         text:
                           lang === 'zh'
-                            ? '🤝 客户经理 Sarah Chen 已接入当前对话。请问有什么可以协助您？'
-                            : '🤝 Sarah Chen is now connected. How may I assist you with your order?',
+                            ? '您好！我是大客户经理 Sarah Chen。请问您有什么订单或打样需求？'
+                            : 'Hi! Sarah Chen from our sales team here. How can I assist with your order?',
                         timestamp: 'Just now',
                         isEscalated: true,
                       },
@@ -508,7 +493,7 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
                 >
                   <div className="whitespace-pre-line">{m.text}</div>
 
-                  {/* Rich Product Details Card */}
+                  {/* Clean Visual Product Card */}
                   {m.isProductCard && m.productData && (
                     <div className="mt-3 p-3 rounded-2xl bg-[#F0F7FA] border border-[#D0E5F0] space-y-2 text-[11px] text-slate-800">
                       <div className="flex items-center gap-3">
@@ -543,7 +528,7 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
                         className="w-full mt-1 py-1.5 rounded-xl bg-[#1E3A5F] hover:bg-[#152a45] text-white font-bold text-[10px] flex items-center justify-center gap-1 transition-all shadow-xs"
                       >
                         <FileText className="w-3 h-3" />
-                        <span>Request 500 pcs Bulk Quote</span>
+                        <span>Get 500 pcs Wholesale Quote</span>
                       </button>
                     </div>
                   )}
@@ -554,7 +539,7 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
                       <div className="flex items-center justify-between pb-1.5 border-b border-[#D0E5F0] font-bold text-[#1E3A5F]">
                         <span className="flex items-center gap-1.5">
                           <FileText className="w-3.5 h-3.5" />
-                          <span>Official Proforma Quote</span>
+                          <span>Proforma Quote</span>
                         </span>
                         <span className="text-[10px] text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full font-bold">
                           Valid 14 Days
@@ -572,7 +557,7 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
                           <span className="font-bold text-emerald-600">${m.quoteData.unitPrice} USD</span>
                         </div>
                         <div className="flex justify-between text-slate-600 font-bold border-t border-[#D0E5F0] pt-1">
-                          <span>Total Est. FOB Value:</span>
+                          <span>Total FOB:</span>
                           <span className="text-[#1E3A5F] font-bold">${m.quoteData.totalAmount.toLocaleString()} USD</span>
                         </div>
                       </div>
@@ -599,7 +584,7 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
             {isTyping && (
               <div className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-white border border-slate-200 w-fit text-slate-400 text-xs">
                 <Sparkles className="w-3.5 h-3.5 text-[#1E3A5F] animate-spin" />
-                <span>DeepSeek AI is searching catalog & pricing...</span>
+                <span>Typing...</span>
               </div>
             )}
 
@@ -610,7 +595,7 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
           <div className="px-3 py-2 bg-white border-t border-slate-100 flex items-center gap-1.5 overflow-x-auto text-[11px]">
             <button
               onClick={() => {
-                setInputVal(lang === 'zh' ? '有机亚麻安抚小兔的产品详情和批发价格？' : 'Tell me about the organic plush bunny and price');
+                setInputVal(lang === 'zh' ? '有机亚麻安抚小兔的批发价格和材质？' : 'Tell me about the organic plush bunny and price');
               }}
               className="px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium whitespace-nowrap transition-all flex items-center gap-1"
             >
@@ -649,7 +634,7 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
               type="text"
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
-              placeholder={lang === 'zh' ? '询问产品、价格、交期，或输入“转人工”...' : 'Ask about products, pricing, or type "agent"...'}
+              placeholder={lang === 'zh' ? '输入消息，或输入“转人工”...' : 'Write a message...'}
               className="flex-1 px-3.5 py-2 rounded-xl bg-slate-100 border-none text-xs text-slate-900 font-medium outline-none focus:ring-1 focus:ring-[#1E3A5F]"
             />
             <button
