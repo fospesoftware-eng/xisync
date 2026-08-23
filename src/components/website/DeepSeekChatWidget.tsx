@@ -435,7 +435,26 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteN
       };
     }
 
-    // 2. Greetings & Politeness ("hi", "hello", "good morning", "hey", "how are you")
+    // 2. Free Sample Inquiry ("are you offer free samples", "can i get sample", "sample policy")
+    if (
+      q.includes('sample') ||
+      q.includes('free sample') ||
+      q.includes('test sample') ||
+      q.includes('prototype') ||
+      q.includes('样品') ||
+      q.includes('打样') ||
+      q.includes('免费样品') ||
+      q.includes('样板')
+    ) {
+      return {
+        text:
+          lang === 'zh'
+            ? '是的！我们为海外采购商提供 **免费现样服务（Free Quality Samples）**。现货样品 1-2 天内即可通过 DHL/FedEx 寄出（运费到付或到付抵扣）。如果您后续下单批量订货，所有打样与快递费用将在正式大货订单中 100% 全额返还。请问您需要我们安排哪款玩具的样品？'
+            : 'Yes, absolutely! We provide **Free Quality Samples** for verified retailers and wholesale buyers. Standard in-stock samples ship within 1-2 business days via DHL or FedEx Express (freight collect). If you proceed with a bulk order, 100% of any sample/courier costs will be fully credited back to your commercial invoice. Which toy models would you like to sample?',
+      };
+    }
+
+    // 3. Greetings & Politeness ("hi", "hello", "good morning", "hey", "how are you")
     if (
       q === 'hi' ||
       q === 'hello' ||
