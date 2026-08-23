@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import {
-  Bot,
+  MessageCircle,
   Send,
   X,
   Sparkles,
   FileText,
   Ship,
   UserCheck,
+  Download,
 } from 'lucide-react';
 
 interface ChatMessage {
@@ -45,8 +46,8 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
       sender: 'ai',
       text:
         lang === 'zh'
-          ? `👋 您好！我是 ${siteName} 的 DeepSeek AI 贸易助理。我可以为您提供即时产品参数、阶梯批发报价（MOQ）、自主议价与海运集装箱运费测算。请问您正在寻找什么玩具或产品？`
-          : `👋 Hello! I am the DeepSeek AI Trade Assistant for ${siteName}. I can provide instant product specs, wholesale tiered quotes, MOQ negotiations, and ocean container freight calculations. What items are you interested in today?`,
+          ? `👋 您好！我是 ${siteName} 的 AI 贸易助手。随时向我咨询批发报价、阶梯折扣、海运物流及安全认证。`
+          : `👋 Hello! Welcome to ${siteName}. How can I assist you with wholesale pricing, MOQ quotes, shipping lead times, or product certifications today?`,
       timestamp: 'Just now',
     },
   ]);
@@ -63,11 +64,11 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
     }
   }, [messages, isOpen, isTyping]);
 
-  // DeepSeek AI Intelligent Natural Language & Negotiation Reasoning Engine
+  // DeepSeek AI Reasoning Engine
   const processDeepSeekAiResponse = (userQuery: string) => {
     const q = userQuery.toLowerCase();
 
-    // 1. Check for Human Agent Escalation Trigger
+    // 1. Human Agent Escalation
     if (
       q.includes('human') ||
       q.includes('agent') ||
@@ -83,13 +84,13 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
       return {
         text:
           lang === 'zh'
-            ? '🤝 没问题！已为您实时转接外贸资深大客户经理（Sarah Chen）。经理已接入当前会话，您可以继续在此沟通定制化模具与信用账期！'
-            : '🤝 Certainly! I have escalated your session to our Senior Export Account Director (Sarah Chen). She has joined the chat and will review your custom OEM specifications directly.',
+            ? '🤝 已为您接通资深大客户经理（Sarah Chen）。经理已进入会话，您可以直接在此沟通。'
+            : '🤝 Senior Account Manager (Sarah Chen) is now connected to this chat and will assist you directly.',
         isEscalated: true,
       };
     }
 
-    // 2. Pricing, Discount & Autonomous Negotiation
+    // 2. Pricing & Wholesale Negotiation
     if (
       q.includes('price') ||
       q.includes('quote') ||
@@ -98,6 +99,7 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
       q.includes('cheap') ||
       q.includes('negotiat') ||
       q.includes('offer') ||
+      q.includes('moq') ||
       q.includes('报价') ||
       q.includes('价格') ||
       q.includes('折扣') ||
@@ -108,23 +110,23 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
       return {
         text:
           lang === 'zh'
-            ? '📊 根据我们的外贸 AI 智能定价引擎，针对大批量采购（≥500件），已为您自动应用 8.5 折工厂直发优惠并生成正式 Proforma 报价单：'
-            : '📊 Based on our AI pricing & autonomous margin engine, I have applied a tier-2 bulk discount (-15%) for batch orders ≥500 units and prepared your instant Proforma Quote:',
+            ? '📊 已根据批量采购策略（≥500件）自动应用工厂 8.5 折批发价，以下为您的即时报价单：'
+            : '📊 Here is your instant Proforma Quote with bulk wholesale pricing applied for 500 units:',
         isQuoteCard: true,
         quoteData: {
-          productName: 'Organic Linen Plush Bunny (Custom OEM / FSC Beechwood)',
+          productName: 'Organic Linen Plush Bunny (FSC Beechwood Custom OEM)',
           sku: 'ECO-TOY-BNY-01',
           quantity: 500,
           unitPrice: 28.9,
           totalAmount: 14450,
-          incoterm: 'FOB Shanghai (CNSHA)',
+          incoterm: 'FOB Shanghai',
           leadTime: '12-15 Business Days',
-          shippingPort: 'Shanghai Port (CNSHA) → Port of Rotterdam / Los Angeles',
+          shippingPort: 'Shanghai Port (CNSHA) → Rotterdam / Los Angeles',
         },
       };
     }
 
-    // 3. Shipping, Logistics & Incoterms Inquiry
+    // 3. Shipping & Logistics
     if (
       q.includes('ship') ||
       q.includes('freight') ||
@@ -144,12 +146,12 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
       return {
         text:
           lang === 'zh'
-            ? '🚢 **海运与物流履约信息**：\n• **起运港 (POL)**: 上海港 (CNSHA) / 宁波舟山港 (CNNGB)\n• **海运承运商**: 中远海运 (COSCO Direct Line) & 马士基 (Maersk)\n• **航程时效**: 洛杉矶港 14天 | 鹿特丹港 24天 | 杰贝阿里港 18天\n• **包装规格**: 5-ply 加厚防潮出口瓦楞纸箱 (0.08 CBM/箱)\n• **支持贸易条款**: FOB, CIF, DDP (含双清包税送仓)。'
-            : '🚢 **Ocean Freight & Logistics Specifications**:\n• **Port of Loading (POL)**: Shanghai Port (CNSHA) / Ningbo-Zhoushan (CNNGB)\n• **Preferred Carriers**: COSCO Direct Ocean Line & Maersk Integrated\n• **Transit Times**: US West Coast (14 Days) | Rotterdam EU (24 Days) | Jebel Ali UAE (18 Days)\n• **Packaging**: 5-ply reinforced export moisture-proof cartons (0.08 CBM/carton)\n• **Supported Terms**: FOB, CIF, DDP (Delivered Duty Paid to door).',
+            ? '🚢 **海运物流详情**：\n• **起运港**: 上海港 / 宁波舟山港\n• **承运商**: 中远海运 (COSCO) & 马士基 (Maersk)\n• **海运时效**: 美西 14天 | 欧洲 24天 | 中东 18天\n• **条款支持**: FOB, CIF, DDP 送仓到门。'
+            : '🚢 **Shipping & Freight Information**:\n• **Port of Loading**: Shanghai / Ningbo Port\n• **Carriers**: COSCO Direct Line & Maersk\n• **Transit Times**: US West Coast 14d | EU Rotterdam 24d | Middle East 18d\n• **Incoterms**: FOB, CIF, DDP (Delivered Duty Paid).',
       };
     }
 
-    // 4. Product Safety & Eco Certification Inquiry
+    // 4. Product Safety & Eco Certification
     if (
       q.includes('safety') ||
       q.includes('cert') ||
@@ -169,17 +171,17 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
       return {
         text:
           lang === 'zh'
-            ? '🌿 **国际品质与安全合规认证**：\n• **欧盟标准**: CE EN71-1, EN71-2, EN71-3 重金属无毒析出认证\n• **北美标准**: ASTM F963-17 & CPSIA 儿童玩具安全法案\n• **环保原材料**: 100% FSC 认证可持续山毛榉木、食用级天然蜂蜡抛光、OEKO-TEX 100 纯天然有机亚麻\n• **质检报告**: 随每批大货附带 SGS / TÜV 官方检测质检单。'
-            : '🌿 **International Safety & Compliance Standards**:\n• **European Directives**: CE EN71-1, EN71-2, EN71-3 (Zero heavy metal toxicity)\n• **North American Standards**: ASTM F963-17 & CPSIA Child Safety Act Compliant\n• **Raw Materials**: 100% FSC-Certified European Beechwood, Food-grade beeswax polish, OEKO-TEX Standard 100 organic linen\n• **Inspection**: Official SGS / TÜV batch inspection test reports issued with every bill of lading.',
+            ? '🌿 **国际安全与环保资质**：\n• **CE EN71-1/2/3** (欧盟玩具安全标准)\n• **ASTM F963-17 & CPSIA** (北美儿童安全指令)\n• **FSC 认证** 纯天然欧洲山毛榉实木 & OEKO-TEX 100 有机亚麻。\n• 附带官方 SGS / TÜV 批量出厂质检报告。'
+            : '🌿 **Safety & Compliance Standards**:\n• **CE EN71-1/2/3** (European Toy Directive)\n• **ASTM F963-17 & CPSIA** (North American Child Safety Standards)\n• **FSC-Certified** European Beechwood & OEKO-TEX 100 organic linen.\n• Official SGS / TÜV batch test inspection reports included.',
       };
     }
 
-    // 5. Default General B2B Response
+    // 5. Default Response
     return {
       text:
         lang === 'zh'
-          ? `🤖 感谢您的咨询！我们的产品线涵盖有机毛绒玩偶、蒙特梭利实木益智玩具及定制 OEM/ODM 包装。\n\n您可随时让我为您计算 **集装箱装柜量 (CBM)**、出具 **实时折扣报价**，或输入 **“人工客服”** 转接外贸业务总监。`
-          : `🤖 Thank you for your inquiry! Our factory specializes in organic plush dolls, Montessori wooden educational toys, and custom OEM/ODM packaging.\n\nFeel free to ask me for **container packing volume (CBM)**, **instant wholesale pricing**, or type **"human agent"** to connect directly with our export director.`,
+          ? `您可以随时让我为您出具产品报价、计算集装箱容积，或输入“转人工”联系客户经理。`
+          : `You can ask me for product pricing, container freight estimates, or type "agent" to speak with our sales manager.`,
     };
   };
 
@@ -200,7 +202,6 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
     setMessages((prev) => [...prev, newUserMsg]);
     setIsTyping(true);
 
-    // Simulate DeepSeek API processing latency
     setTimeout(() => {
       const response = processDeepSeekAiResponse(userText);
       const newAiMsg: ChatMessage = {
@@ -215,55 +216,39 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
 
       setMessages((prev) => [...prev, newAiMsg]);
       setIsTyping(false);
-    }, 900);
-  };
-
-  const handleQuickPrompt = (promptText: string) => {
-    setInputVal(promptText);
+    }, 700);
   };
 
   return (
     <div className="fixed bottom-6 right-6 z-50 font-sans">
-      {/* Floating Chat Trigger Button */}
+      {/* Clean, Minimalist & Premium Floating Chat Bubble */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="group relative flex items-center gap-3 px-5 py-3.5 rounded-full bg-gradient-to-r from-cyan-600 via-blue-600 to-emerald-500 text-white font-extrabold text-xs shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-white/20"
+          aria-label="Open Chat"
+          className="w-14 h-14 rounded-full bg-[#1E3A5F] hover:bg-[#152a45] text-white flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 border-2 border-white/80 relative"
         >
-          <div className="relative">
-            <Bot className="w-5 h-5 animate-bounce" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-slate-900 animate-pulse" />
-          </div>
-          <span>{lang === 'zh' ? 'DeepSeek AI 贸易询价' : 'AI Wholesale & Instant Quote'}</span>
-          <span className="px-2 py-0.5 rounded-full text-[10px] bg-white/20 uppercase tracking-widest font-mono">
-            24/7 LIVE
-          </span>
+          <MessageCircle className="w-6 h-6 stroke-[2.2]" />
+          <span className="absolute top-1 right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-[#1E3A5F]" />
         </button>
       )}
 
-      {/* Main Chat Interface Window */}
+      {/* Premium Minimalist Chat Window */}
       {isOpen && (
-        <div className="w-[360px] sm:w-[420px] h-[580px] rounded-3xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
-          {/* Top Navigation Header */}
-          <div className="p-4 bg-gradient-to-r from-[#1E3A5F] via-[#2A4D7A] to-[#122742] text-white flex items-center justify-between shadow-md">
+        <div className="w-[360px] sm:w-[390px] h-[540px] rounded-3xl bg-white shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
+          {/* Header */}
+          <div className="px-5 py-4 bg-[#1E3A5F] text-white flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="relative w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-cyan-300 border border-white/20 font-black">
-                {isEscalated ? <UserCheck className="w-5 h-5 text-emerald-400" /> : <Bot className="w-5 h-5 text-cyan-400" />}
-                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-900" />
+              <div className="relative w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white border border-white/20">
+                {isEscalated ? <UserCheck className="w-4 h-4 text-emerald-300" /> : <MessageCircle className="w-4 h-4" />}
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full border border-[#1E3A5F]" />
               </div>
               <div>
-                <div className="flex items-center gap-1.5">
-                  <h3 className="font-extrabold text-sm text-white">
-                    {isEscalated ? (lang === 'zh' ? '客户总监 (Sarah Chen)' : 'Sarah Chen (Senior Account Dir.)') : `${siteName} AI Copilot`}
-                  </h3>
-                  <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-cyan-400/20 text-cyan-300 border border-cyan-400/30">
-                    DEEPSEEK V3
-                  </span>
-                </div>
-                <p className="text-[11px] text-cyan-100/80 font-medium">
-                  {isEscalated
-                    ? (lang === 'zh' ? '人工专员已接入' : 'Human Specialist Online')
-                    : (lang === 'zh' ? '即时出具外贸报价 • 自主议价' : 'Instant Quotes • MOQ & Freight')}
+                <h3 className="font-bold text-sm text-white">
+                  {isEscalated ? (lang === 'zh' ? 'Sarah Chen (客户经理)' : 'Sarah Chen (Account Manager)') : siteName}
+                </h3>
+                <p className="text-[11px] text-slate-300">
+                  {isEscalated ? (lang === 'zh' ? '人工专员在线' : 'Live Specialist') : (lang === 'zh' ? '通常即时回复' : 'Typically replies instantly')}
                 </p>
               </div>
             </div>
@@ -280,18 +265,16 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
                         sender: 'agent',
                         text:
                           lang === 'zh'
-                            ? '🤝 客户总监 Sarah Chen 已接入当前对话。我正在查阅您的玩具定制与集装箱方案，请问有什么可以协助您？'
-                            : '🤝 Senior Director Sarah Chen is now connected. I am reviewing your order requirements. How may I assist with your wholesale terms?',
+                            ? '🤝 客户经理 Sarah Chen 已接入当前对话。请问有什么可以协助您？'
+                            : '🤝 Sarah Chen is now connected. How may I assist you with your order?',
                         timestamp: 'Just now',
                         isEscalated: true,
                       },
                     ]);
                   }}
-                  className="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1 transition-all"
-                  title="Transfer to Human Agent"
+                  className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white/10 hover:bg-white/20 text-white transition-all mr-1"
                 >
-                  <UserCheck className="w-3 h-3 text-emerald-400" />
-                  <span>{lang === 'zh' ? '转人工' : 'Human Agent'}</span>
+                  {lang === 'zh' ? '转人工' : 'Human'}
                 </button>
               )}
 
@@ -304,149 +287,119 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName }: Deep
             </div>
           </div>
 
-          {/* Messages Scroll Area */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-3.5 bg-slate-50/50 dark:bg-slate-900/50 text-xs">
+          {/* Messages Area */}
+          <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-[#F8FAFC] text-xs">
             {messages.map((m) => (
               <div
                 key={m.id}
                 className={`flex flex-col ${m.sender === 'user' ? 'items-end' : 'items-start'}`}
               >
-                <div className="flex items-center gap-1.5 mb-1 px-1">
-                  <span className="text-[10px] text-slate-400 font-mono">
-                    {m.sender === 'user' ? 'You' : m.sender === 'agent' ? 'Senior Director' : 'DeepSeek AI Copilot'}
-                  </span>
-                  <span className="text-[9px] text-slate-400 font-mono">• {m.timestamp}</span>
-                </div>
-
                 <div
-                  className={`max-w-[85%] p-3.5 rounded-2xl leading-relaxed ${
+                  className={`max-w-[85%] px-4 py-3 rounded-2xl leading-relaxed ${
                     m.sender === 'user'
-                      ? 'bg-[#1E3A5F] text-white rounded-br-none shadow-xs font-medium'
+                      ? 'bg-[#1E3A5F] text-white rounded-br-xs font-medium'
                       : m.sender === 'agent'
-                      ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-950 dark:text-emerald-200 rounded-bl-none shadow-xs'
-                      : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-bl-none shadow-xs'
+                      ? 'bg-emerald-50 border border-emerald-200 text-emerald-950 rounded-bl-xs'
+                      : 'bg-white border border-slate-200/90 text-slate-800 rounded-bl-xs shadow-2xs'
                   }`}
                 >
                   <div className="whitespace-pre-line">{m.text}</div>
 
-                  {/* Proforma Quote Card Component */}
+                  {/* Clean Proforma Quote Card */}
                   {m.isQuoteCard && m.quoteData && (
-                    <div className="mt-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-cyan-200 dark:border-cyan-800/60 space-y-2 text-[11px] text-slate-800 dark:text-slate-200 font-mono">
-                      <div className="flex items-center justify-between pb-1.5 border-b border-slate-200 dark:border-slate-800">
-                        <div className="font-bold flex items-center gap-1 text-cyan-600 dark:text-cyan-400">
+                    <div className="mt-3 p-3 rounded-xl bg-[#F0F7FA] border border-[#D0E5F0] space-y-2 text-[11px] text-slate-800">
+                      <div className="flex items-center justify-between pb-1.5 border-b border-[#D0E5F0] font-bold text-[#1E3A5F]">
+                        <span className="flex items-center gap-1.5">
                           <FileText className="w-3.5 h-3.5" />
-                          <span>OFFICIAL PROFORMA QUOTE</span>
-                        </div>
-                        <span className="px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/10 text-emerald-500 font-bold">
-                          VALID 14 DAYS
+                          <span>Proforma Quote</span>
+                        </span>
+                        <span className="text-[10px] text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full font-bold">
+                          Valid 14 Days
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2 text-[10px]">
-                        <div>
-                          <span className="text-slate-400 block">Product Item:</span>
-                          <span className="font-bold font-sans text-slate-900 dark:text-white truncate block">
-                            {m.quoteData.productName}
-                          </span>
+                      <div className="space-y-1 text-[11px]">
+                        <div className="font-semibold text-slate-900">{m.quoteData.productName}</div>
+                        <div className="flex justify-between text-slate-600">
+                          <span>Quantity:</span>
+                          <span className="font-bold text-slate-900">{m.quoteData.quantity} pcs</span>
                         </div>
-
-                        <div>
-                          <span className="text-slate-400 block">Order Volume:</span>
-                          <span className="font-bold text-slate-900 dark:text-white">
-                            {m.quoteData.quantity} Units (MOQ Tier 2)
-                          </span>
+                        <div className="flex justify-between text-slate-600">
+                          <span>Unit Price:</span>
+                          <span className="font-bold text-emerald-600">${m.quoteData.unitPrice} USD</span>
                         </div>
-
-                        <div>
-                          <span className="text-slate-400 block">Unit Price (FOB):</span>
-                          <span className="font-bold text-emerald-500 text-xs">
-                            ${m.quoteData.unitPrice} USD
-                          </span>
-                        </div>
-
-                        <div>
-                          <span className="text-slate-400 block">Total Est. FOB Value:</span>
-                          <span className="font-black text-cyan-500 text-xs">
-                            ${m.quoteData.totalAmount.toLocaleString()} USD
-                          </span>
+                        <div className="flex justify-between text-slate-600 font-bold border-t border-[#D0E5F0] pt-1">
+                          <span>Total FOB:</span>
+                          <span className="text-[#1E3A5F] font-bold">${m.quoteData.totalAmount.toLocaleString()} USD</span>
                         </div>
                       </div>
 
-                      <div className="pt-1.5 border-t border-slate-200 dark:border-slate-800 text-[9px] text-slate-400 space-y-0.5">
-                        <div className="flex items-center gap-1">
-                          <Ship className="w-3 h-3 text-cyan-500" />
-                          <span>POL: {m.quoteData.shippingPort}</span>
-                        </div>
-                        <div>Production Lead Time: {m.quoteData.leadTime}</div>
+                      <div className="pt-1 text-[10px] text-slate-500 flex items-center gap-1">
+                        <Ship className="w-3 h-3 text-[#1E3A5F]" />
+                        <span>{m.quoteData.incoterm} • Lead Time {m.quoteData.leadTime}</span>
                       </div>
 
                       <button
-                        onClick={() => alert(`Proforma Invoice PI-2026-9812 generated and emailed to buyer!`)}
-                        className="w-full mt-1 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-[10px] text-center shadow-xs transition-all"
+                        onClick={() => alert('Official Proforma Quote PDF sent to your email!')}
+                        className="w-full mt-1.5 py-2 rounded-xl bg-[#1E3A5F] hover:bg-[#152a45] text-white font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-xs"
                       >
-                        Download Official Proforma PDF (1-Click)
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Download Quote PDF</span>
                       </button>
                     </div>
                   )}
                 </div>
+                <span className="text-[9px] text-slate-400 mt-1 px-1">{m.timestamp}</span>
               </div>
             ))}
 
-            {/* AI Typing Indicator */}
             {isTyping && (
-              <div className="flex items-center gap-2 p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-fit text-slate-400">
-                <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-spin" />
-                <span className="text-[11px] font-mono animate-pulse">DeepSeek AI is calculating quote & terms...</span>
+              <div className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-white border border-slate-200 w-fit text-slate-400 text-xs">
+                <Sparkles className="w-3.5 h-3.5 text-[#1E3A5F] animate-spin" />
+                <span>Typing...</span>
               </div>
             )}
 
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Quick Trade Prompt Badges */}
-          <div className="px-3 py-2 bg-slate-100/70 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center gap-1.5 overflow-x-auto text-[10px]">
+          {/* Quick Questions Pills */}
+          <div className="px-3 py-2 bg-white border-t border-slate-100 flex items-center gap-1.5 overflow-x-auto text-[11px]">
             <button
-              onClick={() => handleQuickPrompt(lang === 'zh' ? '500件小兔玩偶的批发价格和交期是多少？' : 'What is the wholesale price & MOQ for 500 plush bunnies?')}
-              className="px-2.5 py-1 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-cyan-400 text-slate-700 dark:text-slate-300 font-medium whitespace-nowrap"
+              onClick={() => setInputVal(lang === 'zh' ? '500件小兔玩偶的批发报价？' : 'Wholesale quote for 500 plush bunnies?')}
+              className="px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium whitespace-nowrap transition-all"
             >
-              💰 {lang === 'zh' ? '获取500件阶梯报价' : 'Wholesale Quote (500 pcs)'}
+              {lang === 'zh' ? '💰 500件报价' : '💰 500 pcs Quote'}
             </button>
-
             <button
-              onClick={() => handleQuickPrompt(lang === 'zh' ? '到欧洲鹿特丹港的海运时效和装柜规格？' : 'Ocean freight transit time & packaging to Rotterdam port?')}
-              className="px-2.5 py-1 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-cyan-400 text-slate-700 dark:text-slate-300 font-medium whitespace-nowrap"
+              onClick={() => setInputVal(lang === 'zh' ? '海运时效与港口说明' : 'Ocean freight and transit times')}
+              className="px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium whitespace-nowrap transition-all"
             >
-              🚢 {lang === 'zh' ? '海运时效与港口' : 'Ocean Freight & Port'}
+              {lang === 'zh' ? '🚢 海运时效' : '🚢 Shipping Info'}
             </button>
-
             <button
-              onClick={() => handleQuickPrompt(lang === 'zh' ? '请出具 CE EN71 与 ASTM 玩具安全认证资质' : 'Provide CE EN71 & ASTM safety certifications')}
-              className="px-2.5 py-1 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-cyan-400 text-slate-700 dark:text-slate-300 font-medium whitespace-nowrap"
+              onClick={() => setInputVal(lang === 'zh' ? 'CE 与 ASTM 玩具安全认证' : 'CE & ASTM Safety Certifications')}
+              className="px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium whitespace-nowrap transition-all"
             >
-              🛡️ {lang === 'zh' ? '玩具安全认证' : 'Safety Certs'}
+              {lang === 'zh' ? '🛡️ 安全认证' : '🛡️ Safety Certs'}
             </button>
           </div>
 
-          {/* Chat Input Field Form */}
-          <form onSubmit={handleSendMessage} className="p-3 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2">
+          {/* Input Bar */}
+          <form onSubmit={handleSendMessage} className="p-3 bg-white border-t border-slate-200 flex items-center gap-2">
             <input
               type="text"
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
-              placeholder={
-                lang === 'zh'
-                  ? '询问产品参数、阶梯报价，或输入“转人工”...'
-                  : 'Ask product specs, discount quotes, or type "agent"...'
-              }
-              className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white font-medium outline-none focus:border-cyan-500"
+              placeholder={lang === 'zh' ? '输入消息，或输入“转人工”...' : 'Write a message...'}
+              className="flex-1 px-3.5 py-2 rounded-xl bg-slate-100 border-none text-xs text-slate-900 font-medium outline-none focus:ring-1 focus:ring-[#1E3A5F]"
             />
-
             <button
               type="submit"
               disabled={!inputVal.trim()}
-              className="p-2.5 rounded-xl bg-[#1E3A5F] hover:bg-[#122742] disabled:opacity-40 text-white transition-all shadow-sm"
+              className="w-8 h-8 rounded-xl bg-[#1E3A5F] hover:bg-[#152a45] disabled:opacity-30 text-white flex items-center justify-center transition-all shadow-xs"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-3.5 h-3.5" />
             </button>
           </form>
         </div>
