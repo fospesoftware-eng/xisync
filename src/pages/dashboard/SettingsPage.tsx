@@ -217,7 +217,7 @@ export function SettingsPage() {
           }`}
         >
           <Radio className="w-3.5 h-3.5" />
-          <span>Channel API & Auth (FB, IG, WA)</span>
+          <span>Channel API & Auth</span>
         </button>
 
         <button

@@ -254,7 +254,7 @@ export function UltraDashboardPage() {
       href: '/dashboard/ultra/settings',
       icon: Settings,
       children: [
-        { name: language === 'zh' ? '社交聊天 API 授权 (FB/IG/WA)' : 'Channel API & Auth (FB/IG/WA)', href: '/dashboard/ultra/settings/channels' },
+        { name: language === 'zh' ? '社交聊天 API 授权' : 'Channel API & Auth', href: '/dashboard/ultra/settings/channels' },
         { name: language === 'zh' ? '工作流构建器' : 'Workflow Builder', href: '/dashboard/ultra/settings/workflow' },
         { name: language === 'zh' ? '工厂与企业信息' : 'Manufacturer Profile', href: '/dashboard/ultra/settings/profile' },
         { name: language === 'zh' ? 'AI 议价规则' : 'AI Copilot & Pricing', href: '/dashboard/ultra/settings/ai-rules' },
