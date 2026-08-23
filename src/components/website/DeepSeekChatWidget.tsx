@@ -9,6 +9,7 @@ import {
   UserCheck,
   Download,
   Package,
+  CheckCircle2,
 } from 'lucide-react';
 
 interface ChatMessage {
@@ -32,6 +33,7 @@ interface ChatMessage {
   };
   isQuoteCard?: boolean;
   quoteData?: {
+    quoteNumber: string;
     productName: string;
     sku: string;
     quantity: number;
@@ -40,6 +42,7 @@ interface ChatMessage {
     incoterm: string;
     leadTime: string;
     shippingPort: string;
+    validDays: number;
   };
   isEscalated?: boolean;
 }
@@ -173,6 +176,8 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteN
   const [inputVal, setInputVal] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isEscalated, setIsEscalated] = useState(false);
+  const [downloadToast, setDownloadToast] = useState<string | null>(null);
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'msg-welcome',
@@ -197,7 +202,216 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteN
     }
   }, [messages, isOpen, isTyping]);
 
-  // Natural Human-like Conversational Reasoning
+  // Production-grade Printable Proforma Invoice Generator
+  const handleDownloadQuote = (quote: NonNullable<ChatMessage['quoteData']>) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Please allow popups to download your Proforma Quote PDF.');
+      return;
+    }
+
+    const today = new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+
+    const quoteHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Proforma Invoice - ${quote.quoteNumber}</title>
+        <meta charset="utf-8" />
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #1e293b;
+            margin: 0;
+            padding: 40px;
+            background: #ffffff;
+          }
+          .invoice-box {
+            max-width: 800px;
+            margin: auto;
+            border: 1px solid #e2e8f0;
+            padding: 40px;
+            border-radius: 16px;
+          }
+          .header-table {
+            width: 100%;
+            border-bottom: 2px solid #0284c7;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+          }
+          .logo {
+            font-size: 26px;
+            font-weight: 900;
+            color: #1e3a5f;
+            letter-spacing: -0.5px;
+          }
+          .title {
+            text-align: right;
+            font-size: 22px;
+            font-weight: 800;
+            color: #0284c7;
+            text-transform: uppercase;
+          }
+          .meta-table {
+            width: 100%;
+            margin-bottom: 30px;
+            font-size: 13px;
+          }
+          .meta-table td {
+            vertical-align: top;
+          }
+          .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            font-size: 13px;
+          }
+          .items-table th {
+            background: #f1f5f9;
+            color: #475569;
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #cbd5e1;
+            font-weight: 700;
+          }
+          .items-table td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #e2e8f0;
+          }
+          .total-box {
+            text-align: right;
+            margin-bottom: 30px;
+          }
+          .total-amount {
+            font-size: 20px;
+            font-weight: 900;
+            color: #1e3a5f;
+          }
+          .terms-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #475569;
+          }
+          .terms-box h4 {
+            margin: 0 0 8px 0;
+            color: #1e293b;
+            font-size: 13px;
+          }
+          .footer-note {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 11px;
+            color: #94a3b8;
+          }
+          @media print {
+            body { padding: 0; }
+            .invoice-box { border: none; padding: 0; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="invoice-box">
+          <table class="header-table">
+            <tr>
+              <td>
+                <div class="logo">🧸 Eco-Toys Craft & Workshop</div>
+                <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Precision Eco Toy Manufacturing Base • Ningbo / Shanghai</div>
+              </td>
+              <td class="title">
+                PROFORMA INVOICE
+                <div style="font-size: 12px; font-weight: normal; color: #64748b; margin-top: 4px;">PI No: <strong>${quote.quoteNumber}</strong></div>
+              </td>
+            </tr>
+          </table>
+
+          <table class="meta-table">
+            <tr>
+              <td style="width: 50%;">
+                <strong style="color: #0f172a;">ISSUED BY (EXPORTER):</strong><br />
+                Eco-Toys Craft Co., Ltd.<br />
+                Port of Loading: ${quote.shippingPort}<br />
+                China Unified Social Credit ID: CN-91310000MA1FL4892X<br />
+                Email: export@xisync-toys.com
+              </td>
+              <td style="width: 50%; text-align: right;">
+                <strong>DATE:</strong> ${today}<br />
+                <strong>VALIDITY:</strong> ${quote.validDays} Days from issuance<br />
+                <strong>INCOTERMS:</strong> ${quote.incoterm}<br />
+                <strong>PAYMENT:</strong> 30% T/T Deposit, 70% against B/L Copy
+              </td>
+            </tr>
+          </table>
+
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th style="width: 15%;">SKU</th>
+                <th style="width: 45%;">Item Description</th>
+                <th style="width: 15%; text-align: center;">Qty (PCS)</th>
+                <th style="width: 10%; text-align: right;">Unit Price</th>
+                <th style="width: 15%; text-align: right;">Total Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-family: monospace; font-weight: bold;">${quote.sku}</td>
+                <td>
+                  <strong>${quote.productName}</strong><br />
+                  <span style="font-size: 11px; color: #64748b;">CE EN71 & ASTM F963-17 Certified • FSC Beechwood & Organic Flax</span>
+                </td>
+                <td style="text-align: center; font-weight: bold;">${quote.quantity.toLocaleString()}</td>
+                <td style="text-align: right; font-family: monospace;">$${quote.unitPrice.toFixed(2)}</td>
+                <td style="text-align: right; font-family: monospace; font-weight: bold;">$${quote.totalAmount.toLocaleString()}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="total-box">
+            <div style="font-size: 13px; color: #64748b;">Total FOB Order Value (USD):</div>
+            <div class="total-amount">$${quote.totalAmount.toLocaleString()} USD</div>
+          </div>
+
+          <div class="terms-box">
+            <h4>Commercial Terms & Clear Production Instructions:</h4>
+            1. <strong>Production Lead Time:</strong> ${quote.leadTime} upon 30% deposit confirmation.<br />
+            2. <strong>Packaging Specifications:</strong> 5-ply reinforced export seaworthy cartons (0.08 CBM/ctn) with inner protective polybags.<br />
+            3. <strong>Quality Inspection:</strong> SGS / TÜV batch inspection certificate issued with bill of lading.<br />
+            4. <strong>Custom Branding:</strong> OEM custom private laser logo and full color retail packaging included.<br />
+            5. <strong>Next Steps:</strong> To confirm this Proforma Invoice, reply with your purchase order or contact our team.
+          </div>
+
+          <div class="footer-note">
+            Eco-Toys Craft Global Export Division • Generated via XiSync Autonomous B2B Trade Copilot
+          </div>
+        </div>
+        <script>
+          window.onload = function() {
+            setTimeout(function() {
+              window.print();
+            }, 300);
+          }
+        </script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.open();
+    printWindow.document.write(quoteHtml);
+    printWindow.document.close();
+
+    setDownloadToast(`Proforma Quote ${quote.quoteNumber} generated and ready for print/PDF export!`);
+    setTimeout(() => setDownloadToast(null), 4000);
+  };
+
+  // Natural Conversational Reasoning
   const processDeepSeekAiResponse = (userQuery: string): Partial<ChatMessage> => {
     const q = userQuery.toLowerCase().trim();
 
@@ -252,18 +466,20 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteN
       if (wantsPrice) {
         return {
           text: isZh
-            ? `关于 **${productName}**，我们的常规批发起订量是 ${matchedProduct.moq} 件，单价 $${matchedProduct.wholesaleTier1} 美元；如果订购 500 件以上，工厂直供单价为 **$${matchedProduct.wholesaleTier2} 美元**（包含 OEM 包装定制）。\n\n我已为您整理好初步的 Proforma 报价如下：`
-            : `For the **${productName}**, our wholesale MOQ starts at ${matchedProduct.moq} units ($${matchedProduct.wholesaleTier1}/unit). For orders of 500 units or more, our direct factory price is **$${matchedProduct.wholesaleTier2} USD/unit** with custom packaging included.\n\nHere is your quote summary:`,
+            ? `关于 **${productName}**，我们的常规批发起订量是 ${matchedProduct.moq} 件，单价 $${matchedProduct.wholesaleTier1} 美元；如果订购 500 件以上，工厂直供单价为 **$${matchedProduct.wholesaleTier2} 美元**（包含 OEM 包装定制）。\n\n我已为您整理好正式 Proforma 报价单，您可以直接点击下方按钮下载/打印：`
+            : `For the **${productName}**, our wholesale MOQ starts at ${matchedProduct.moq} units ($${matchedProduct.wholesaleTier1}/unit). For orders of 500 units or more, our direct factory price is **$${matchedProduct.wholesaleTier2} USD/unit** with custom packaging included.\n\nHere is your official Proforma Quote summary:`,
           isQuoteCard: true,
           quoteData: {
+            quoteNumber: `PI-2026-${Math.floor(1000 + Math.random() * 9000)}`,
             productName: `${productName} (${matchedProduct.sku})`,
             sku: matchedProduct.sku,
             quantity: 500,
             unitPrice: matchedProduct.wholesaleTier2,
             totalAmount: Math.round(500 * matchedProduct.wholesaleTier2),
-            incoterm: 'FOB Shanghai',
+            incoterm: 'FOB Shanghai (CNSHA)',
             leadTime: matchedProduct.leadTime,
-            shippingPort: 'Shanghai Port (CNSHA) → Rotterdam / Los Angeles',
+            shippingPort: 'Shanghai Port (CNSHA) / Ningbo Port (CNNGB)',
+            validDays: 14,
           },
         };
       }
@@ -305,18 +521,20 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteN
       return {
         text:
           lang === 'zh'
-            ? '我们工坊所有玩具均支持阶梯批发折扣（500件以上享优惠工厂价，2000件以上支持整柜特惠），且免费提供品牌定制打样。\n\n以我们的畅销有机小兔为例，500件起订单价为 $24.50 美元，您可以参考以下报价：'
-            : 'We offer flexible wholesale volume tiers across our entire catalog (15% off for 500+ units, and 25% off for 20ft container orders), with custom branding included.\n\nHere is an example quote for 500 units of our bestselling Organic Plush Bunny:',
+            ? '我们工坊所有玩具均支持阶梯批发折扣（500件以上享优惠工厂价，2000件以上支持整柜特惠），且免费提供品牌定制打样。\n\n以我们的畅销有机小兔为例，500件起订单价为 $24.50 美元，您可以点击下方下载正式 Proforma 报价单：'
+            : 'We offer flexible wholesale volume tiers across our entire catalog (15% off for 500+ units, and 25% off for 20ft container orders), with custom branding included.\n\nHere is an official Proforma Quote for 500 units of our bestselling Organic Plush Bunny:',
         isQuoteCard: true,
         quoteData: {
+          quoteNumber: `PI-2026-${Math.floor(1000 + Math.random() * 9000)}`,
           productName: 'Organic Linen Plush Bunny (Custom OEM / FSC Beechwood)',
           sku: 'ECO-TOY-BNY-01',
           quantity: 500,
           unitPrice: 24.5,
           totalAmount: 12250,
-          incoterm: 'FOB Shanghai',
+          incoterm: 'FOB Shanghai (CNSHA)',
           leadTime: '12-15 Business Days',
           shippingPort: 'Shanghai Port (CNSHA) → Rotterdam / Los Angeles',
+          validDays: 14,
         },
       };
     }
@@ -533,16 +751,16 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteN
                     </div>
                   )}
 
-                  {/* Clean Proforma Quote Card */}
+                  {/* Official Proforma Quote Card with Functional Download */}
                   {m.isQuoteCard && m.quoteData && (
                     <div className="mt-3 p-3 rounded-2xl bg-[#F0F7FA] border border-[#D0E5F0] space-y-2 text-[11px] text-slate-800">
                       <div className="flex items-center justify-between pb-1.5 border-b border-[#D0E5F0] font-bold text-[#1E3A5F]">
                         <span className="flex items-center gap-1.5">
                           <FileText className="w-3.5 h-3.5" />
-                          <span>Proforma Quote</span>
+                          <span>Official Proforma Quote</span>
                         </span>
                         <span className="text-[10px] text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full font-bold">
-                          Valid 14 Days
+                          PI: {m.quoteData.quoteNumber}
                         </span>
                       </div>
 
@@ -550,29 +768,33 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteN
                         <div className="font-semibold text-slate-900">{m.quoteData.productName}</div>
                         <div className="flex justify-between text-slate-600">
                           <span>Quantity:</span>
-                          <span className="font-bold text-slate-900">{m.quoteData.quantity} pcs</span>
+                          <span className="font-bold text-slate-900">{m.quoteData.quantity.toLocaleString()} pcs</span>
                         </div>
                         <div className="flex justify-between text-slate-600">
                           <span>Unit Price (FOB):</span>
-                          <span className="font-bold text-emerald-600">${m.quoteData.unitPrice} USD</span>
+                          <span className="font-bold text-emerald-600">${m.quoteData.unitPrice.toFixed(2)} USD</span>
                         </div>
                         <div className="flex justify-between text-slate-600 font-bold border-t border-[#D0E5F0] pt-1">
-                          <span>Total FOB:</span>
+                          <span>Total Est. FOB:</span>
                           <span className="text-[#1E3A5F] font-bold">${m.quoteData.totalAmount.toLocaleString()} USD</span>
                         </div>
                       </div>
 
-                      <div className="pt-1 text-[10px] text-slate-500 flex items-center gap-1">
-                        <Ship className="w-3 h-3 text-[#1E3A5F]" />
-                        <span>{m.quoteData.incoterm} • Lead Time {m.quoteData.leadTime}</span>
+                      <div className="pt-1 text-[10px] text-slate-500 space-y-0.5">
+                        <div className="flex items-center gap-1">
+                          <Ship className="w-3 h-3 text-[#1E3A5F]" />
+                          <span>{m.quoteData.incoterm}</span>
+                        </div>
+                        <div>Production Lead Time: {m.quoteData.leadTime}</div>
+                        <div>Validity: {m.quoteData.validDays} Days</div>
                       </div>
 
                       <button
-                        onClick={() => alert('Official Proforma Quote PDF generated and sent to your email!')}
-                        className="w-full mt-1.5 py-2 rounded-xl bg-[#1E3A5F] hover:bg-[#152a45] text-white font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-xs"
+                        onClick={() => handleDownloadQuote(m.quoteData!)}
+                        className="w-full mt-1.5 py-2.5 rounded-xl bg-[#1E3A5F] hover:bg-[#152a45] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-98"
                       >
-                        <Download className="w-3.5 h-3.5" />
-                        <span>Download Quote PDF</span>
+                        <Download className="w-4 h-4" />
+                        <span>Download Official Proforma PDF</span>
                       </button>
                     </div>
                   )}
@@ -645,6 +867,14 @@ export function DeepSeekChatWidget({ lang, currency: _currency, siteName: _siteN
               <Send className="w-3.5 h-3.5" />
             </button>
           </form>
+        </div>
+      )}
+
+      {/* Floating Download Toast */}
+      {downloadToast && (
+        <div className="fixed bottom-24 right-6 z-50 px-4 py-2.5 rounded-2xl bg-slate-900 text-white text-xs font-bold shadow-2xl flex items-center gap-2 animate-in fade-in">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{downloadToast}</span>
         </div>
       )}
     </div>
