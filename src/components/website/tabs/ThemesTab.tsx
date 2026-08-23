@@ -1,6 +1,13 @@
 import { useState } from 'react';
 import { Website, ThemeConfig } from '../../../types/websiteBuilder';
-import { CheckCircle2, Palette } from 'lucide-react';
+import {
+  Palette,
+  Image as ImageIcon,
+  Type,
+  CheckCircle2,
+  Sparkles,
+  Layout,
+} from 'lucide-react';
 
 interface ThemesTabProps {
   website: Website;
@@ -76,6 +83,15 @@ const AVAILABLE_THEMES: ThemeConfig[] = [
 
 export function ThemesTab({ website, onUpdateWebsite }: ThemesTabProps) {
   const [activeTheme, setActiveTheme] = useState<ThemeConfig>(website.theme_config || AVAILABLE_THEMES[0]);
+  const [siteName, setSiteName] = useState(website.name || 'Eco-Toys Craft Workshop');
+  const [logoUrl, setLogoUrl] = useState(website.logo_url || '');
+  const [logoText, setLogoText] = useState(website.logo_text || '🧸 ECO-TOYS');
+  const [primaryColor, setPrimaryColor] = useState(activeTheme.color_palette.primary);
+  const [secondaryColor, setSecondaryColor] = useState(activeTheme.color_palette.secondary);
+  const [bgColor, setBgColor] = useState(activeTheme.color_palette.background);
+  const [accentColor, setAccentColor] = useState(activeTheme.color_palette.accent);
+  const [fontFamily, setFontFamily] = useState(activeTheme.typography.font_family_en);
+  const [borderRadius, setBorderRadius] = useState(activeTheme.component_style.border_radius);
   const [toast, setToast] = useState<string | null>(null);
 
   const triggerToast = (msg: string) => {
@@ -85,8 +101,50 @@ export function ThemesTab({ website, onUpdateWebsite }: ThemesTabProps) {
 
   const handleSelectTheme = (t: ThemeConfig) => {
     setActiveTheme(t);
-    onUpdateWebsite({ ...website, active_theme_id: t.id, theme_config: t });
-    triggerToast(`Switched theme to ${t.name}! All DeepSeek bilingual content preserved.`);
+    setPrimaryColor(t.color_palette.primary);
+    setSecondaryColor(t.color_palette.secondary);
+    setBgColor(t.color_palette.background);
+    setAccentColor(t.color_palette.accent);
+    setFontFamily(t.typography.font_family_en);
+    setBorderRadius(t.component_style.border_radius);
+
+    onUpdateWebsite({
+      ...website,
+      active_theme_id: t.id,
+      theme_config: t,
+    });
+    triggerToast(`Switched theme to ${t.name}!`);
+  };
+
+  const handleApplyCustomizations = () => {
+    const updatedTheme: ThemeConfig = {
+      ...activeTheme,
+      color_palette: {
+        ...activeTheme.color_palette,
+        primary: primaryColor,
+        secondary: secondaryColor,
+        background: bgColor,
+        accent: accentColor,
+      },
+      typography: {
+        ...activeTheme.typography,
+        font_family_en: fontFamily,
+      },
+      component_style: {
+        ...activeTheme.component_style,
+        border_radius: borderRadius as any,
+      },
+    };
+
+    onUpdateWebsite({
+      ...website,
+      name: siteName,
+      logo_url: logoUrl,
+      logo_text: logoText,
+      theme_config: updatedTheme,
+    });
+
+    triggerToast('Custom branding, colors, logo, and typography updated!');
   };
 
   return (
@@ -94,29 +152,38 @@ export function ThemesTab({ website, onUpdateWebsite }: ThemesTabProps) {
       {/* Top Banner Toolbar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
         <div>
-          <h2 className="text-xl font-extrabold tracking-tight">Active Theme Manager & Styling Controls</h2>
+          <h2 className="text-xl font-extrabold tracking-tight">WordPress-Style Theme & Brand Customizer (CMS)</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-            Swap visual layout themes without losing your DeepSeek-generated bilingual content and SEO metadata
+            Customize logo, brand colors, typography, and visual layout presets with instant live preview updates
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-            ACTIVE: {activeTheme.name}
-          </span>
+          <button
+            onClick={handleApplyCustomizations}
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-xisync-blue-600 to-xisync-cyan-500 text-white font-extrabold text-xs shadow-md hover:opacity-90 transition-all flex items-center gap-1.5"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Save Customizer Settings</span>
+          </button>
         </div>
       </div>
 
-      {/* Main Grid: Theme Cards & Styling Panel */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Theme Selector Cards */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
+      {/* Main Grid: Theme Presets & WordPress Customizer Panel */}
+      <div className="grid lg:grid-cols-12 gap-6">
+        {/* Left 7 Cols: Available Theme Templates */}
+        <div className="lg:col-span-7 space-y-4">
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold">
+            <Layout className="w-4 h-4 text-cyan-500" />
+            <span>Select Active Industry Theme Template</span>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-4">
             {AVAILABLE_THEMES.map((theme) => (
               <div
                 key={theme.id}
                 onClick={() => handleSelectTheme(theme)}
-                className={`p-5 rounded-2xl border-2 cursor-pointer transition-all space-y-4 ${
+                className={`p-5 rounded-2xl border-2 cursor-pointer transition-all space-y-3 ${
                   activeTheme.id === theme.id
                     ? 'border-cyan-500 bg-cyan-500/5 dark:bg-cyan-950/20 shadow-md'
                     : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900'
@@ -137,19 +204,19 @@ export function ThemesTab({ website, onUpdateWebsite }: ThemesTabProps) {
                 </div>
 
                 <div>
-                  <h3 className="font-extrabold text-base">{theme.name}</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1 leading-relaxed">
+                  <h3 className="font-extrabold text-sm">{theme.name}</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1 leading-relaxed line-clamp-2">
                     {theme.description}
                   </p>
                 </div>
 
                 {/* Color Palette Pill Preview */}
                 <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <span className="text-[10px] font-mono font-bold text-slate-400">PALETTE:</span>
+                  <span className="text-[10px] font-mono font-bold text-slate-400">COLORS:</span>
                   <div className="flex items-center gap-1">
-                    <span className="w-4 h-4 rounded-full border border-white/20" style={{ backgroundColor: theme.color_palette.primary }} />
-                    <span className="w-4 h-4 rounded-full border border-white/20" style={{ backgroundColor: theme.color_palette.secondary }} />
-                    <span className="w-4 h-4 rounded-full border border-white/20" style={{ backgroundColor: theme.color_palette.accent }} />
+                    <span className="w-3.5 h-3.5 rounded-full border border-white/20" style={{ backgroundColor: theme.color_palette.primary }} />
+                    <span className="w-3.5 h-3.5 rounded-full border border-white/20" style={{ backgroundColor: theme.color_palette.secondary }} />
+                    <span className="w-3.5 h-3.5 rounded-full border border-white/20" style={{ backgroundColor: theme.color_palette.accent }} />
                   </div>
                 </div>
               </div>
@@ -157,109 +224,147 @@ export function ThemesTab({ website, onUpdateWebsite }: ThemesTabProps) {
           </div>
         </div>
 
-        {/* Right Col: Quick Styling Controls */}
-        <div className="space-y-6">
-          <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4 text-xs">
+        {/* Right 5 Cols: WordPress-Style Live Customizer Inspector Panel */}
+        <div className="lg:col-span-5 space-y-6">
+          {/* 1. Logo & Brand Identity */}
+          <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
             <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
-              <Palette className="w-4 h-4 text-cyan-500" />
-              <h3 className="font-extrabold text-sm">Theme Styling Controls</h3>
+              <ImageIcon className="w-4 h-4 text-cyan-500" />
+              <h3 className="font-extrabold text-sm">Site Identity & Logo</h3>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 text-xs">
               <div>
-                <label className="font-bold text-slate-500 dark:text-slate-400 block mb-1">Primary Color Accent</label>
-                <div className="flex items-center gap-2">
+                <label className="font-bold text-slate-500 dark:text-slate-400 block mb-1">Company / Site Name</label>
+                <input
+                  type="text"
+                  value={siteName}
+                  onChange={(e) => setSiteName(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-bold outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-500 dark:text-slate-400 block mb-1">Header Logo Badge / Text</label>
+                <input
+                  type="text"
+                  value={logoText}
+                  onChange={(e) => setLogoText(e.target.value)}
+                  placeholder="e.g. 🧸 ECO-TOYS"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-bold outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-500 dark:text-slate-400 block mb-1">Logo Image URL (Optional)</label>
+                <input
+                  type="text"
+                  value={logoUrl}
+                  onChange={(e) => setLogoUrl(e.target.value)}
+                  placeholder="https://example.com/logo.png"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-medium outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Color Palette Customizer */}
+          <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+            <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+              <Palette className="w-4 h-4 text-purple-500" />
+              <h3 className="font-extrabold text-sm">Theme Color Palette</h3>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <label className="font-bold text-slate-500 dark:text-slate-400 block mb-1">Primary Color</label>
+                <div className="flex items-center gap-2 p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950">
                   <input
                     type="color"
-                    value={activeTheme.color_palette.primary}
-                    onChange={(e) => {
-                      const updated = {
-                        ...activeTheme,
-                        color_palette: { ...activeTheme.color_palette, primary: e.target.value },
-                      };
-                      setActiveTheme(updated);
-                      onUpdateWebsite({ ...website, theme_config: updated });
-                    }}
-                    className="w-9 h-9 rounded-xl cursor-pointer border-0 bg-transparent"
+                    value={primaryColor}
+                    onChange={(e) => setPrimaryColor(e.target.value)}
+                    className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
                   />
-                  <span className="font-mono font-bold text-slate-900 dark:text-white uppercase">
-                    {activeTheme.color_palette.primary}
-                  </span>
+                  <span className="font-mono font-bold">{primaryColor}</span>
                 </div>
               </div>
 
               <div>
-                <label className="font-bold text-slate-500 dark:text-slate-400 block mb-1">Component Border Radius</label>
-                <select
-                  value={activeTheme.component_style.border_radius}
-                  onChange={(e) => {
-                    const updated = {
-                      ...activeTheme,
-                      component_style: {
-                        ...activeTheme.component_style,
-                        border_radius: e.target.value as any,
-                      },
-                    };
-                    setActiveTheme(updated);
-                    onUpdateWebsite({ ...website, theme_config: updated });
-                  }}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-bold outline-none"
-                >
-                  <option value="none">Square (0px)</option>
-                  <option value="rounded-md">Medium (6px)</option>
-                  <option value="rounded-2xl">Rounded (16px)</option>
-                  <option value="rounded-full">Pill Radius (Full)</option>
-                </select>
+                <label className="font-bold text-slate-500 dark:text-slate-400 block mb-1">Background Canvas</label>
+                <div className="flex items-center gap-2 p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950">
+                  <input
+                    type="color"
+                    value={bgColor}
+                    onChange={(e) => setBgColor(e.target.value)}
+                    className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
+                  />
+                  <span className="font-mono font-bold">{bgColor}</span>
+                </div>
               </div>
 
               <div>
-                <label className="font-bold text-slate-500 dark:text-slate-400 block mb-1">English Font Family</label>
-                <select
-                  value={activeTheme.typography.font_family_en}
-                  onChange={(e) => {
-                    const updated = {
-                      ...activeTheme,
-                      typography: { ...activeTheme.typography, font_family_en: e.target.value },
-                    };
-                    setActiveTheme(updated);
-                    onUpdateWebsite({ ...website, theme_config: updated });
-                  }}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-bold outline-none"
-                >
-                  <option>Inter (Clean Corporate)</option>
-                  <option>Plus Jakarta Sans (Modern B2B)</option>
-                  <option>Roboto (Standard)</option>
-                </select>
+                <label className="font-bold text-slate-500 dark:text-slate-400 block mb-1">Accent CTA Color</label>
+                <div className="flex items-center gap-2 p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950">
+                  <input
+                    type="color"
+                    value={accentColor}
+                    onChange={(e) => setAccentColor(e.target.value)}
+                    className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
+                  />
+                  <span className="font-mono font-bold">{accentColor}</span>
+                </div>
               </div>
 
               <div>
-                <label className="font-bold text-slate-500 dark:text-slate-400 block mb-1">Chinese Font Family</label>
-                <select
-                  value={activeTheme.typography.font_family_zh}
-                  onChange={(e) => {
-                    const updated = {
-                      ...activeTheme,
-                      typography: { ...activeTheme.typography, font_family_zh: e.target.value },
-                    };
-                    setActiveTheme(updated);
-                    onUpdateWebsite({ ...website, theme_config: updated });
-                  }}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-bold outline-none"
-                >
-                  <option>PingFang SC (Apple Simplified)</option>
-                  <option>Noto Sans SC (Google Simplified)</option>
-                  <option>Source Han Sans CN (Adobe Chinese)</option>
-                </select>
+                <label className="font-bold text-slate-500 dark:text-slate-400 block mb-1">Secondary Tint</label>
+                <div className="flex items-center gap-2 p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950">
+                  <input
+                    type="color"
+                    value={secondaryColor}
+                    onChange={(e) => setSecondaryColor(e.target.value)}
+                    className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
+                  />
+                  <span className="font-mono font-bold">{secondaryColor}</span>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
-              <button
-                onClick={() => triggerToast('Theme styling preferences saved!')}
-                className="w-full py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs shadow-xs"
-              >
-                Save Styling Preferences
-              </button>
+          {/* 3. Typography & Corner Radius Styling */}
+          <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+            <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+              <Type className="w-4 h-4 text-emerald-500" />
+              <h3 className="font-extrabold text-sm">Typography & Card Radii</h3>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="font-bold text-slate-500 dark:text-slate-400 block mb-1">Font Family</label>
+                <select
+                  value={fontFamily}
+                  onChange={(e) => setFontFamily(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-bold outline-none"
+                >
+                  <option value="Playfair Display">Playfair Display (Boutique Serif)</option>
+                  <option value="Inter">Inter (Clean Modern Sans)</option>
+                  <option value="Plus Jakarta Sans">Plus Jakarta Sans (Contemporary)</option>
+                  <option value="Outfit">Outfit (Geometric Friendly)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-500 dark:text-slate-400 block mb-1">Component Corner Radius</label>
+                <select
+                  value={borderRadius}
+                  onChange={(e) => setBorderRadius(e.target.value as any)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-bold outline-none"
+                >
+                  <option value="rounded-2xl">Rounded Extra Large (Pill Smooth)</option>
+                  <option value="rounded-md">Rounded Medium (Subtle)</option>
+                  <option value="rounded-full">Fully Circular (Organic)</option>
+                  <option value="none">Sharp Corners (None)</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>

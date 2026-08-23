@@ -236,13 +236,30 @@ export function EcoToysTemplate({
       {/* 2. TOP FLOATING PILL NAVBAR */}
       <div className="pt-6 px-4 md:px-10 max-w-7xl mx-auto">
         <header className="bg-white/90 backdrop-blur-md rounded-full px-6 md:px-8 py-3.5 shadow-sm border border-white/60 flex items-center justify-between gap-4">
-          {/* Logo with Brand Name */}
-          <a href="#" className="flex items-center gap-2 group" aria-label={`${website.name} Home`}>
-            <div className="w-9 h-9 rounded-full bg-[#BCE0FD] flex items-center justify-center text-[#1E3A5F] font-black text-sm group-hover:scale-105 transition-transform shadow-xs">
-              🧸
-            </div>
-            <span className="font-extrabold text-base md:text-lg tracking-tight text-[#1E3A5F] uppercase">
-              {website.name.toUpperCase()}
+          {/* Logo with Brand Name or Custom Logo */}
+          <a href="#" className="flex items-center gap-2.5 group" aria-label={`${website.name} Home`}>
+            {website.logo_url ? (
+              <img
+                src={website.logo_url}
+                alt={website.name}
+                className="h-9 w-auto max-w-[120px] object-contain rounded-lg"
+              />
+            ) : (
+              <div
+                className="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm group-hover:scale-105 transition-transform shadow-xs"
+                style={{
+                  backgroundColor: website.theme_config?.color_palette?.accent || '#BCE0FD',
+                  color: website.theme_config?.color_palette?.primary || '#1E3A5F',
+                }}
+              >
+                🧸
+              </div>
+            )}
+            <span
+              className="font-extrabold text-base md:text-lg tracking-tight uppercase"
+              style={{ color: website.theme_config?.color_palette?.primary || '#1E3A5F' }}
+            >
+              {website.logo_text || website.name.toUpperCase()}
             </span>
           </a>
 

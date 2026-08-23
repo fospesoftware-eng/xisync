@@ -155,6 +155,16 @@ export interface Website {
   id: string;
   tenant_id: string;
   name: string;
+  logo_url?: string;
+  logo_text?: string;
+  favicon_url?: string;
+  announcement_bar?: {
+    enabled: boolean;
+    text: BilingualText;
+    link?: string;
+    bg_color?: string;
+    text_color?: string;
+  };
   subdomain: string;
   custom_domain: string | null;
   active_theme_id: string;
