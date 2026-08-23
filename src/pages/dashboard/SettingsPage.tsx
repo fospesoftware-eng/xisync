@@ -17,6 +17,8 @@ import {
   RefreshCw,
   Copy,
   Lock,
+  Edit3,
+  X,
 } from 'lucide-react';
 
 interface ChannelAuthItem {
@@ -26,6 +28,10 @@ interface ChannelAuthItem {
   icon: string;
   status: 'connected' | 'needs_auth' | 'token_expiring';
   appId: string;
+  phoneNumberId?: string;
+  wabaId?: string;
+  permanentAccessToken?: string;
+  webhookVerifyToken?: string;
   webhookSecret: string;
   accountName: string;
   leadsIngestedTotal: number;
@@ -74,8 +80,27 @@ export function SettingsPage() {
   const [taxId, setTaxId] = useState('CN-91310000MA1FL4892X');
   const [syncingId, setSyncingId] = useState<string | null>(null);
 
+  // Modal State for Editing / Connecting Channel Credentials
+  const [editingChannel, setEditingChannel] = useState<ChannelAuthItem | null>(null);
+
   // Omnichannel API & App Auth Configurations
-  const [channels] = useState<ChannelAuthItem[]>([
+  const [channels, setChannels] = useState<ChannelAuthItem[]>([
+    {
+      id: 'ch-wa-3',
+      name: 'WhatsApp Business Cloud API (Meta)',
+      channel: 'whatsapp',
+      icon: 'WA',
+      status: 'connected',
+      appId: '109481920491829',
+      phoneNumberId: '108472910482910',
+      wabaId: 'waba_994810293847',
+      permanentAccessToken: 'EAAG94810...x9841zK9',
+      webhookVerifyToken: 'xisync_wa_webhook_token_2026',
+      webhookSecret: 'waba_sec_8471920394817293',
+      accountName: '+1 (800) 492-7962 (Verified Exporter)',
+      leadsIngestedTotal: 840,
+      lastWebhookPing: '5 mins ago',
+    },
     {
       id: 'ch-fb-1',
       name: 'Facebook Messenger & Graph API',
@@ -83,6 +108,8 @@ export function SettingsPage() {
       icon: 'FB',
       status: 'connected',
       appId: '109284729104820',
+      permanentAccessToken: 'EAAFB8491...pL902',
+      webhookVerifyToken: 'xisync_fb_verify_token_2026',
       webhookSecret: 'fb_sec_994827103948172039',
       accountName: 'Eco-Toys Craft Official Page',
       leadsIngestedTotal: 482,
@@ -95,22 +122,12 @@ export function SettingsPage() {
       icon: 'IG',
       status: 'connected',
       appId: 'ig_biz_8837192049182',
+      permanentAccessToken: 'EAAIG3829...mN102',
+      webhookVerifyToken: 'xisync_ig_verify_token_2026',
       webhookSecret: 'ig_sec_38291049281039482',
       accountName: '@ecotoys_craft_official',
       leadsIngestedTotal: 319,
       lastWebhookPing: 'Just now',
-    },
-    {
-      id: 'ch-wa-3',
-      name: 'WhatsApp Business Cloud API (Meta)',
-      channel: 'whatsapp',
-      icon: 'WA',
-      status: 'connected',
-      appId: 'waba_phone_18004927962',
-      webhookSecret: 'waba_sec_8471920394817293',
-      accountName: '+1 (800) 492-7962 (Verified Exporter)',
-      leadsIngestedTotal: 840,
-      lastWebhookPing: '5 mins ago',
     },
     {
       id: 'ch-tt-4',
@@ -149,6 +166,12 @@ export function SettingsPage() {
       setSyncingId(null);
       triggerToast(`Live Webhook Ping Verified! Incoming leads and chats routing directly to Unified Inbox.`);
     }, 800);
+  };
+
+  const handleSaveChannelModal = (updated: ChannelAuthItem) => {
+    setChannels((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+    setEditingChannel(null);
+    triggerToast(`Updated API Credentials for ${updated.name}! Webhook & Access Tokens synchronized.`);
   };
 
   return (
@@ -281,7 +304,7 @@ export function SettingsPage() {
                   <span>Omnichannel Social Chat & Messaging Channels API Hub</span>
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  All messages from Facebook, Instagram, WhatsApp, TikTok, and WeChat automatically land in the Unified Inbox with DeepSeek AI translation
+                  Click <strong>&quot;Configure API Credentials&quot;</strong> on any channel to enter Meta App ID, Permanent Access Token, WABA ID, and Webhook Verify Tokens.
                 </p>
               </div>
 
@@ -315,7 +338,7 @@ export function SettingsPage() {
 
                   <div className="grid grid-cols-2 gap-3 text-xs p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
                     <div>
-                      <span className="text-[10px] text-slate-400 font-mono block">App ID / Channel Key:</span>
+                      <span className="text-[10px] text-slate-400 font-mono block">Meta App / Channel ID:</span>
                       <span className="font-bold font-mono text-[11px] truncate block text-slate-900 dark:text-white">
                         {item.appId}
                       </span>
@@ -334,12 +357,20 @@ export function SettingsPage() {
 
                     <div className="flex items-center gap-2">
                       <button
+                        onClick={() => setEditingChannel(item)}
+                        className="px-3 py-1.5 rounded-xl text-xs font-bold bg-cyan-500 text-white flex items-center gap-1.5 hover:bg-cyan-600 transition-all shadow-xs"
+                      >
+                        <Edit3 className="w-3 h-3" />
+                        <span>Configure API</span>
+                      </button>
+
+                      <button
                         onClick={() => handleTestWebhook(item.id)}
                         disabled={syncingId === item.id}
                         className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-1.5 hover:bg-slate-100 transition-all shadow-2xs"
                       >
                         <RefreshCw className={`w-3 h-3 ${syncingId === item.id ? 'animate-spin' : ''}`} />
-                        <span>Test Webhook</span>
+                        <span>Test Ping</span>
                       </button>
                     </div>
                   </div>
@@ -656,6 +687,171 @@ export function SettingsPage() {
             >
               Save API Preferences
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Comprehensive API Credentials & Meta Token Setup */}
+      {editingChannel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 md:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 text-left space-y-5 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-black text-sm">
+                  {editingChannel.icon}
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
+                    Configure {editingChannel.name}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Enter Meta Cloud API credentials, webhook verification tokens, and Phone IDs
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setEditingChannel(null)}
+                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center text-xs"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSaveChannelModal(editingChannel);
+              }}
+              className="space-y-4 text-xs"
+            >
+              <div>
+                <label className="font-bold text-slate-500 block mb-1">Account / Display Name</label>
+                <input
+                  type="text"
+                  value={editingChannel.accountName}
+                  onChange={(e) => setEditingChannel({ ...editingChannel, accountName: e.target.value })}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-bold outline-none"
+                />
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-500 block mb-1">Meta App ID / Client ID</label>
+                  <input
+                    type="text"
+                    value={editingChannel.appId}
+                    onChange={(e) => setEditingChannel({ ...editingChannel, appId: e.target.value })}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-mono font-bold outline-none"
+                  />
+                </div>
+
+                {editingChannel.channel === 'whatsapp' ? (
+                  <div>
+                    <label className="font-bold text-slate-500 block mb-1">Phone Number ID (Meta WABA)</label>
+                    <input
+                      type="text"
+                      value={editingChannel.phoneNumberId || '108472910482910'}
+                      onChange={(e) => setEditingChannel({ ...editingChannel, phoneNumberId: e.target.value })}
+                      placeholder="e.g. 108472910482910"
+                      className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-mono font-bold outline-none"
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <label className="font-bold text-slate-500 block mb-1">Webhook Secret / App Secret</label>
+                    <input
+                      type="password"
+                      value={editingChannel.webhookSecret}
+                      onChange={(e) => setEditingChannel({ ...editingChannel, webhookSecret: e.target.value })}
+                      className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-mono font-bold outline-none"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {editingChannel.channel === 'whatsapp' && (
+                <div className="grid md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-500 block mb-1">WhatsApp Business Account ID (WABA ID)</label>
+                    <input
+                      type="text"
+                      value={editingChannel.wabaId || 'waba_994810293847'}
+                      onChange={(e) => setEditingChannel({ ...editingChannel, wabaId: e.target.value })}
+                      placeholder="e.g. waba_994810293847"
+                      className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-mono font-bold outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-500 block mb-1">Webhook Secret</label>
+                    <input
+                      type="password"
+                      value={editingChannel.webhookSecret}
+                      onChange={(e) => setEditingChannel({ ...editingChannel, webhookSecret: e.target.value })}
+                      className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-mono font-bold outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="font-bold text-slate-500 block mb-1">Meta System User Permanent Access Token (Bearer)</label>
+                <input
+                  type="password"
+                  value={editingChannel.permanentAccessToken || 'EAAG94810...x9841zK9'}
+                  onChange={(e) => setEditingChannel({ ...editingChannel, permanentAccessToken: e.target.value })}
+                  placeholder="EAAG..."
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-mono font-medium outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-500 block mb-1">Webhook Verify Token (Enter in Meta Developer App)</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={editingChannel.webhookVerifyToken || 'xisync_webhook_verify_token_2026'}
+                    readOnly
+                    className="flex-1 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-950 font-mono font-bold outline-none text-slate-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => triggerToast('Verify Token copied to clipboard!')}
+                    className="px-3 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs"
+                  >
+                    Copy Token
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800/60 text-cyan-900 dark:text-cyan-200 text-xs space-y-1">
+                <div className="font-extrabold flex items-center gap-1.5">
+                  <Key className="w-3.5 h-3.5 text-cyan-500" />
+                  Meta Webhook Callback URL:
+                </div>
+                <div className="font-mono font-bold text-[11px] select-all bg-white dark:bg-slate-900 p-2 rounded-lg border border-cyan-100 dark:border-cyan-900">
+                  https://api.xisync.com/v1/omnichannel/inbox/webhook?tenant_id=tn_ecotoys_99182
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingChannel(null)}
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-xisync-blue-600 to-xisync-cyan-500 text-white font-extrabold text-xs shadow-md"
+                >
+                  Save API Credentials
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
