@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { VisualWorkflowBuilder } from '../../components/workflow/VisualWorkflowBuilder';
 import {
@@ -16,6 +16,7 @@ import {
   Radio,
   RefreshCw,
   Copy,
+  Lock,
 } from 'lucide-react';
 
 interface ChannelAuthItem {
@@ -33,11 +34,16 @@ interface ChannelAuthItem {
 
 export function SettingsPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
-  // Sync active settings tab
-  const getTabFromPath = () => {
+  const isUltra = location.pathname.includes('/dashboard/ultra');
+  const baseRoute = isUltra ? '/dashboard/ultra/settings' : '/dashboard/settings';
+
+  // Sync active settings tab with URL route
+  const getTabFromPath = (): 'channels' | 'workflow' | 'profile' | 'ai-rules' | 'logistics-settings' | 'security-compliance' | 'notifications' => {
     if (location.pathname.includes('/channels') || location.pathname.includes('/api')) return 'channels';
+    if (location.pathname.includes('/workflow')) return 'workflow';
     if (location.pathname.includes('/profile')) return 'profile';
     if (location.pathname.includes('/ai-rules')) return 'ai-rules';
     if (location.pathname.includes('/logistics-settings')) return 'logistics-settings';
@@ -48,7 +54,22 @@ export function SettingsPage() {
 
   const [activeTab, setActiveTab] = useState<'channels' | 'workflow' | 'profile' | 'ai-rules' | 'logistics-settings' | 'security-compliance' | 'notifications'>(getTabFromPath());
 
+  useEffect(() => {
+    setActiveTab(getTabFromPath());
+  }, [location.pathname]);
+
+  const handleTabChange = (tab: 'channels' | 'workflow' | 'profile' | 'ai-rules' | 'logistics-settings' | 'security-compliance' | 'notifications') => {
+    setActiveTab(tab);
+    navigate(`${baseRoute}/${tab}`);
+  };
+
   // Form states
+  const [minMargin, setMinMargin] = useState('25.0');
+  const [maxDiscount, setMaxDiscount] = useState('5.0');
+  const [defaultIncoterms, setDefaultIncoterms] = useState('FOB Shanghai (CNSHA)');
+  const [paymentTerm, setPaymentTerm] = useState('30/70 T/T Split');
+  const [minCreditScore, setMinCreditScore] = useState('75');
+  const [preferredCarrier, setPreferredCarrier] = useState('COSCO Shipping');
   const [factoryName, setFactoryName] = useState('Eco-Toys Craft & Precision Manufacturing Base');
   const [taxId, setTaxId] = useState('CN-91310000MA1FL4892X');
   const [syncingId, setSyncingId] = useState<string | null>(null);
@@ -126,7 +147,7 @@ export function SettingsPage() {
     setSyncingId(chId);
     setTimeout(() => {
       setSyncingId(null);
-      triggerToast(`Live Webhook Test Ping Successful! All incoming messages routing to Unified Inbox.`);
+      triggerToast(`Live Webhook Ping Verified! Incoming leads and chats routing directly to Unified Inbox.`);
     }, 800);
   };
 
@@ -142,33 +163,33 @@ export function SettingsPage() {
             <div className="flex items-center gap-2 mb-0.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-[10px] font-bold font-mono text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-                System Administration & Omnichannel API Controls
+                System Administration & Omnichannel Controls
               </span>
             </div>
             <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-              Client Settings & Channel Authorization Hub
+              Client Settings & Configuration Hub
             </h1>
             <p className="text-xs text-slate-500 dark:text-slate-300 font-medium mt-0.5">
-              Manage Facebook Messenger, Instagram Direct, WhatsApp Cloud API, TikTok, and unified webhook ingesters
+              Manage social chat channel authorizations, workflow engines, AI pricing rules, factory credentials, and API webhooks
             </p>
           </div>
         </div>
 
         <Button
-          onClick={() => triggerToast('All channel configurations and API authorization tokens saved!')}
+          onClick={() => triggerToast('All configuration settings and live authorization tokens saved!')}
           icon={<Check className="w-4 h-4" />}
         >
           Save All Settings
         </Button>
       </div>
 
-      {/* Settings Sub-Navigation Tabs */}
+      {/* Settings Sub-Navigation Tabs Synchronized to Routes */}
       <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-xs font-bold shadow-xs overflow-x-auto">
         <button
-          onClick={() => setActiveTab('channels')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all whitespace-nowrap ${
+          onClick={() => handleTabChange('channels')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all whitespace-nowrap ${
             activeTab === 'channels'
-              ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-bold'
+              ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-extrabold'
               : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
         >
@@ -177,10 +198,10 @@ export function SettingsPage() {
         </button>
 
         <button
-          onClick={() => setActiveTab('workflow')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all whitespace-nowrap ${
+          onClick={() => handleTabChange('workflow')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all whitespace-nowrap ${
             activeTab === 'workflow'
-              ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-bold'
+              ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-extrabold'
               : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
         >
@@ -189,10 +210,10 @@ export function SettingsPage() {
         </button>
 
         <button
-          onClick={() => setActiveTab('profile')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all whitespace-nowrap ${
+          onClick={() => handleTabChange('profile')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all whitespace-nowrap ${
             activeTab === 'profile'
-              ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-bold'
+              ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-extrabold'
               : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
         >
@@ -201,10 +222,10 @@ export function SettingsPage() {
         </button>
 
         <button
-          onClick={() => setActiveTab('ai-rules')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all whitespace-nowrap ${
+          onClick={() => handleTabChange('ai-rules')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all whitespace-nowrap ${
             activeTab === 'ai-rules'
-              ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-bold'
+              ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-extrabold'
               : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
         >
@@ -213,10 +234,10 @@ export function SettingsPage() {
         </button>
 
         <button
-          onClick={() => setActiveTab('logistics-settings')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all whitespace-nowrap ${
+          onClick={() => handleTabChange('logistics-settings')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all whitespace-nowrap ${
             activeTab === 'logistics-settings'
-              ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-bold'
+              ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-extrabold'
               : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
         >
@@ -225,31 +246,31 @@ export function SettingsPage() {
         </button>
 
         <button
-          onClick={() => setActiveTab('security-compliance')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all whitespace-nowrap ${
+          onClick={() => handleTabChange('security-compliance')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all whitespace-nowrap ${
             activeTab === 'security-compliance'
-              ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-bold'
+              ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-extrabold'
               : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
         >
           <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
-          <span>Credit Shield</span>
+          <span>Credit Shield & Security</span>
         </button>
 
         <button
-          onClick={() => setActiveTab('notifications')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all whitespace-nowrap ${
+          onClick={() => handleTabChange('notifications')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all whitespace-nowrap ${
             activeTab === 'notifications'
-              ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-bold'
+              ? 'bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-400 text-white shadow-xs font-extrabold'
               : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
         >
           <Bell className="w-3.5 h-3.5" />
-          <span>API & Webhooks</span>
+          <span>API Keys & Webhooks</span>
         </button>
       </div>
 
-      {/* MODULE: Omnichannel Channel API & OAuth Settings */}
+      {/* 1. SEPARATE SUB-MENU: Omnichannel Channel API & OAuth Settings */}
       {activeTab === 'channels' && (
         <div className="space-y-6">
           <div className="p-6 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-6">
@@ -349,14 +370,14 @@ export function SettingsPage() {
         </div>
       )}
 
-      {/* MODULE 1: Visual Workflow Engine Builder & Modifier */}
+      {/* 2. SEPARATE SUB-MENU: Visual Workflow Engine Builder */}
       {activeTab === 'workflow' && (
         <div className="space-y-6">
           <VisualWorkflowBuilder />
         </div>
       )}
 
-      {/* MODULE 2: Manufacturer & Company Profile Settings */}
+      {/* 3. SEPARATE SUB-MENU: Manufacturer & Company Profile Settings */}
       {activeTab === 'profile' && (
         <div className="space-y-6">
           <div className="p-6 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-6">
@@ -420,6 +441,221 @@ export function SettingsPage() {
                 Save Factory Profile
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. SEPARATE SUB-MENU: AI Copilot & Pricing */}
+      {activeTab === 'ai-rules' && (
+        <div className="space-y-6">
+          <div className="p-6 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Bot className="w-5 h-5 text-purple-500" />
+                <h2 className="font-extrabold text-base text-slate-900 dark:text-white">AI Autonomous Negotiation & Dynamic Pricing Rules</h2>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4 text-xs">
+              <div>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Minimum Target Gross Margin (%)</label>
+                <input
+                  type="number"
+                  value={minMargin}
+                  onChange={(e) => setMinMargin(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold text-slate-900 dark:text-white outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Max Autonomous Discount Floor (%)</label>
+                <input
+                  type="number"
+                  value={maxDiscount}
+                  onChange={(e) => setMaxDiscount(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold text-slate-900 dark:text-white outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Default International Incoterms</label>
+                <select
+                  value={defaultIncoterms}
+                  onChange={(e) => setDefaultIncoterms(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold text-slate-900 dark:text-white outline-none"
+                >
+                  <option value="FOB Shanghai (CNSHA)">FOB Shanghai (CNSHA)</option>
+                  <option value="FOB Ningbo (CNNGB)">FOB Ningbo (CNNGB)</option>
+                  <option value="CIF Rotterdam">CIF Rotterdam (NLRTM)</option>
+                  <option value="CIF Los Angeles">CIF Los Angeles (USLAX)</option>
+                  <option value="DDP Delivered Duty Paid">DDP Delivered Duty Paid</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Accepted Payment Terms</label>
+                <select
+                  value={paymentTerm}
+                  onChange={(e) => setPaymentTerm(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold text-slate-900 dark:text-white outline-none"
+                >
+                  <option value="30/70 T/T Split">30% Deposit / 70% Against B/L Copy (T/T)</option>
+                  <option value="100% Irrevocable L/C at Sight">100% Irrevocable L/C at Sight</option>
+                  <option value="OA 60 Days with Sinosure">OA 60 Days (Sinosure Insured)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+              <button
+                onClick={() => triggerToast('AI Negotiation rules and margin thresholds saved!')}
+                className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs"
+              >
+                Save AI Rules
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. SEPARATE SUB-MENU: Logistics & Freight */}
+      {activeTab === 'logistics-settings' && (
+        <div className="space-y-6">
+          <div className="p-6 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Ship className="w-5 h-5 text-blue-500" />
+                <h2 className="font-extrabold text-base text-slate-900 dark:text-white">Ocean Freight Defaults & Carrier Integrations</h2>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4 text-xs">
+              <div>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Preferred Ocean Carrier</label>
+                <select
+                  value={preferredCarrier}
+                  onChange={(e) => setPreferredCarrier(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold text-slate-900 dark:text-white outline-none"
+                >
+                  <option value="COSCO Shipping">COSCO Shipping (Direct Terminal Line)</option>
+                  <option value="Maersk Line">Maersk Line (Spot Integrated)</option>
+                  <option value="MSC Mediterranean">MSC Mediterranean Shipping</option>
+                  <option value="CMA CGM Group">CMA CGM Group</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Primary Export Loading Port (POL)</label>
+                <input
+                  type="text"
+                  defaultValue="Ningbo-Zhoushan Port (CNNGB) / Shanghai Port (CNSHA)"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold text-slate-900 dark:text-white outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+              <button
+                onClick={() => triggerToast('Logistics carrier defaults and port configurations saved!')}
+                className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs"
+              >
+                Save Logistics Settings
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 6. SEPARATE SUB-MENU: Credit Shield & Security */}
+      {activeTab === 'security-compliance' && (
+        <div className="space-y-6">
+          <div className="p-6 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                <h2 className="font-extrabold text-base text-slate-900 dark:text-white">Credit Shield & Sinosure Risk Scoring</h2>
+              </div>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Minimum Buyer Credit Score for L/C Approval</label>
+                <input
+                  type="number"
+                  value={minCreditScore}
+                  onChange={(e) => setMinCreditScore(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold text-slate-900 dark:text-white outline-none"
+                />
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-2">
+                <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-purple-500" />
+                  Automated Wire Sanction & Entity List Screening
+                </div>
+                <p className="text-slate-500 dark:text-slate-400 font-medium">
+                  Real-time screening against OFAC, EU, UN, and US Department of Commerce entity lists before accepting T/T wire transfers.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => triggerToast('Credit Shield risk thresholds saved!')}
+              className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs"
+            >
+              Save Security Rules
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 7. SEPARATE SUB-MENU: API Keys & Webhooks */}
+      {activeTab === 'notifications' && (
+        <div className="space-y-6">
+          <div className="p-6 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Bell className="w-5 h-5 text-amber-500" />
+                <h2 className="font-extrabold text-base text-slate-900 dark:text-white">API Integration Keys & Notifications</h2>
+              </div>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1 flex items-center gap-1.5">
+                  <Key className="w-3.5 h-3.5 text-cyan-500" />
+                  XiSync Production Live API Key
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="password"
+                    defaultValue="xi_live_98412849128491284912"
+                    readOnly
+                    className="flex-1 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white outline-none"
+                  />
+                  <button
+                    onClick={() => triggerToast('API Key copied to clipboard!')}
+                    className="px-4 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs"
+                  >
+                    Copy Key
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-2">
+                <div className="font-bold text-slate-900 dark:text-white">Omnichannel Lead Webhook Triggers</div>
+                <p className="text-slate-500 dark:text-slate-400 font-medium">
+                  Instant webhook alerts dispatched for Meta Ads, Google Search inquiries, and WhatsApp Direct buyer leads.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => triggerToast('Notification settings updated!')}
+              className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs"
+            >
+              Save API Preferences
+            </button>
           </div>
         </div>
       )}

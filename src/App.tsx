@@ -103,6 +103,8 @@ function App() {
                 <Route path="compliance" element={<CompliancePage />} />
                 <Route path="analytics" element={<DashboardHome />} />
                 <Route path="settings" element={<SettingsPage />} />
+                <Route path="settings/channels" element={<SettingsPage />} />
+                <Route path="settings/api" element={<SettingsPage />} />
                 <Route path="settings/workflow" element={<SettingsPage />} />
                 <Route path="settings/profile" element={<SettingsPage />} />
                 <Route path="settings/ai-rules" element={<SettingsPage />} />
@@ -143,6 +145,8 @@ function App() {
                 <Route path="compliance" element={<CompliancePage />} />
                 <Route path="analytics" element={<DashboardHome />} />
                 <Route path="settings" element={<SettingsPage />} />
+                <Route path="settings/channels" element={<SettingsPage />} />
+                <Route path="settings/api" element={<SettingsPage />} />
                 <Route path="settings/workflow" element={<SettingsPage />} />
                 <Route path="settings/profile" element={<SettingsPage />} />
                 <Route path="settings/ai-rules" element={<SettingsPage />} />

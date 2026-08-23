@@ -119,12 +119,13 @@ export function DashboardLayout({ variant = 'client' }: DashboardLayoutProps) {
       href: '/dashboard/settings',
       icon: Settings,
       children: [
+        { name: language === 'zh' ? '社交聊天 API 授权 (FB/IG/WA)' : 'Channel API & Auth (FB/IG/WA)', href: '/dashboard/settings/channels' },
         { name: language === 'zh' ? '工作流构建器' : 'Workflow Builder', href: '/dashboard/settings/workflow' },
         { name: language === 'zh' ? '工厂与企业信息' : 'Manufacturer Profile', href: '/dashboard/settings/profile' },
         { name: language === 'zh' ? 'AI 议价规则' : 'AI Copilot & Pricing', href: '/dashboard/settings/ai-rules' },
         { name: language === 'zh' ? '物流与运力设置' : 'Logistics Defaults', href: '/dashboard/settings/logistics-settings' },
         { name: language === 'zh' ? '信用风控与合规' : 'Credit & Security Shield', href: '/dashboard/settings/security-compliance' },
-        { name: language === 'zh' ? 'API 与通知' : 'API & Notifications', href: '/dashboard/settings/notifications' },
+        { name: language === 'zh' ? 'API 密钥与 Webhook' : 'API Keys & Webhooks', href: '/dashboard/settings/notifications' },
       ],
     },
   ];
