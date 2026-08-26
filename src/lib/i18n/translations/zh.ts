@@ -273,6 +273,7 @@ export const zh = {
     nav: {
       marketing: '全球数字营销',
       overview: '营销概览 & ROI',
+      mediaBuyer: '🎯 自动化投流 (Media Buyer)',
       campaigns: '广告系列管理',
       channels: '渠道与 API 授权',
       creatives: '素材工坊与 AI',

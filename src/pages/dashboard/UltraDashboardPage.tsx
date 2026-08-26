@@ -185,6 +185,7 @@ export function UltraDashboardPage() {
       icon: Megaphone,
       children: [
         { name: (t as any).marketing?.nav?.overview || (language === 'zh' ? '营销概览 & ROI' : 'Overview & ROI'), href: '/dashboard/ultra/marketing' },
+        { name: (t as any).marketing?.nav?.mediaBuyer || (language === 'zh' ? '🎯 自动化投流 (Media Buyer)' : 'Media Buyer'), href: '/dashboard/ultra/media-buyer' },
         { name: (t as any).marketing?.nav?.campaigns || (language === 'zh' ? '广告系列管理' : 'Campaigns'), href: '/dashboard/ultra/marketing/campaigns' },
         { name: (t as any).marketing?.nav?.channels || (language === 'zh' ? '渠道与 API 授权' : 'Ad Accounts & Channels'), href: '/dashboard/ultra/marketing/channels' },
         { name: (t as any).marketing?.nav?.creatives || (language === 'zh' ? '素材工坊' : 'Creative Studio'), href: '/dashboard/ultra/marketing/creatives' },

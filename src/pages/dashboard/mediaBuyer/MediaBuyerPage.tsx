@@ -14,6 +14,7 @@ import {
   Globe,
 } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
+import { useI18n } from '../../../lib/i18n';
 import { CampaignBuilder } from '../../../components/mediaBuyer/CampaignBuilder';
 import { EffectivenessTable } from '../../../components/mediaBuyer/EffectivenessTable';
 import { TreasuryLiveFxCard } from '../../../components/mediaBuyer/treasury/TreasuryLiveFxCard';
@@ -28,6 +29,7 @@ import {
 } from '../../../types/mediaBuyer';
 
 export function MediaBuyerPage() {
+  const { language } = useI18n();
   const tenantId = 'tn_ecotoys_99182';
 
   // Live Wallet & Transaction States
@@ -161,14 +163,22 @@ export function MediaBuyerPage() {
       setPendingQrData(null);
       setShowTopUpModal(false);
 
-      triggerToast(`人民币充值成功！已完成汇率结算并入账 $${pendingQrData.conversion.netAdBudgetUsd} USD 可用广告金。`);
+      triggerToast(
+        language === 'zh'
+          ? `人民币充值成功！已完成汇率结算并入账 $${pendingQrData.conversion.netAdBudgetUsd} USD 可用广告金。`
+          : `CNY deposit successful! Credited $${pendingQrData.conversion.netAdBudgetUsd} USD into active ad balance.`
+      );
     }, 1500);
   };
 
   const handleCampaignCreated = (newCamp: ManagedCampaign) => {
     setCampaigns([newCamp, ...campaigns]);
     setActiveTab('matrix');
-    triggerToast(`广告系列「${newCamp.name}」已一键同步部署至 Google、Meta 和 TikTok 广告网络！`);
+    triggerToast(
+      language === 'zh'
+        ? `广告系列「${newCamp.name}」已一键同步部署至 Google、Meta 和 TikTok 广告网络！`
+        : `Campaign "${newCamp.name}" published to Google, Meta & TikTok ad networks!`
+    );
   };
 
   return (
@@ -183,14 +193,16 @@ export function MediaBuyerPage() {
             <div className="flex items-center gap-2 mb-0.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-[10px] font-bold font-mono text-cyan-300 uppercase tracking-wider">
-                Cross-Border Programmatic Media Buying Engine
+                {language === 'zh' ? '跨国程序化投流中控' : 'Programmatic Media Buyer'}
               </span>
             </div>
             <h1 className="text-2xl font-black tracking-tight">
-              海外数字营销与自动化投流中控台 (Media Buyer Console)
+              {language === 'zh' ? '自动化投流中控台 (Media Buyer Console)' : 'Media Buyer Console'}
             </h1>
             <p className="text-xs text-slate-300 font-medium mt-0.5">
-              人民币微信/支付宝直接充值 · 智能汇率结算与 20% 平台服务费自动分账 · Google/Meta/TikTok 一键全网分发
+              {language === 'zh'
+                ? '人民币微信/支付宝直接充值 · 智能汇率结算与 20% 平台服务费自动分账 · Google/Meta/TikTok 一键全网分发'
+                : 'Direct CNY deposit via WeChat/Alipay · Real-time FX conversion with 20% margin split · 1-Click deployment to Google, Meta & TikTok'}
             </p>
           </div>
         </div>
@@ -200,7 +212,7 @@ export function MediaBuyerPage() {
           icon={<Plus className="w-4 h-4" />}
           className="bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black px-6 shadow-md"
         >
-          立即充值广告金 (CNY Top-Up)
+          {language === 'zh' ? '充值广告金 (Add Funds)' : 'Deposit Funds'}
         </Button>
       </div>
 
@@ -208,14 +220,14 @@ export function MediaBuyerPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500 font-bold">
-            <span>账户可用广告金 (USD)</span>
+            <span>{language === 'zh' ? '账户可用广告金 (USD)' : 'Available Ad Balance (USD)'}</span>
             <DollarSign className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="text-2xl font-black text-slate-900 font-mono">
             ${wallet.usdBalance.toFixed(2)}
           </div>
           <div className="text-[11px] text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100">
-            <span>折合人民币 (CNY)</span>
+            <span>{language === 'zh' ? '折合人民币 (CNY)' : 'CNY Equivalent'}</span>
             <span className="font-mono font-bold text-slate-800">
               ≈ ¥{(wallet.usdBalance * 7.235).toFixed(2)}
             </span>
@@ -224,14 +236,14 @@ export function MediaBuyerPage() {
 
         <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500 font-bold">
-            <span>累计人民币充值 (Lifetime CNY)</span>
+            <span>{language === 'zh' ? '累计人民币充值 (Lifetime CNY)' : 'Lifetime CNY Deposits'}</span>
             <Wallet className="w-4 h-4 text-indigo-600" />
           </div>
           <div className="text-2xl font-black text-indigo-600 font-mono">
             ¥{wallet.lifetimeDepositedCny.toLocaleString()}
           </div>
           <div className="text-[11px] text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100">
-            <span>总折算毛美元</span>
+            <span>{language === 'zh' ? '总折算毛美元' : 'Gross USD Converted'}</span>
             <span className="font-mono font-bold text-slate-800">
               ${wallet.lifetimeGrossUsdConverted.toFixed(2)}
             </span>
@@ -240,29 +252,29 @@ export function MediaBuyerPage() {
 
         <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500 font-bold">
-            <span>平台 20% 服务费 (Platform Margin)</span>
+            <span>{language === 'zh' ? '平台 20% 服务费 (Platform Margin)' : 'Platform 20% Retained Margin'}</span>
             <ShieldCheck className="w-4 h-4 text-cyan-600" />
           </div>
           <div className="text-2xl font-black text-cyan-600 font-mono">
             ${wallet.lifetimeMarginRetainedUsd.toFixed(2)}
           </div>
           <div className="text-[11px] text-emerald-600 font-bold flex items-center justify-between pt-1 border-t border-slate-100">
-            <span>含代投与合规风控</span>
-            <span>20% 标准费率</span>
+            <span>{language === 'zh' ? '含代投与合规风控' : 'Ad Ops & Compliance Shield'}</span>
+            <span>20%</span>
           </div>
         </div>
 
         <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500 font-bold">
-            <span>累计已消耗投流金 (Spent USD)</span>
+            <span>{language === 'zh' ? '累计已消耗投流金 (Spent USD)' : 'Lifetime Ad Spend (USD)'}</span>
             <TrendingUp className="w-4 h-4 text-rose-600" />
           </div>
           <div className="text-2xl font-black text-slate-900 font-mono">
             ${wallet.lifetimeSpentUsd.toFixed(2)}
           </div>
           <div className="text-[11px] text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100">
-            <span>运行中广告组</span>
-            <span className="font-bold text-indigo-600">{campaigns.length} 个系列</span>
+            <span>{language === 'zh' ? '运行中广告组' : 'Active Campaigns'}</span>
+            <span className="font-bold text-indigo-600">{campaigns.length} {language === 'zh' ? '个系列' : 'Active'}</span>
           </div>
         </div>
       </div>
@@ -278,7 +290,7 @@ export function MediaBuyerPage() {
           }`}
         >
           <BarChart3 className="w-3.5 h-3.5" />
-          <span>全网投放成效矩阵 (ROAS Matrix)</span>
+          <span>{language === 'zh' ? '全网投放成效矩阵 (ROAS Matrix)' : 'Multi-Channel ROAS Matrix'}</span>
         </button>
 
         <button
@@ -290,7 +302,7 @@ export function MediaBuyerPage() {
           }`}
         >
           <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-          <span>一键创建海外广告 (Campaign Builder)</span>
+          <span>{language === 'zh' ? '一键创建海外广告 (Campaign Builder)' : 'Campaign Builder'}</span>
         </button>
 
         <button
@@ -302,7 +314,7 @@ export function MediaBuyerPage() {
           }`}
         >
           <Globe className="w-3.5 h-3.5 text-emerald-500" />
-          <span>离岸外汇与 20% 分账测算 (FX Treasury Engine)</span>
+          <span>{language === 'zh' ? '离岸外汇与 20% 分账测算 (FX Treasury Engine)' : 'FX & 20% Margin Treasury'}</span>
         </button>
 
         <button
@@ -314,7 +326,7 @@ export function MediaBuyerPage() {
           }`}
         >
           <Clock className="w-3.5 h-3.5" />
-          <span>资金流水与双录账单 (Ledger History)</span>
+          <span>{language === 'zh' ? '资金流水与双录账单 (Ledger History)' : 'Double-Entry Ledger'}</span>
         </button>
       </div>
 

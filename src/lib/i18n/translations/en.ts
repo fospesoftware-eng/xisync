@@ -273,6 +273,7 @@ export const en = {
     nav: {
       marketing: 'Global Marketing',
       overview: 'Overview & ROI',
+      mediaBuyer: 'Media Buyer',
       campaigns: 'Campaigns',
       channels: 'Ad Accounts & Channels',
       creatives: 'Creative Studio',

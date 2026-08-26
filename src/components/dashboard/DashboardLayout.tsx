@@ -60,7 +60,7 @@ export function DashboardLayout({ variant = 'client' }: DashboardLayoutProps) {
       icon: Megaphone,
       children: [
         { name: (t as any).marketing?.nav?.overview || (language === 'zh' ? '营销概览 & ROI' : 'Overview & ROI'), href: '/dashboard/marketing' },
-        { name: language === 'zh' ? '🎯 自动化投流与充值' : 'Media Buyer & Top-Up', href: '/dashboard/media-buyer' },
+        { name: (t as any).marketing?.nav?.mediaBuyer || (language === 'zh' ? '🎯 自动化投流 (Media Buyer)' : 'Media Buyer'), href: '/dashboard/media-buyer' },
         { name: (t as any).marketing?.nav?.campaigns || (language === 'zh' ? '广告系列管理' : 'Campaigns'), href: '/dashboard/marketing/campaigns' },
         { name: (t as any).marketing?.nav?.channels || (language === 'zh' ? '渠道与 API 授权' : 'Ad Accounts & Channels'), href: '/dashboard/marketing/channels' },
         { name: (t as any).marketing?.nav?.creatives || (language === 'zh' ? '素材工坊与 AI' : 'Creative Studio'), href: '/dashboard/marketing/creatives' },
