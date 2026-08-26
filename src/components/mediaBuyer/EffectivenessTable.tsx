@@ -5,6 +5,11 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { useI18n } from '../../lib/i18n';
+import {
+  GoogleAdsLogo,
+  MetaLogo,
+  TikTokLogo,
+} from './BrandLogos';
 import { NormalizedMetrics } from '../../types/mediaBuyer';
 
 interface EffectivenessTableProps {
@@ -31,7 +36,7 @@ export function EffectivenessTable({ metrics, onSmartRebalance }: EffectivenessT
   const totalInquiries = metrics.reduce((acc, m) => acc + m.inquiriesGenerated, 0);
   const totalRevenue = metrics.reduce((acc, m) => acc + m.attributedOrderValueUsd, 0);
   const averageCpa = totalInquiries > 0 ? (totalSpend / totalInquiries).toFixed(2) : '0.00';
-  const trueTradeRoas = totalSpend > 0 ? (totalRevenue / (totalSpend * 1.20)).toFixed(2) : '0.00';
+  const trueTradeRoas = totalSpend > 0 ? (totalRevenue / totalSpend).toFixed(2) : '0.00';
 
   return (
     <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden text-slate-900 space-y-6">
@@ -94,7 +99,7 @@ export function EffectivenessTable({ metrics, onSmartRebalance }: EffectivenessT
           </span>
           <div className="text-xl font-black text-slate-900 font-mono">${totalSpend.toFixed(2)} USD</div>
           <span className="text-[10px] text-slate-400">
-            {language === 'zh' ? '含 20% 平台服务费' : 'Includes 20% Platform Fee'}
+            {language === 'zh' ? '多网络实时同步' : 'Real-time multi-network sync'}
           </span>
         </div>
 
@@ -149,24 +154,21 @@ export function EffectivenessTable({ metrics, onSmartRebalance }: EffectivenessT
           </thead>
           <tbody className="divide-y divide-slate-100 font-mono">
             {metrics.map((m) => {
-              const platformLabel =
-                m.platform === 'GOOGLE_ADS'
-                  ? 'Google Ads (Search & PMax)'
-                  : m.platform === 'META_ADS'
-                  ? 'Meta (Facebook & Instagram)'
-                  : 'TikTok For Business';
+              const isGoogle = m.platform === 'GOOGLE_ADS';
+              const isMeta = m.platform === 'META_ADS';
 
-              const platformIcon =
-                m.platform === 'GOOGLE_ADS'
-                  ? '🔍'
-                  : m.platform === 'META_ADS'
-                  ? '📱'
-                  : '🎵';
+              const platformLabel = isGoogle
+                ? 'Google Ads (Search & PMax)'
+                : isMeta
+                ? 'Meta (Facebook & Instagram)'
+                : 'TikTok For Business';
 
               return (
                 <tr key={m.platform} className="hover:bg-slate-50 transition-colors">
-                  <td className="py-3.5 px-4 font-sans font-extrabold text-slate-900 flex items-center gap-2">
-                    <span>{platformIcon}</span>
+                  <td className="py-3.5 px-4 font-sans font-extrabold text-slate-900 flex items-center gap-2.5">
+                    {isGoogle && <GoogleAdsLogo size={20} />}
+                    {isMeta && <MetaLogo size={20} />}
+                    {!isGoogle && !isMeta && <TikTokLogo size={20} />}
                     <span>{platformLabel}</span>
                   </td>
                   <td className="py-3.5 px-4 text-slate-700">{m.impressions.toLocaleString()}</td>

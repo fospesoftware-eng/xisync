@@ -9,6 +9,11 @@ import {
   PauseCircle,
 } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
+import {
+  GoogleAdsLogo,
+  MetaLogo,
+  TikTokLogo,
+} from '../../../components/mediaBuyer/BrandLogos';
 import { MasterMediaCredential } from '../../../types/mediaBuyer';
 
 export function MediaEngineAdminPage() {
@@ -178,7 +183,12 @@ export function MediaEngineAdminPage() {
           {credentials.map((cred) => (
             <div key={cred.id} className="p-5 rounded-2xl border border-slate-200 bg-slate-50/50 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div className="space-y-1">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-white border border-slate-200 shadow-2xs">
+                    {cred.platform === 'GOOGLE_ADS' && <GoogleAdsLogo size={18} />}
+                    {cred.platform === 'META_ADS' && <MetaLogo size={18} />}
+                    {cred.platform === 'TIKTOK_ADS' && <TikTokLogo size={18} />}
+                  </div>
                   <span className="font-extrabold text-sm text-slate-900">{cred.name}</span>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
                     {cred.status}

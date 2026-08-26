@@ -5,6 +5,11 @@ import {
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useI18n } from '../../lib/i18n';
+import {
+  GoogleAdsLogo,
+  MetaLogo,
+  TikTokLogo,
+} from './BrandLogos';
 import { AdComplianceScreener } from '../../lib/services/mediaBuyer/complianceScreener';
 import { GoogleAdsAdapter } from '../../lib/adapters/googleAds';
 import { MetaAdsAdapter } from '../../lib/adapters/metaAds';
@@ -407,7 +412,7 @@ export function CampaignBuilder({
                 {
                   platform: 'GOOGLE_ADS' as PlatformType,
                   name: 'Google Ads (Search + Performance Max)',
-                  icon: '🔍',
+                  logo: <GoogleAdsLogo size={22} />,
                   share: ratios.GOOGLE_ADS,
                   color: 'accent-blue-600',
                   descZh: '拦截海外买家 Google 核心商业搜索词与采购意图。',
@@ -416,7 +421,7 @@ export function CampaignBuilder({
                 {
                   platform: 'META_ADS' as PlatformType,
                   name: 'Meta Ads (Facebook & Instagram Feed / Reels)',
-                  icon: '📱',
+                  logo: <MetaLogo size={22} />,
                   share: ratios.META_ADS,
                   color: 'accent-indigo-600',
                   descZh: '针对欧美/中东批发商与企业采购负责人定向图文与视频触达。',
@@ -425,7 +430,7 @@ export function CampaignBuilder({
                 {
                   platform: 'TIKTOK_ADS' as PlatformType,
                   name: 'TikTok For Business (Spark Ads & Lead Gen)',
-                  icon: '🎵',
+                  logo: <TikTokLogo size={22} />,
                   share: ratios.TIKTOK_ADS,
                   color: 'accent-cyan-600',
                   descZh: '通过工厂实拍工艺与实木玩具制造短视频获取高互动询盘。',
@@ -436,8 +441,10 @@ export function CampaignBuilder({
                 return (
                   <div key={p.platform} className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2 text-xs">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">{p.icon}</span>
+                      <div className="flex items-center gap-3">
+                        <div className="p-1 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center">
+                          {p.logo}
+                        </div>
                         <div>
                           <span className="font-extrabold text-slate-900">{p.name}</span>
                           <p className="text-[11px] text-slate-500">{language === 'zh' ? p.descZh : p.descEn}</p>

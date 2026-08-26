@@ -5,6 +5,10 @@ import {
   Zap,
 } from 'lucide-react';
 import { useI18n } from '../../../lib/i18n';
+import {
+  AlipayLogo,
+  WeChatLogo,
+} from '../BrandLogos';
 import { TreasuryFxEngine, DetailedFxQuote } from '../../../lib/treasury/treasuryFxEngine';
 
 interface TreasuryLiveFxCardProps {
@@ -36,9 +40,7 @@ export function TreasuryLiveFxCard({ onQuoteUpdated }: TreasuryLiveFxCardProps) 
   }, []);
 
   const rate = fxQuote?.effectiveConversionRate || 7.235;
-  const grossUsd = sampleCny / rate;
-  const marginUsd = grossUsd * 0.20;
-  const netAdUsd = grossUsd - marginUsd;
+  const netAdUsd = (sampleCny / rate) * 0.80; // Calculated effective ad balance
 
   return (
     <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 text-white rounded-3xl p-6 md:p-8 shadow-xl border border-indigo-900/50 space-y-6 text-left">
@@ -57,17 +59,20 @@ export function TreasuryLiveFxCard({ onQuoteUpdated }: TreasuryLiveFxCardProps) 
             </div>
             <h3 className="text-lg font-black text-white">
               {language === 'zh'
-                ? '实时离岸汇率结算与 20% 平台服务费自动分账引擎'
-                : 'Real-Time FX Settlement & 20% Platform Margin Allocation Engine'}
+                ? '实时离岸汇率即时结算与资金保障中控'
+                : 'Real-Time FX Settlement & Capital Security Engine'}
             </h3>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="px-3 py-1.5 rounded-xl bg-white/10 text-xs font-mono flex items-center gap-2 border border-white/10">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 text-xs font-mono border border-white/10">
+            <AlipayLogo size={16} />
+            <WeChatLogo size={16} />
+            <span className="text-slate-400">|</span>
             <Clock className="w-3.5 h-3.5 text-cyan-400" />
             <span>
-              {language === 'zh' ? '报价锁定倒计时: ' : 'Price Lock Guarantee: '}
+              {language === 'zh' ? '报价锁定: ' : 'Price Lock: '}
               <strong className="text-cyan-300">
                 {Math.floor(countdown / 60)}:{(countdown % 60).toString().padStart(2, '0')}
               </strong>
@@ -86,7 +91,7 @@ export function TreasuryLiveFxCard({ onQuoteUpdated }: TreasuryLiveFxCardProps) 
       </div>
 
       {/* Math Formulation Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 font-mono text-xs">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
         <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
           <div className="text-slate-400 font-sans">
             {language === 'zh' ? '现汇中间汇率 (USD/CNY)' : 'Mid-Market FX Rate'}
@@ -99,21 +104,15 @@ export function TreasuryLiveFxCard({ onQuoteUpdated }: TreasuryLiveFxCardProps) 
 
         <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
           <div className="text-slate-400 font-sans">
-            {language === 'zh' ? '充值折算毛美元 (Gross USD)' : 'Gross USD Converted'}
+            {language === 'zh' ? '结算入金通道 (Gateway)' : 'Supported Payment Channels'}
           </div>
-          <div className="text-xl font-black text-white">${grossUsd.toFixed(2)} USD</div>
+          <div className="text-base font-bold text-white flex items-center gap-2 pt-0.5">
+            <span className="flex items-center gap-1"><AlipayLogo size={18} /> Alipay</span>
+            <span>•</span>
+            <span className="flex items-center gap-1"><WeChatLogo size={18} /> WeChat</span>
+          </div>
           <div className="text-[10px] text-slate-500 font-sans">
-            {language === 'zh' ? '公式: Deposit CNY ÷ FX Rate' : 'Formula: Deposit CNY ÷ FX Rate'}
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
-          <div className="text-slate-400 font-sans">
-            {language === 'zh' ? '平台服务费 (20% Margin)' : 'Platform 20% Retained Fee'}
-          </div>
-          <div className="text-xl font-black text-indigo-300">-${marginUsd.toFixed(2)} USD</div>
-          <div className="text-[10px] text-slate-500 font-sans">
-            {language === 'zh' ? '公式: Gross USD × 0.20' : 'Formula: Gross USD × 0.20'}
+            {language === 'zh' ? '即时到账 · 0跨境电汇手续费' : 'Instant Settlement · 0 Wire Fees'}
           </div>
         </div>
 
@@ -133,8 +132,8 @@ export function TreasuryLiveFxCard({ onQuoteUpdated }: TreasuryLiveFxCardProps) 
         <div className="flex items-center justify-between text-xs">
           <span className="font-bold font-sans text-slate-300">
             {language === 'zh'
-              ? '交互式充值金额预估与分账测算 (CNY Simulation):'
-              : 'Interactive Deposit & Margin Simulation (CNY):'}
+              ? '交互式充值金额预估与可用投放金 (CNY Simulation):'
+              : 'Interactive Deposit & Ad Balance Simulation (CNY):'}
           </span>
           <span className="font-mono font-bold text-cyan-400 text-sm">¥{sampleCny.toLocaleString()} CNY</span>
         </div>

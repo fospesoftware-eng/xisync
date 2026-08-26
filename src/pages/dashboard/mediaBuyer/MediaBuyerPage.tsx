@@ -18,6 +18,13 @@ import { useI18n } from '../../../lib/i18n';
 import { CampaignBuilder } from '../../../components/mediaBuyer/CampaignBuilder';
 import { EffectivenessTable } from '../../../components/mediaBuyer/EffectivenessTable';
 import { TreasuryLiveFxCard } from '../../../components/mediaBuyer/treasury/TreasuryLiveFxCard';
+import {
+  GoogleAdsLogo,
+  MetaLogo,
+  TikTokLogo,
+  WeChatLogo,
+  AlipayLogo,
+} from '../../../components/mediaBuyer/BrandLogos';
 import { WalletLedgerService } from '../../../lib/services/mediaBuyer/walletLedger';
 import { FxConversionService } from '../../../lib/services/mediaBuyer/fxService';
 import {
@@ -201,19 +208,33 @@ export function MediaBuyerPage() {
             </h1>
             <p className="text-xs text-slate-300 font-medium mt-0.5">
               {language === 'zh'
-                ? '人民币微信/支付宝直接充值 · 智能汇率结算与 20% 平台服务费自动分账 · Google/Meta/TikTok 一键全网分发'
-                : 'Direct CNY deposit via WeChat/Alipay · Real-time FX conversion with 20% margin split · 1-Click deployment to Google, Meta & TikTok'}
+                ? '人民币微信/支付宝一键充值 · 实时离岸汇率即时结算 · Google / Meta / TikTok 全网精准分发'
+                : 'Direct CNY deposit via WeChat / Alipay · Institutional real-time FX settlement · 1-Click deployment across Google, Meta & TikTok'}
             </p>
           </div>
         </div>
 
-        <Button
-          onClick={() => setShowTopUpModal(true)}
-          icon={<Plus className="w-4 h-4" />}
-          className="bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black px-6 shadow-md"
-        >
-          {language === 'zh' ? '充值广告金 (Add Funds)' : 'Deposit Funds'}
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10">
+            <span className="text-[11px] text-slate-300 font-medium">{language === 'zh' ? '已连接通道:' : 'Active Networks:'}</span>
+            <div className="flex items-center gap-1.5">
+              <GoogleAdsLogo size={18} />
+              <MetaLogo size={18} />
+              <TikTokLogo size={18} />
+              <div className="h-3 w-px bg-white/20 mx-1" />
+              <AlipayLogo size={18} />
+              <WeChatLogo size={18} />
+            </div>
+          </div>
+
+          <Button
+            onClick={() => setShowTopUpModal(true)}
+            icon={<Plus className="w-4 h-4" />}
+            className="bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black px-6 shadow-md"
+          >
+            {language === 'zh' ? '充值广告金 (Add Funds)' : 'Deposit Funds'}
+          </Button>
+        </div>
       </div>
 
       {/* 4 Financial Wallet & Treasury Cards */}
@@ -243,24 +264,25 @@ export function MediaBuyerPage() {
             ¥{wallet.lifetimeDepositedCny.toLocaleString()}
           </div>
           <div className="text-[11px] text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100">
-            <span>{language === 'zh' ? '总折算毛美元' : 'Gross USD Converted'}</span>
-            <span className="font-mono font-bold text-slate-800">
-              ${wallet.lifetimeGrossUsdConverted.toFixed(2)}
-            </span>
+            <span>{language === 'zh' ? '结算外汇通道' : 'Settlement Gateways'}</span>
+            <div className="flex items-center gap-1.5">
+              <AlipayLogo size={14} />
+              <WeChatLogo size={14} />
+            </div>
           </div>
         </div>
 
         <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500 font-bold">
-            <span>{language === 'zh' ? '平台 20% 服务费 (Platform Margin)' : 'Platform 20% Retained Margin'}</span>
+            <span>{language === 'zh' ? '全网投放保障与风控' : 'Global Ad Ops & Protection'}</span>
             <ShieldCheck className="w-4 h-4 text-cyan-600" />
           </div>
           <div className="text-2xl font-black text-cyan-600 font-mono">
-            ${wallet.lifetimeMarginRetainedUsd.toFixed(2)}
+            100% {language === 'zh' ? '全天候' : 'Active'}
           </div>
           <div className="text-[11px] text-emerald-600 font-bold flex items-center justify-between pt-1 border-t border-slate-100">
-            <span>{language === 'zh' ? '含代投与合规风控' : 'Ad Ops & Compliance Shield'}</span>
-            <span>20%</span>
+            <span>{language === 'zh' ? 'AI 广告法合规盾已激活' : 'AI Policy Shield Active'}</span>
+            <span>PRO</span>
           </div>
         </div>
 
@@ -314,7 +336,7 @@ export function MediaBuyerPage() {
           }`}
         >
           <Globe className="w-3.5 h-3.5 text-emerald-500" />
-          <span>{language === 'zh' ? '离岸外汇与 20% 分账测算 (FX Treasury Engine)' : 'FX & 20% Margin Treasury'}</span>
+          <span>{language === 'zh' ? '离岸外汇与汇率结算 (FX Treasury Engine)' : 'FX & Currency Treasury'}</span>
         </button>
 
         <button
@@ -406,8 +428,8 @@ export function MediaBuyerPage() {
                   </div>
                   <div className="text-[10px] text-slate-400 font-sans">
                     {language === 'zh'
-                      ? `汇率: ${tx.fxRate} • 扣除20%服务费: $${tx.marginAmountUsd.toFixed(2)}`
-                      : `FX Rate: ${tx.fxRate} • 20% Margin Fee: $${tx.marginAmountUsd.toFixed(2)}`}
+                      ? `实时结算汇率: ${tx.fxRate} • 自动汇兑结算完成`
+                      : `Settlement FX Rate: ${tx.fxRate} • Direct Settlement Completed`}
                   </div>
                 </div>
               </div>
@@ -495,11 +517,11 @@ export function MediaBuyerPage() {
                       className={`p-3 rounded-2xl border-2 flex items-center gap-2.5 font-bold transition-all ${
                         selectedMethod === 'ALIPAY'
                           ? 'border-blue-500 bg-blue-50/50 text-blue-900'
-                          : 'border-slate-200 text-slate-700'
+                          : 'border-slate-200 text-slate-700 hover:border-slate-300'
                       }`}
                     >
-                      <span className="text-xl">🔵</span>
-                      <span>{language === 'zh' ? '支付宝扫码 (Alipay)' : 'Alipay QR'}</span>
+                      <AlipayLogo size={24} />
+                      <span>{language === 'zh' ? '支付宝 (Alipay)' : 'Alipay Instant'}</span>
                     </button>
 
                     <button
@@ -508,34 +530,30 @@ export function MediaBuyerPage() {
                       className={`p-3 rounded-2xl border-2 flex items-center gap-2.5 font-bold transition-all ${
                         selectedMethod === 'WECHAT_PAY'
                           ? 'border-emerald-500 bg-emerald-50/50 text-emerald-900'
-                          : 'border-slate-200 text-slate-700'
+                          : 'border-slate-200 text-slate-700 hover:border-slate-300'
                       }`}
                     >
-                      <span className="text-xl">🟢</span>
-                      <span>{language === 'zh' ? '微信支付 (WeChat)' : 'WeChat Pay QR'}</span>
+                      <WeChatLogo size={24} />
+                      <span>{language === 'zh' ? '微信支付 (WeChat)' : 'WeChat Pay'}</span>
                     </button>
                   </div>
                 </div>
 
-                {/* FX & Margin Preview Card */}
+                {/* FX Rate & Direct Credit Preview Card */}
                 {(() => {
                   const preview = FxConversionService.calculateTopUpConversion(depositAmountCny, 0.20, 7.235);
                   return (
-                    <div className="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100 space-y-2 font-mono text-[11px]">
+                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 font-mono text-[11px]">
                       <div className="flex justify-between text-slate-600 font-sans">
-                        <span>{language === 'zh' ? '实时中间汇率:' : 'Live Mid-Market Rate:'}</span>
+                        <span>{language === 'zh' ? '实时离岸结算汇率:' : 'Live Settlement FX Rate:'}</span>
                         <span className="font-bold text-slate-900">1 USD = 7.2350 CNY</span>
                       </div>
                       <div className="flex justify-between text-slate-600 font-sans">
-                        <span>{language === 'zh' ? '折合毛美元 (Gross USD):' : 'Gross USD Converted:'}</span>
-                        <span className="font-bold text-slate-900">${preview.grossAmountUsd} USD</span>
+                        <span>{language === 'zh' ? '存入人民币总额:' : 'Deposit Amount (CNY):'}</span>
+                        <span className="font-bold text-slate-900">¥{depositAmountCny.toLocaleString()} CNY</span>
                       </div>
-                      <div className="flex justify-between text-slate-600 font-sans">
-                        <span>{language === 'zh' ? '平台服务费 (20% Platform Margin):' : 'Platform Fee (20% Retained):'}</span>
-                        <span className="font-bold text-indigo-600">-${preview.marginAmountUsd} USD</span>
-                      </div>
-                      <div className="flex justify-between font-bold text-sm text-slate-900 border-t border-indigo-200 pt-2 font-sans">
-                        <span>{language === 'zh' ? '实际入账可用广告金:' : 'Net Ad Budget Credited:'}</span>
+                      <div className="flex justify-between font-bold text-sm text-slate-900 border-t border-slate-200 pt-2 font-sans">
+                        <span>{language === 'zh' ? '广告钱包即时入账:' : 'Direct Active Ad Balance:'}</span>
                         <span className="text-emerald-600 font-black font-mono">${preview.netAdBudgetUsd} USD</span>
                       </div>
                     </div>
