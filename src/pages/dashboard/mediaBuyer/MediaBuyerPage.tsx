@@ -372,7 +372,9 @@ export function MediaBuyerPage() {
       {activeTab === 'transactions' && (
         <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h3 className="font-black text-base text-slate-900">人民币充值与外汇结算流水明细 (Double-Entry Audit)</h3>
+            <h3 className="font-black text-base text-slate-900">
+              {language === 'zh' ? '人民币充值与外汇结算流水明细 (Double-Entry Audit)' : 'CNY Deposits & FX Settlement Audit Ledger'}
+            </h3>
             <span className="text-xs text-slate-500 font-mono">Real-time ACID Ledger</span>
           </div>
 
@@ -395,13 +397,17 @@ export function MediaBuyerPage() {
                   <div className="font-bold text-slate-900 text-sm">
                     {tx.grossAmountCny > 0 ? `+¥${tx.grossAmountCny.toLocaleString()}` : ''}
                     {tx.netAdBudgetUsd > 0 ? (
-                      <span className="text-emerald-600 ml-2">(${tx.netAdBudgetUsd.toFixed(2)} USD 入账)</span>
+                      <span className="text-emerald-600 ml-2">
+                        (${tx.netAdBudgetUsd.toFixed(2)} USD {language === 'zh' ? '入账' : 'Credited'})
+                      </span>
                     ) : (
                       <span className="text-rose-600">${tx.netAdBudgetUsd.toFixed(2)} USD</span>
                     )}
                   </div>
-                  <div className="text-[10px] text-slate-400">
-                    汇率: {tx.fxRate} • 扣除20%服务费: ${tx.marginAmountUsd.toFixed(2)}
+                  <div className="text-[10px] text-slate-400 font-sans">
+                    {language === 'zh'
+                      ? `汇率: ${tx.fxRate} • 扣除20%服务费: $${tx.marginAmountUsd.toFixed(2)}`
+                      : `FX Rate: ${tx.fxRate} • 20% Margin Fee: $${tx.marginAmountUsd.toFixed(2)}`}
                   </div>
                 </div>
               </div>
@@ -427,17 +433,25 @@ export function MediaBuyerPage() {
             <div>
               <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 uppercase tracking-wider mb-1">
                 <Wallet className="w-4 h-4" />
-                <span>CNY Local Inbound Gateway</span>
+                <span>{language === 'zh' ? '人民币跨境入金网关' : 'CNY Inbound Payment Gateway'}</span>
               </div>
-              <h3 className="text-xl font-black text-slate-900">人民币广告金充值与美元汇率折算</h3>
-              <p className="text-xs text-slate-500 mt-1">支持支付宝/微信即时扫码。系统自动折算美元并扣除 20% 服务费后存入投流余额。</p>
+              <h3 className="text-xl font-black text-slate-900">
+                {language === 'zh' ? '人民币广告金充值与美元汇率折算' : 'Deposit Ad Funds & Real-Time FX Conversion'}
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                {language === 'zh'
+                  ? '支持支付宝/微信即时扫码。系统自动折算美元并扣除 20% 服务费后存入投流余额。'
+                  : 'Scan with Alipay or WeChat Pay. Funds are converted to USD with automated 20% platform margin split.'}
+              </p>
             </div>
 
             {!pendingQrData ? (
               <div className="space-y-4 text-xs">
                 {/* Amount presets */}
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">选择充值金额 (人民币 CNY)</label>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    {language === 'zh' ? '选择充值金额 (人民币 CNY)' : 'Select Deposit Amount (CNY)'}
+                  </label>
                   <div className="grid grid-cols-3 gap-2">
                     {[5000, 10000, 20000, 50000, 100000].map((amt) => (
                       <button
@@ -458,7 +472,9 @@ export function MediaBuyerPage() {
 
                 {/* Custom Input */}
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">或自定义充值金额 (¥)</label>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    {language === 'zh' ? '或自定义充值金额 (¥)' : 'Or Enter Custom Amount (¥)'}
+                  </label>
                   <input
                     type="number"
                     value={depositAmountCny}
@@ -469,7 +485,9 @@ export function MediaBuyerPage() {
 
                 {/* Payment Method */}
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">选择支付通道</label>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    {language === 'zh' ? '选择支付通道' : 'Payment Method'}
+                  </label>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
@@ -481,7 +499,7 @@ export function MediaBuyerPage() {
                       }`}
                     >
                       <span className="text-xl">🔵</span>
-                      <span>支付宝扫码 (Alipay)</span>
+                      <span>{language === 'zh' ? '支付宝扫码 (Alipay)' : 'Alipay QR'}</span>
                     </button>
 
                     <button
@@ -494,7 +512,7 @@ export function MediaBuyerPage() {
                       }`}
                     >
                       <span className="text-xl">🟢</span>
-                      <span>微信支付 (WeChat)</span>
+                      <span>{language === 'zh' ? '微信支付 (WeChat)' : 'WeChat Pay QR'}</span>
                     </button>
                   </div>
                 </div>
@@ -504,28 +522,28 @@ export function MediaBuyerPage() {
                   const preview = FxConversionService.calculateTopUpConversion(depositAmountCny, 0.20, 7.235);
                   return (
                     <div className="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100 space-y-2 font-mono text-[11px]">
-                      <div className="flex justify-between text-slate-600">
-                        <span>实时中间汇率:</span>
+                      <div className="flex justify-between text-slate-600 font-sans">
+                        <span>{language === 'zh' ? '实时中间汇率:' : 'Live Mid-Market Rate:'}</span>
                         <span className="font-bold text-slate-900">1 USD = 7.2350 CNY</span>
                       </div>
-                      <div className="flex justify-between text-slate-600">
-                        <span>折合毛美元 (Gross USD):</span>
+                      <div className="flex justify-between text-slate-600 font-sans">
+                        <span>{language === 'zh' ? '折合毛美元 (Gross USD):' : 'Gross USD Converted:'}</span>
                         <span className="font-bold text-slate-900">${preview.grossAmountUsd} USD</span>
                       </div>
-                      <div className="flex justify-between text-slate-600">
-                        <span>平台服务费 (20% Platform Margin):</span>
+                      <div className="flex justify-between text-slate-600 font-sans">
+                        <span>{language === 'zh' ? '平台服务费 (20% Platform Margin):' : 'Platform Fee (20% Retained):'}</span>
                         <span className="font-bold text-indigo-600">-${preview.marginAmountUsd} USD</span>
                       </div>
-                      <div className="flex justify-between font-bold text-sm text-slate-900 border-t border-indigo-200 pt-2">
-                        <span>实际入账可用广告金:</span>
-                        <span className="text-emerald-600 font-black">${preview.netAdBudgetUsd} USD</span>
+                      <div className="flex justify-between font-bold text-sm text-slate-900 border-t border-indigo-200 pt-2 font-sans">
+                        <span>{language === 'zh' ? '实际入账可用广告金:' : 'Net Ad Budget Credited:'}</span>
+                        <span className="text-emerald-600 font-black font-mono">${preview.netAdBudgetUsd} USD</span>
                       </div>
                     </div>
                   );
                 })()}
 
                 <Button onClick={handleInitiateQr} className="w-full py-3 font-bold">
-                  生成支付二维码 (Generate QR Code) ➔
+                  {language === 'zh' ? '生成支付二维码 (Generate QR Code) ➔' : 'Generate Checkout QR Code ➔'}
                 </Button>
               </div>
             ) : (
@@ -537,25 +555,36 @@ export function MediaBuyerPage() {
                     className="w-48 h-48 mx-auto rounded-lg shadow-sm"
                   />
                   <div className="mt-2 font-mono font-bold text-slate-700">
-                    充值金额: ¥{depositAmountCny.toLocaleString()} CNY
+                    {language === 'zh' ? '充值金额' : 'Deposit Amount'}: ¥{depositAmountCny.toLocaleString()} CNY
                   </div>
                 </div>
 
                 <p className="text-slate-500 max-w-xs mx-auto">
-                  请使用<strong>{selectedMethod === 'ALIPAY' ? '支付宝' : '微信'}</strong>扫描上方二维码完成支付。支付成功后，
-                  <strong>${pendingQrData.conversion.netAdBudgetUsd} USD</strong> 将自动计入您的广告钱包。
+                  {language === 'zh' ? (
+                    <>
+                      请使用<strong>{selectedMethod === 'ALIPAY' ? '支付宝' : '微信'}</strong>扫描上方二维码完成支付。支付成功后，
+                      <strong>${pendingQrData.conversion.netAdBudgetUsd} USD</strong> 将自动计入您的广告钱包。
+                    </>
+                  ) : (
+                    <>
+                      Please scan with <strong>{selectedMethod === 'ALIPAY' ? 'Alipay' : 'WeChat'}</strong> to complete payment. Upon confirmation,{' '}
+                      <strong>${pendingQrData.conversion.netAdBudgetUsd} USD</strong> will be credited directly to your media buying balance.
+                    </>
+                  )}
                 </p>
 
                 <div className="pt-2 flex gap-3">
                   <Button variant="outline" onClick={() => setPendingQrData(null)} className="w-1/2">
-                    返回修改
+                    {language === 'zh' ? '返回修改' : 'Back'}
                   </Button>
                   <Button
                     onClick={handleConfirmSimulation}
                     disabled={isSimulatingPayment}
                     className="w-1/2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
                   >
-                    {isSimulatingPayment ? '正在确认到账...' : '模拟扫码完成支付'}
+                    {isSimulatingPayment
+                      ? language === 'zh' ? '正在确认到账...' : 'Verifying...'
+                      : language === 'zh' ? '模拟扫码完成支付' : 'Simulate Successful Payment'}
                   </Button>
                 </div>
               </div>

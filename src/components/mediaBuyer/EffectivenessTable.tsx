@@ -4,6 +4,7 @@ import {
   Sparkles,
   CheckCircle2,
 } from 'lucide-react';
+import { useI18n } from '../../lib/i18n';
 import { NormalizedMetrics } from '../../types/mediaBuyer';
 
 interface EffectivenessTableProps {
@@ -12,6 +13,7 @@ interface EffectivenessTableProps {
 }
 
 export function EffectivenessTable({ metrics, onSmartRebalance }: EffectivenessTableProps) {
+  const { language } = useI18n();
   const [rebalancing, setRebalancing] = useState(false);
   const [rebalanceDone, setRebalanceDone] = useState(false);
 
@@ -40,8 +42,16 @@ export function EffectivenessTable({ metrics, onSmartRebalance }: EffectivenessT
             <TrendingUp className="w-4 h-4 text-cyan-500" />
             <span>Multi-Channel Performance Matrix & True Trade Attribution</span>
           </div>
-          <h2 className="text-xl font-black text-slate-900">各渠道推广成效与真实贸易闭环回报 (ROAS Matrix)</h2>
-          <p className="text-xs text-slate-500">连接 Google、Meta 与 TikTok 实时转化，直联 XiSync 独立站大宗贸易订单</p>
+          <h2 className="text-xl font-black text-slate-900">
+            {language === 'zh'
+              ? '各渠道推广成效与真实贸易闭环回报 (ROAS Matrix)'
+              : 'Cross-Channel Performance & True Trade ROAS Matrix'}
+          </h2>
+          <p className="text-xs text-slate-500">
+            {language === 'zh'
+              ? '连接 Google、Meta 与 TikTok 实时转化，直联 XiSync 独立站大宗贸易订单'
+              : 'Connecting Google, Meta & TikTok conversions directly to XiSync wholesale trade orders'}
+          </p>
         </div>
 
         <button
@@ -50,7 +60,11 @@ export function EffectivenessTable({ metrics, onSmartRebalance }: EffectivenessT
           className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-700 hover:to-cyan-700 text-white font-extrabold text-xs flex items-center gap-2 shadow-md hover:shadow-lg transition-all"
         >
           <Sparkles className={`w-4 h-4 ${rebalancing ? 'animate-spin' : ''}`} />
-          <span>{rebalancing ? '正在计算最低 CPA 渠道...' : '⚡ 智能预算再平衡 (Smart Rebalance)'}</span>
+          <span>
+            {rebalancing
+              ? language === 'zh' ? '正在计算最低 CPA 渠道...' : 'Calculating Lowest CPA Channels...'
+              : language === 'zh' ? '⚡ 智能预算再平衡 (Smart Rebalance)' : '⚡ Smart Budget Rebalance'}
+          </span>
         </button>
       </div>
 
@@ -58,34 +72,62 @@ export function EffectivenessTable({ metrics, onSmartRebalance }: EffectivenessT
       {rebalanceDone && (
         <div className="mx-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-xs flex items-center gap-3 animate-in fade-in">
           <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-          <span><strong>智能再平衡完成！</strong>已自动将 25% 的每日预算从较高 CPA 渠道转移至 <strong>TikTok Ads & Meta Reels</strong>（当前单次询盘成本 $5.18 USD）。</span>
+          <span>
+            {language === 'zh' ? (
+              <>
+                <strong>智能再平衡完成！</strong>已自动将 25% 的每日预算从较高 CPA 渠道转移至 <strong>TikTok Ads & Meta Reels</strong>（当前单次询盘成本 $5.18 USD）。
+              </>
+            ) : (
+              <>
+                <strong>Smart Rebalance Completed!</strong> Shifted 25% of daily budget from high-CPA channels to <strong>TikTok Ads & Meta Reels</strong> (Current CPA: $5.18 USD).
+              </>
+            )}
+          </span>
         </div>
       )}
 
       {/* Top 4 Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 px-6">
         <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
-          <span className="text-xs text-slate-500 font-bold block mb-1">总广告消耗 (Total Spend)</span>
+          <span className="text-xs text-slate-500 font-bold block mb-1">
+            {language === 'zh' ? '总广告消耗 (Total Spend)' : 'Total Ad Spend'}
+          </span>
           <div className="text-xl font-black text-slate-900 font-mono">${totalSpend.toFixed(2)} USD</div>
-          <span className="text-[10px] text-slate-400">含 20% 平台服务费</span>
+          <span className="text-[10px] text-slate-400">
+            {language === 'zh' ? '含 20% 平台服务费' : 'Includes 20% Platform Fee'}
+          </span>
         </div>
 
         <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
-          <span className="text-xs text-slate-500 font-bold block mb-1">海外买家询盘 (Inquiries)</span>
-          <div className="text-xl font-black text-indigo-600 font-mono">{totalInquiries} 条</div>
-          <span className="text-[10px] text-slate-400">平均单价: ${averageCpa} USD</span>
+          <span className="text-xs text-slate-500 font-bold block mb-1">
+            {language === 'zh' ? '海外买家询盘 (Inquiries)' : 'B2B Inquiries'}
+          </span>
+          <div className="text-xl font-black text-indigo-600 font-mono">
+            {totalInquiries} {language === 'zh' ? '条' : 'Leads'}
+          </div>
+          <span className="text-[10px] text-slate-400">
+            {language === 'zh' ? '平均单价:' : 'Avg CPA:'} ${averageCpa} USD
+          </span>
         </div>
 
         <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
-          <span className="text-xs text-slate-500 font-bold block mb-1">真实贸易成交额 (Order Value)</span>
+          <span className="text-xs text-slate-500 font-bold block mb-1">
+            {language === 'zh' ? '真实贸易成交额 (Order Value)' : 'Closed Wholesale Trade Value'}
+          </span>
           <div className="text-xl font-black text-emerald-600 font-mono">${totalRevenue.toLocaleString()} USD</div>
-          <span className="text-[10px] text-emerald-600 font-semibold">外贸订单已闭环录入</span>
+          <span className="text-[10px] text-emerald-600 font-semibold">
+            {language === 'zh' ? '外贸订单已闭环录入' : 'Attributed Wholesale Orders'}
+          </span>
         </div>
 
         <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
-          <span className="text-xs text-slate-500 font-bold block mb-1">真实贸易 ROI (True Trade ROAS)</span>
+          <span className="text-xs text-slate-500 font-bold block mb-1">
+            {language === 'zh' ? '真实贸易 ROI (True Trade ROAS)' : 'True Trade ROAS'}
+          </span>
           <div className="text-xl font-black text-slate-900 font-mono">{trueTradeRoas}x</div>
-          <span className="text-[10px] text-indigo-600 font-bold">高出行业平均 3.2 倍</span>
+          <span className="text-[10px] text-indigo-600 font-bold">
+            {language === 'zh' ? '高出行业平均 3.2 倍' : '3.2x Above Industry Avg'}
+          </span>
         </div>
       </div>
 
@@ -94,15 +136,15 @@ export function EffectivenessTable({ metrics, onSmartRebalance }: EffectivenessT
         <table className="w-full text-left text-xs border-collapse">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-bold">
-              <th className="py-3 px-4">广告平台 (Platform)</th>
-              <th className="py-3 px-4">曝光量 (Impr)</th>
-              <th className="py-3 px-4">独立点击 (Clicks)</th>
-              <th className="py-3 px-4">点击率 (CTR)</th>
-              <th className="py-3 px-4">询盘转化 (Inquiries)</th>
-              <th className="py-3 px-4">消耗金额 (Spend)</th>
-              <th className="py-3 px-4">单次询盘成本 (CPA)</th>
-              <th className="py-3 px-4">真实贸易产出 (Trade Value)</th>
-              <th className="py-3 px-4">真实贸易回报率 (ROAS)</th>
+              <th className="py-3 px-4">{language === 'zh' ? '广告平台 (Platform)' : 'Ad Network'}</th>
+              <th className="py-3 px-4">{language === 'zh' ? '曝光量 (Impr)' : 'Impressions'}</th>
+              <th className="py-3 px-4">{language === 'zh' ? '独立点击 (Clicks)' : 'Clicks'}</th>
+              <th className="py-3 px-4">{language === 'zh' ? '点击率 (CTR)' : 'CTR'}</th>
+              <th className="py-3 px-4">{language === 'zh' ? '询盘转化 (Inquiries)' : 'Inquiries'}</th>
+              <th className="py-3 px-4">{language === 'zh' ? '消耗金额 (Spend)' : 'Spend (USD)'}</th>
+              <th className="py-3 px-4">{language === 'zh' ? '单次询盘成本 (CPA)' : 'CPA (USD)'}</th>
+              <th className="py-3 px-4">{language === 'zh' ? '真实贸易产出 (Trade Value)' : 'Trade Value (USD)'}</th>
+              <th className="py-3 px-4">{language === 'zh' ? '真实贸易回报率 (ROAS)' : 'True ROAS'}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 font-mono">
