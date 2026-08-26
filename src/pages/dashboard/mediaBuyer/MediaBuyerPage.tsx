@@ -11,10 +11,12 @@ import {
   Clock,
   Sparkles,
   BarChart3,
+  Globe,
 } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { CampaignBuilder } from '../../../components/mediaBuyer/CampaignBuilder';
 import { EffectivenessTable } from '../../../components/mediaBuyer/EffectivenessTable';
+import { TreasuryLiveFxCard } from '../../../components/mediaBuyer/treasury/TreasuryLiveFxCard';
 import { WalletLedgerService } from '../../../lib/services/mediaBuyer/walletLedger';
 import { FxConversionService } from '../../../lib/services/mediaBuyer/fxService';
 import {
@@ -122,7 +124,7 @@ export function MediaBuyerPage() {
     },
   ]);
 
-  const [activeTab, setActiveTab] = useState<'matrix' | 'builder' | 'transactions'>('matrix');
+  const [activeTab, setActiveTab] = useState<'matrix' | 'builder' | 'treasury' | 'transactions'>('matrix');
 
   const triggerToast = (msg: string) => {
     setToastMsg(msg);
@@ -292,6 +294,18 @@ export function MediaBuyerPage() {
         </button>
 
         <button
+          onClick={() => setActiveTab('treasury')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all whitespace-nowrap ${
+            activeTab === 'treasury'
+              ? 'bg-slate-900 text-white shadow-xs font-extrabold'
+              : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <Globe className="w-3.5 h-3.5 text-emerald-500" />
+          <span>离岸外汇与 20% 分账测算 (FX Treasury Engine)</span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('transactions')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all whitespace-nowrap ${
             activeTab === 'transactions'
@@ -335,7 +349,14 @@ export function MediaBuyerPage() {
         </div>
       )}
 
-      {/* TAB 3: TRANSACTION LEDGER */}
+      {/* TAB 3: TREASURY LIVE FX & MARGIN ENGINE */}
+      {activeTab === 'treasury' && (
+        <div className="space-y-6">
+          <TreasuryLiveFxCard />
+        </div>
+      )}
+
+      {/* TAB 4: TRANSACTION LEDGER */}
       {activeTab === 'transactions' && (
         <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
