@@ -36,6 +36,7 @@ import { WebsitePage } from './pages/dashboard/WebsitePage';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { TenantsPage } from './pages/admin/TenantsPage';
 import { CMSPage } from './pages/admin/CMSPage';
+import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 
 import { PortalLayout } from './components/portal/PortalLayout';
 import { PortalDashboard } from './pages/portal/PortalDashboard';
@@ -166,7 +167,7 @@ function App() {
                 <Route path="integrations" element={<AdminDashboard />} />
                 <Route path="security" element={<AdminDashboard />} />
                 <Route path="analytics" element={<AdminDashboard />} />
-                <Route path="settings" element={<AdminDashboard />} />
+                <Route path="settings" element={<AdminSettingsPage />} />
               </Route>
 
               <Route path="/portal" element={<PortalLayout />}>
