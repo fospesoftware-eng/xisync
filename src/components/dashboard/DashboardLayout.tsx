@@ -60,6 +60,7 @@ export function DashboardLayout({ variant = 'client' }: DashboardLayoutProps) {
       icon: Megaphone,
       children: [
         { name: (t as any).marketing?.nav?.overview || (language === 'zh' ? '营销概览 & ROI' : 'Overview & ROI'), href: '/dashboard/marketing' },
+        { name: language === 'zh' ? '🎯 自动化投流与充值' : 'Media Buyer & Top-Up', href: '/dashboard/media-buyer' },
         { name: (t as any).marketing?.nav?.campaigns || (language === 'zh' ? '广告系列管理' : 'Campaigns'), href: '/dashboard/marketing/campaigns' },
         { name: (t as any).marketing?.nav?.channels || (language === 'zh' ? '渠道与 API 授权' : 'Ad Accounts & Channels'), href: '/dashboard/marketing/channels' },
         { name: (t as any).marketing?.nav?.creatives || (language === 'zh' ? '素材工坊与 AI' : 'Creative Studio'), href: '/dashboard/marketing/creatives' },
@@ -135,6 +136,7 @@ export function DashboardLayout({ variant = 'client' }: DashboardLayoutProps) {
     { name: t.admin.tenants, href: '/admin/tenants', icon: Building2 },
     { name: t.admin.users, href: '/admin/users', icon: Users },
     { name: 'Website CMS', href: '/admin/cms', icon: FileText },
+    { name: language === 'zh' ? '跨国投流总控' : 'Media Engine Admin', href: '/admin/media-engine', icon: Zap },
     { name: t.admin.billing, href: '/admin/billing', icon: CreditCard },
     { name: t.dashboard.nav.integrations, href: '/admin/integrations', icon: Zap },
     { name: t.admin.security, href: '/admin/security', icon: Shield },

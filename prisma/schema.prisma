@@ -1,0 +1,301 @@
+// ====================================================================================
+// PRISMA SCHEMA: Media Buying, CNY Top-Up, Double-Entry Ledger & Ad Controller
+// ====================================================================================
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ------------------------------------------------------------------------------------
+// 1. MASTER MEDIA CREDENTIALS & AGENCY ACCOUNTS (SaaS Admin Managed)
+// ------------------------------------------------------------------------------------
+
+enum PlatformType {
+  GOOGLE_ADS
+  META_ADS
+  TIKTOK_ADS
+  LINKEDIN_ADS
+  MICROSOFT_ADS
+}
+
+enum CredentialStatus {
+  ACTIVE
+  NEEDS_REAUTH
+  RATE_LIMITED
+  SUSPENDED
+}
+
+model MediaAccountCredential {
+  id                    String            @id @default(uuid())
+  platform              PlatformType      @unique
+  encryptedCredentials  String            // AES-256 encrypted payload (API keys, secrets, tokens)
+  developerToken        String?           // Google Ads Developer Token
+  mccCustomerId         String?           // Google MCC Account ID
+  businessManagerId     String?           // Meta Business Manager ID
+  businessCenterId      String?           // TikTok Business Center ID
+  organizationUrn       String?           // LinkedIn Organization URN
+  systemUserTokenMasked String?           // Masked token preview e.g. "EAAG948...bc91"
+  status                CredentialStatus  @default(ACTIVE)
+  dailySpendCapUsd      Decimal           @default(100000.00) @db.Decimal(12, 2)
+  currentDaySpendUsd    Decimal           @default(0.00) @db.Decimal(12, 2)
+  healthStatus          String            @default("HEALTHY_200_OK")
+  lastHealthCheckedAt   DateTime          @default(now())
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  childAccounts         PlatformChildAccount[]
+
+  @@map("media_account_credentials")
+}
+
+model PlatformChildAccount {
+  id                    String                  @id @default(uuid())
+  tenantId              String
+  credentialId          String
+  platform              PlatformType
+  externalAccountId     String                  // Platform assigned customer ID / act_12345
+  accountName           String
+  currency              String                  @default("USD")
+  timezone              String                  @default("UTC")
+  accountStatus         String                  @default("ACTIVE")
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+
+  masterCredential      MediaAccountCredential  @relation(fields: [credentialId], references: [id], onDelete: Cascade)
+  campaigns             ManagedCampaign[]
+
+  @@unique([tenantId, platform])
+  @@index([tenantId])
+  @@map("platform_child_accounts")
+}
+
+// ------------------------------------------------------------------------------------
+// 2. TENANT WALLET, FX CONVERSION & DOUBLE-ENTRY LEDGER
+// ------------------------------------------------------------------------------------
+
+enum TransactionType {
+  TOPUP_CNY              // Inbound deposit from Alipay/WeChat/Airwallex
+  MARGIN_DEDUCTION       // Platform fee split (default 20%)
+  AD_RESERVATION         // Budget lock for active campaign
+  AD_SETTLEMENT          // Actual API consumption billed
+  AD_REFUND              // Return of unspent budget to available balance
+  ADMIN_ADJUSTMENT       // Manual grant or dispute correction
+}
+
+enum PaymentMethod {
+  ALIPAY
+  WECHAT_PAY
+  AIRWALLEX
+  LIANLIAN_PAY
+  UNIONPAY
+  STRIPE_CHINA
+}
+
+enum TransactionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REVERSED
+}
+
+model TenantWallet {
+  id                         String              @id @default(uuid())
+  tenantId                   String              @unique
+  cnyBalance                 Decimal             @default(0.0000) @db.Decimal(14, 4)
+  usdBalance                 Decimal             @default(0.0000) @db.Decimal(14, 4) // Available for ad spend
+  reservedAdSpendUsd         Decimal             @default(0.0000) @db.Decimal(14, 4) // Committed to active ads
+  lifetimeDepositedCny       Decimal             @default(0.0000) @db.Decimal(16, 4)
+  lifetimeGrossUsdConverted  Decimal             @default(0.0000) @db.Decimal(16, 4)
+  lifetimeMarginRetainedUsd  Decimal             @default(0.0000) @db.Decimal(16, 4)
+  lifetimeSpentUsd           Decimal             @default(0.0000) @db.Decimal(16, 4)
+  customMarginOverridePct    Decimal?            @db.Decimal(5, 4) // e.g. 0.1500 for enterprise override
+  autoPauseOnLowBalance      Boolean             @default(true)
+  lowBalanceThresholdUsd     Decimal             @default(50.00) @db.Decimal(10, 2)
+  version                    Int                 @default(1) // Optimistic locking
+  createdAt                  DateTime            @default(now())
+  updatedAt                  DateTime            @updatedAt
+
+  transactions               WalletTransaction[]
+
+  @@map("tenant_wallets")
+}
+
+model WalletTransaction {
+  id                    String              @id @default(uuid())
+  walletId              String
+  tenantId              String
+  type                  TransactionType
+  status                TransactionStatus   @default(PENDING)
+  paymentMethod         PaymentMethod?
+  paymentReference      String?             // Gateway Transaction ID / Trade No
+  checkoutQrCodeUrl     String?             // For WeChat/Alipay QR render
+  idempotencyKey        String              @unique
+
+  // Financial Double-Entry Values
+  grossAmountCny        Decimal             @default(0.0000) @db.Decimal(14, 4)
+  fxRate                Decimal             @default(7.2000) @db.Decimal(10, 4) // e.g. 1 USD = 7.20 CNY
+  grossAmountUsd        Decimal             @default(0.0000) @db.Decimal(14, 4)
+  marginPercent         Decimal             @default(0.2000) @db.Decimal(5, 4) // Default 20% platform margin
+  marginAmountUsd       Decimal             @default(0.0000) @db.Decimal(14, 4)
+  netAdBudgetUsd        Decimal             @default(0.0000) @db.Decimal(14, 4) // Net allocated to campaign
+
+  balanceBeforeUsd      Decimal             @default(0.0000) @db.Decimal(14, 4)
+  balanceAfterUsd       Decimal             @default(0.0000) @db.Decimal(14, 4)
+
+  metadata              Json                @default("{}")
+  failureReason         String?
+  processedAt           DateTime?
+  createdAt             DateTime            @default(now())
+
+  wallet                TenantWallet        @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, type])
+  @@index([paymentReference])
+  @@index([createdAt])
+  @@map("wallet_transactions")
+}
+
+// ------------------------------------------------------------------------------------
+// 3. MANAGED MULTI-NETWORK CAMPAIGNS & CROSS-PLATFORM MAPPING
+// ------------------------------------------------------------------------------------
+
+enum CampaignObjective {
+  B2B_LEAD_GEN         // 海外买家询盘 / WhatsApp / Form Submissions
+  INQUIRY_MAX          // 最大化海外询盘量
+  CATALOG_SALES        // 独立站目录采购 / Sample Order
+  VIDEO_VIEWS          // 工厂实力与制造工艺曝光
+  BRAND_AWARENESS      // 品牌出海展会曝光
+}
+
+enum CampaignStatus {
+  DRAFT
+  COMPLIANCE_REVIEW
+  COMPLIANCE_FAILED
+  ACTIVE
+  PAUSED_MANUAL
+  PAUSED_OUT_OF_FUNDS
+  REBALANCING
+  COMPLETED
+  SUSPENDED
+}
+
+model ManagedCampaign {
+  id                    String                      @id @default(uuid())
+  tenantId              String
+  childAccountId        String?
+  name                  String
+  objective             CampaignObjective           @default(B2B_LEAD_GEN)
+  targetMarkets         String[]                    // ["US", "DE", "SA", "AE", "BR"]
+  targetIndustries      String[]                    // ["Eco Toys", "Machinery", "Textiles"]
+  dailyBudgetUsd        Decimal                     @db.Decimal(10, 2)
+  totalBudgetUsd        Decimal                     @db.Decimal(10, 2)
+  spentAmountUsd        Decimal                     @default(0.00) @db.Decimal(12, 2)
+  cpaTargetUsd          Decimal?                    @db.Decimal(8, 2)
+  status                CampaignStatus              @default(DRAFT)
+  autoRebalanceEnabled  Boolean                     @default(true)
+  startDate             DateTime                    @default(now())
+  endDate               DateTime?
+
+  // Creative & Copy
+  chineseHeadline       String
+  englishHeadline       String
+  spanishHeadline       String?
+  arabicHeadline        String?
+  primaryVideoUrl       String?
+  primaryImageUrl       String?
+  landingPageUrl        String
+  callToAction          String                      @default("REQUEST_WHOLESALE_CATALOG")
+
+  // AI Compliance Pre-Flight Status
+  complianceScore       Int                         @default(100)
+  complianceViolations  Json                        @default("[]") // Prohibited claims, trademark alerts
+  aiApprovedAt          DateTime?
+
+  createdAt             DateTime                    @default(now())
+  updatedAt             DateTime                    @updatedAt
+
+  childAccount          PlatformChildAccount?       @relation(fields: [childAccountId], references: [id])
+  platformMappings      CampaignPlatformMapping[]
+  metricSnapshots       CampaignMetricSnapshot[]
+  attributedLeads       CampaignAttributedLead[]
+
+  @@index([tenantId, status])
+  @@map("managed_campaigns")
+}
+
+model CampaignPlatformMapping {
+  id                    String              @id @default(uuid())
+  campaignId            String
+  platform              PlatformType
+  externalCampaignId    String              // Google Campaign ID, Meta Campaign ID, TikTok Campaign ID
+  externalAdSetId       String?             // Meta AdSet ID / TikTok AdGroup ID
+  externalAdId          String?             // Meta Ad ID / TikTok Ad ID
+  platformBudgetRatio   Decimal             @default(0.33) @db.Decimal(4, 2) // Ratio e.g. 0.40 Google, 0.35 Meta, 0.25 TikTok
+  allocatedDailyUsd     Decimal             @db.Decimal(10, 2)
+  spentPlatformUsd      Decimal             @default(0.00) @db.Decimal(12, 2)
+  syncStatus            String              @default("SYNCED")
+  lastApiSyncAt         DateTime            @default(now())
+
+  campaign              ManagedCampaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, platform])
+  @@index([externalCampaignId])
+  @@map("campaign_platform_mappings")
+}
+
+// ------------------------------------------------------------------------------------
+// 4. METRIC SNAPSHOTS & TRUE TRADE ROAS ATTRIBUTION
+// ------------------------------------------------------------------------------------
+
+model CampaignMetricSnapshot {
+  id                    String              @id @default(uuid())
+  campaignId            String
+  platform              PlatformType
+  timestamp             DateTime            @default(now())
+  impressions           Int                 @default(0)
+  clicks                Int                 @default(0)
+  videoViews            Int                 @default(0)
+  inquiriesGenerated    Int                 @default(0)
+  whatsappClicks        Int                 @default(0)
+  sampleRequests        Int                 @default(0)
+  spendUsd              Decimal             @default(0.0000) @db.Decimal(12, 4)
+  cpaUsd                Decimal             @default(0.0000) @db.Decimal(10, 4)
+  tradeRevenueGenerated Decimal             @default(0.0000) @db.Decimal(14, 4)
+  trueTradeRoas         Decimal             @default(0.0000) @db.Decimal(8, 2) // (Trade Revenue) / (Spend * 1.20)
+
+  campaign              ManagedCampaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId, timestamp])
+  @@index([platform, timestamp])
+  @@map("campaign_metric_snapshots")
+}
+
+model CampaignAttributedLead {
+  id                    String              @id @default(uuid())
+  campaignId            String
+  tenantId              String
+  leadId                String              // Links to XiSync Unified CRM Lead
+  gclid                 String?             // Google Click ID
+  fbclid                String?             // Meta Click ID
+  ttclid                String?             // TikTok Click ID
+  utmSource             String?
+  utmCampaign           String?
+  buyerCompanyName      String
+  buyerCountry          String
+  firstInteractionAt    DateTime            @default(now())
+  orderStatus           String              @default("INQUIRY_RECEIVED") // INQUIRY, SAMPLE_PAID, CONTAINER_ORDERED
+  attributedOrderValue  Decimal             @default(0.00) @db.Decimal(14, 2)
+  proformaInvoiceNo     String?
+
+  campaign              ManagedCampaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@index([tenantId])
+  @@map("campaign_attributed_leads")
+}

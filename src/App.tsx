@@ -37,6 +37,8 @@ import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { TenantsPage } from './pages/admin/TenantsPage';
 import { CMSPage } from './pages/admin/CMSPage';
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
+import { MediaEngineAdminPage } from './pages/admin/mediaEngine/MediaEngineAdminPage';
+import { MediaBuyerPage } from './pages/dashboard/mediaBuyer/MediaBuyerPage';
 
 import { PortalLayout } from './components/portal/PortalLayout';
 import { PortalDashboard } from './pages/portal/PortalDashboard';
@@ -78,6 +80,7 @@ function App() {
               <Route path="/dashboard/ultra" element={<UltraDashboardPage />}>
                 <Route path="calendar" element={<CalendarPage />} />
                 <Route path="marketing" element={<MarketingHubPage />} />
+                <Route path="media-buyer" element={<MediaBuyerPage />} />
                 <Route path="marketing/campaigns" element={<MarketingCampaignsPage />} />
                 <Route path="marketing/channels" element={<MarketingChannelsPage />} />
                 <Route path="marketing/creatives" element={<MarketingCreativeStudioPage />} />
@@ -120,6 +123,7 @@ function App() {
                 <Route index element={<DashboardHome />} />
                 <Route path="calendar" element={<CalendarPage />} />
                 <Route path="marketing" element={<MarketingHubPage />} />
+                <Route path="media-buyer" element={<MediaBuyerPage />} />
                 <Route path="marketing/campaigns" element={<MarketingCampaignsPage />} />
                 <Route path="marketing/channels" element={<MarketingChannelsPage />} />
                 <Route path="marketing/creatives" element={<MarketingCreativeStudioPage />} />
@@ -163,6 +167,7 @@ function App() {
                 <Route path="tenants" element={<TenantsPage />} />
                 <Route path="users" element={<TenantsPage />} />
                 <Route path="cms" element={<CMSPage />} />
+                <Route path="media-engine" element={<MediaEngineAdminPage />} />
                 <Route path="billing" element={<AdminDashboard />} />
                 <Route path="integrations" element={<AdminDashboard />} />
                 <Route path="security" element={<AdminDashboard />} />
