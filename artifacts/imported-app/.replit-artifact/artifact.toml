@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/"
-title = "Imported App"
+title = "XiSync Export Management Suite"
 description = "The original Bolt application, migrated to Replit with its existing design, pages, and interactions preserved."
 version = "1.0.0"
 id = "artifacts/imported-app"

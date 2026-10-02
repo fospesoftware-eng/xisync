@@ -57,7 +57,7 @@ function App() {
         <PasswordProvider>
           <AuthProvider>
             <CurrencyProvider>
-              <BrowserRouter>
+              <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || '/'}>
                 <AppGuard>
                   <Routes>
                     <Route path="/" element={<HomePage />} />

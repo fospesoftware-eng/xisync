@@ -1,0 +1,1 @@
+- [Import connection scope](import-connection-scope.md) — preserve the imported database; missing settings allow explicit public/demo preview, never successful fake writes.
