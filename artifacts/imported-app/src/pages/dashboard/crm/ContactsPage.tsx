@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { DataTable } from '../../../components/dashboard/DataTable';
 import { Button } from '../../../components/ui/Button';
-import { supabase } from '../../../lib/supabase';
+import { xisyncDb } from '../../../lib/xisync-db';
 import { useAuth } from '../../../lib/auth-context';
 import {
   Users,
@@ -43,7 +43,7 @@ export function ContactsPage() {
     (async () => {
       try {
         if (tenant) {
-          const { data, error } = await supabase
+          const { data, error } = await xisyncDb
             .from('contacts')
             .select('*, account:accounts(name)')
             .eq('tenant_id', tenant.id);
@@ -67,6 +67,9 @@ export function ContactsPage() {
       } catch (err) {
         console.error(err);
       }
+
+      setContacts([]);
+      return;
 
       // Production-grade mock contacts
       setContacts([

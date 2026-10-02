@@ -159,7 +159,6 @@ export function DashboardLayout({ variant = 'client' }: DashboardLayoutProps) {
 
   const handleSignOut = async () => {
     await signOut();
-    window.location.href = '/';
   };
 
   return (

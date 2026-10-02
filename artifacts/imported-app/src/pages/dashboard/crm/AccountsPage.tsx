@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { DataTable } from '../../../components/dashboard/DataTable';
 import { Button } from '../../../components/ui/Button';
-import { supabase } from '../../../lib/supabase';
+import { xisyncDb } from '../../../lib/xisync-db';
 import { useAuth } from '../../../lib/auth-context';
 import {
   Building2,
@@ -42,7 +42,7 @@ export function AccountsPage() {
     (async () => {
       try {
         if (tenant) {
-          const { data, error } = await supabase
+          const { data, error } = await xisyncDb
             .from('accounts')
             .select('*')
             .eq('tenant_id', tenant.id);
@@ -68,6 +68,9 @@ export function AccountsPage() {
       } catch (err) {
         console.error(err);
       }
+
+      setAccounts([]);
+      return;
 
       // Production-grade mock accounts for B2B global trade
       setAccounts([

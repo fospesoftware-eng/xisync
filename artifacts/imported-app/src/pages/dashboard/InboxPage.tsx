@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { xisyncDb } from '../../lib/xisync-db';
 import { useAuth } from '../../lib/auth-context';
 import {
   Search,
@@ -77,7 +77,7 @@ export function InboxPage() {
       setLoading(true);
       try {
         if (tenant) {
-          const { data, error } = await supabase
+          const { data, error } = await xisyncDb
             .from('conversations')
             .select('*, contact:contacts(first_name,last_name,account:accounts(name))')
             .eq('tenant_id', tenant.id)
@@ -107,6 +107,10 @@ export function InboxPage() {
       } finally {
         setLoading(false);
       }
+
+      setConversations([]);
+      setSelectedConversation(null);
+      return;
 
       // Production-grade omnichannel conversations for demo account
       const mockConvs: Conversation[] = [
@@ -210,6 +214,35 @@ export function InboxPage() {
   // Load message thread for selected conversation
   useEffect(() => {
     if (!selectedConversation) return;
+    if (!selectedConversation.id.startsWith('cv-')) {
+      setLoadingMessages(true);
+      void (async () => {
+        try {
+          const { data, error } = await xisyncDb
+            .from('messages')
+            .select('*')
+            .eq('conversation_id', selectedConversation.id)
+            .order('created_at', { ascending: true });
+          if (error) throw error;
+          setMessages((data || []).map((row: Record<string, unknown>) => ({
+            id: row.id as string,
+            content: (row.content as string) || '',
+            translation: (row.content_translated as string) || undefined,
+            sender: (row.sender_type === 'agent' ? 'agent' : 'customer') as Message['sender'],
+            timestamp: row.created_at
+              ? new Date(row.created_at as string).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              : '',
+            status: (row.status as Message['status']) || 'sent',
+          })));
+        } catch (error) {
+          console.error('Inbox message load failed:', error);
+          setMessages([]);
+        } finally {
+          setLoadingMessages(false);
+        }
+      })();
+      return;
+    }
     setLoadingMessages(true);
 
     if (selectedConversation.id === 'cv-fb-1') {
@@ -275,17 +308,28 @@ export function InboxPage() {
     }
   }, [selectedConversation]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!newMessage.trim() || !selectedConversation) return;
-    const newMsg: Message = {
-      id: `msg-${Date.now()}`,
-      content: newMessage,
-      translation: `[DeepSeek AI Auto-Translated to ${selectedConversation.country || 'International'}]: ${newMessage}`,
-      sender: 'agent',
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    const content = newMessage.trim();
+    const { data, error } = await xisyncDb.from('messages').insert({
+      conversation_id: selectedConversation.id,
+      direction: 'outbound',
+      sender_type: 'agent',
+      content,
+      content_type: 'text',
       status: 'sent',
-    };
-    setMessages((prev) => [...prev, newMsg]);
+    }).select('*').single();
+    if (error || !data) {
+      triggerToast(error?.message || 'Message was not saved.');
+      return;
+    }
+    setMessages((prev) => [...prev, {
+      id: data.id as string,
+      content: (data.content as string) || content,
+      sender: 'agent',
+      timestamp: new Date(data.created_at as string).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      status: 'sent',
+    }]);
     setNewMessage('');
   };
 
@@ -317,8 +361,8 @@ export function InboxPage() {
               <MessageSquare className="w-4 h-4 text-cyan-500" />
               <span>Omnichannel CRM Inbox</span>
             </h2>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-              7 CHANNELS CONNECTED
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-500/10 text-slate-500 border border-slate-500/20">
+              WORKSPACE INBOX
             </span>
           </div>
 

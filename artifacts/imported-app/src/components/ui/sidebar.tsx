@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button-primitive';
+import { Input } from '@/components/ui/input-primitive';
 import { Separator } from '@/components/ui/separator';
 import {
   Sheet,

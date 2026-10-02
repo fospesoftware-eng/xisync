@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { DataTable } from '../../../components/dashboard/DataTable';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
-import { supabase } from '../../../lib/supabase';
+import { xisyncDb } from '../../../lib/xisync-db';
 import { useAuth } from '../../../lib/auth-context';
 import {
   Plus,
@@ -49,7 +49,7 @@ export function LeadsPage() {
       setLoading(true);
       try {
         if (tenant) {
-          const { data, error } = await supabase
+          const { data, error } = await xisyncDb
             .from('leads')
             .select('*')
             .eq('tenant_id', tenant.id)
@@ -76,6 +76,9 @@ export function LeadsPage() {
       } finally {
         setLoading(false);
       }
+
+      setLeads([]);
+      return;
 
       // Rich default mock leads for demo account
       setLeads([
@@ -249,7 +252,7 @@ export function LeadsPage() {
             <LeadForm tenantId={tenant?.id} onClose={() => setShowNewLeadModal(false)} onSaved={() => {
               setShowNewLeadModal(false);
               if (tenant) {
-                supabase.from('leads').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false })
+                xisyncDb.from('leads').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false })
                   .then(({ data }) => {
                     if (data) setLeads(data.map((row: Record<string, unknown>) => ({
                       id: row.id as string,
@@ -288,7 +291,7 @@ function LeadForm({ tenantId, onClose, onSaved }: { tenantId?: string; onClose: 
     e.preventDefault();
     if (!tenantId) return;
     setSaving(true);
-    const { error } = await supabase.from('leads').insert({
+    const { error } = await xisyncDb.from('leads').insert({
       tenant_id: tenantId,
       contact_name: form.contactName,
       email: form.email,

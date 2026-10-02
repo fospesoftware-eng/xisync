@@ -1,185 +1,34 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Logo } from '../../components/ui/Logo';
-import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
+import { Link } from 'react-router-dom';
+import { ArrowRight, UserPlus } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
-import { useI18n } from '../../lib/i18n';
-import { Mail, Lock, User, Building2, AlertCircle, Check } from 'lucide-react';
 
 export function RegisterPage() {
-  const { t } = useI18n();
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    company: '',
-    password: '',
-    confirmPassword: '',
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const { signUp } = useAuth();
-  const navigate = useNavigate();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (formData.password !== formData.confirmPassword) {
-      setError(t.pages.register.validation.passwordMismatch);
-      return;
-    }
-
-    if (formData.password.length < 8) {
-      setError(t.pages.register.validation.passwordTooShort);
-      return;
-    }
-
-    setLoading(true);
-
-    const { error } = await signUp(formData.email, formData.password, formData.fullName);
-
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    } else {
-      navigate('/dashboard');
-    }
-  };
+  const { signIn, loading } = useAuth();
 
   return (
-    <div className="min-h-screen flex">
-      <div className="flex-1 flex flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24">
-        <div className="mx-auto w-full max-w-sm">
-          <Link to="/">
-            <Logo size="lg" />
-          </Link>
-          <h2 className="mt-8 text-2xl font-bold text-gray-900">{t.pages.register.title}</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            {t.pages.register.subtitle}
-          </p>
-
-          {error && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-              <p className="text-sm text-red-600">{error}</p>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-            <Input
-              label={t.pages.register.formLabels.fullName}
-              value={formData.fullName}
-              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-              required
-              icon={<User className="w-4 h-4" />}
-              placeholder={t.pages.register.formLabels.fullName}
-            />
-
-            <Input
-              label={t.pages.register.formLabels.workEmail}
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required
-              icon={<Mail className="w-4 h-4" />}
-              placeholder="you@company.com"
-            />
-
-            <Input
-              label={t.pages.register.formLabels.company}
-              value={formData.company}
-              onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-              required
-              icon={<Building2 className="w-4 h-4" />}
-              placeholder={t.pages.register.formLabels.company}
-            />
-
-            <Input
-              label={t.pages.register.formLabels.password}
-              type="password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              required
-              icon={<Lock className="w-4 h-4" />}
-              placeholder="Min. 8 characters"
-              helperText="At least 8 characters"
-            />
-
-            <Input
-              label={t.pages.register.formLabels.confirmPassword}
-              type="password"
-              value={formData.confirmPassword}
-              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-              required
-              icon={<Lock className="w-4 h-4" />}
-              placeholder={t.pages.register.formLabels.confirmPassword}
-            />
-
-            <Button type="submit" className="w-full" loading={loading}>
-              {t.pages.register.formLabels.createAccount}
-            </Button>
-          </form>
-
-          <p className="mt-6 text-center text-sm text-gray-600">
-            {t.auth.hasAccount}{' '}
-            <Link
-              to="/login"
-              className="font-semibold text-xisync-cyan-600 hover:text-xisync-cyan-700"
-            >
-              {t.pages.register.formLabels.signIn}
-            </Link>
-          </p>
-
-          <p className="mt-4 text-xs text-gray-500 text-center">
-            {t.pages.register.terms}{' '}
-            <Link to="/terms" className="text-xisync-cyan-600 hover:underline">
-              {t.pages.register.termsLink}
-            </Link>{' '}
-            and{' '}
-            <Link to="/privacy" className="text-xisync-cyan-600 hover:underline">
-              {t.pages.register.privacyLink}
-            </Link>
-          </p>
+    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12 dark:bg-slate-950">
+      <section className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-xl dark:border-slate-800 dark:bg-slate-900">
+        <Link to="/" className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">XiSync</Link>
+        <div className="mt-8 flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-100 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300">
+          <UserPlus className="h-6 w-6" />
         </div>
-      </div>
-
-      <div className="hidden lg:block relative flex-1">
-        <div className="absolute inset-0 bg-gradient-to-br from-xisync-blue-900 via-xisync-cyan-800 to-xisync-green-700">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
-        </div>
-        <div className="absolute inset-0 flex items-center justify-center p-12">
-          <div className="max-w-lg">
-            <h2 className="text-3xl font-bold text-white mb-6">
-              Everything you need to grow globally
-            </h2>
-            <ul className="space-y-4">
-              {t.pages.register.features.map((feature) => (
-                <li key={feature} className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-xisync-green-500/20 flex items-center justify-center">
-                    <Check className="w-4 h-4 text-xisync-green-400" />
-                  </div>
-                  <span className="text-white">{feature}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-10 p-6 bg-white/10 backdrop-blur-sm rounded-xl">
-              <p className="text-white italic">
-                "{t.pages.home.testimonials[0].quote}"
-              </p>
-              <div className="mt-4 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-xisync-cyan-500 flex items-center justify-center text-white font-bold">
-                  ZW
-                </div>
-                <div>
-                  <div className="text-white font-medium">{t.pages.home.testimonials[0].author}</div>
-                  <div className="text-sm text-xisync-blue-200">{t.pages.home.testimonials[0].role}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+        <h1 className="mt-5 text-2xl font-bold text-slate-900 dark:text-white">Create your XiSync account</h1>
+        <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+          Create or use your secure account. XiSync will set up a private workspace the first time you sign in.
+        </p>
+        <button
+          type="button"
+          onClick={signIn}
+          disabled={loading}
+          className="mt-7 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-xisync-blue-600 to-xisync-cyan-500 px-5 py-3 font-semibold text-white transition hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+        >
+          Continue securely
+          <ArrowRight className="h-4 w-4" />
+        </button>
+        <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
+          Already registered? <Link to="/login" className="font-semibold text-cyan-700 hover:underline dark:text-cyan-300">Sign in</Link>
+        </p>
+      </section>
+    </main>
   );
 }

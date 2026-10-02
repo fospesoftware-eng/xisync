@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { xisyncDb } from '../../lib/xisync-db';
 import { Plus, Edit, Trash2, Save } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 
@@ -35,7 +35,7 @@ export function CMSPage() {
   }, []);
 
   const fetchPages = async () => {
-    const { data, error } = await supabase
+    const { data, error } = await xisyncDb
       .from('cms_pages')
       .select('*')
       .order('created_at', { ascending: false });
@@ -50,7 +50,7 @@ export function CMSPage() {
   };
 
   const fetchSections = async (pageId: string) => {
-    const { data, error } = await supabase
+    const { data, error } = await xisyncDb
       .from('cms_sections')
       .select('*')
       .eq('page_id', pageId)
@@ -64,7 +64,7 @@ export function CMSPage() {
   const handleCreatePage = async () => {
     if (!newPageData.slug || !newPageData.title) return;
 
-    const { data, error } = await supabase
+    const { data, error } = await xisyncDb
       .from('cms_pages')
       .insert([newPageData])
       .select();
@@ -79,7 +79,7 @@ export function CMSPage() {
   const handleDeletePage = async (pageId: string) => {
     if (!confirm('Are you sure? This will delete all sections in this page.')) return;
 
-    const { error } = await supabase
+    const { error } = await xisyncDb
       .from('cms_pages')
       .delete()
       .eq('id', pageId);
@@ -92,7 +92,7 @@ export function CMSPage() {
   };
 
   const handleUpdateSection = async (section: CMSSection) => {
-    const { error } = await supabase
+    const { error } = await xisyncDb
       .from('cms_sections')
       .update({ ...section, updated_at: new Date().toISOString() })
       .eq('id', section.id);
@@ -104,7 +104,7 @@ export function CMSPage() {
   };
 
   const handleDeleteSection = async (sectionId: string) => {
-    const { error } = await supabase
+    const { error } = await xisyncDb
       .from('cms_sections')
       .delete()
       .eq('id', sectionId);

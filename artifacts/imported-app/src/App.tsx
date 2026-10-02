@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import type { ReactNode } from 'react';
 import { AuthProvider } from './lib/auth-context';
 import { I18nProvider } from './lib/i18n';
 import { ThemeProvider } from './lib/theme-context';
@@ -49,6 +50,19 @@ import { ProductsPage } from './pages/dashboard/ProductsPage';
 import { CompliancePage } from './pages/dashboard/CompliancePage';
 import { CalendarPage } from './pages/dashboard/CalendarPage';
 import { PublishedWebsiteView } from './pages/public/PublishedWebsiteView';
+import { Loader2 } from 'lucide-react';
+import { useAuth } from './lib/auth-context';
+
+function AuthRequired({ children }: { children: ReactNode }) {
+  const { user, profile, loading, error } = useAuth();
+  if (loading) {
+    return <div className="flex min-h-screen items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-xisync-cyan-500" /></div>;
+  }
+  if (!user) return <Navigate to="/login" replace />;
+  if (error) return <div role="alert" className="mx-auto max-w-xl p-8 text-center text-red-700">{error}</div>;
+  if (!profile) return <div role="status" className="p-8 text-center">Your XiSync profile is not available.</div>;
+  return <>{children}</>;
+}
 
 function App() {
   return (
@@ -77,7 +91,7 @@ function App() {
                     <Route path="/preview/site" element={<PublishedWebsiteView />} />
                     <Route path="/preview/:siteId" element={<PublishedWebsiteView />} />
 
-              <Route path="/dashboard/ultra" element={<UltraDashboardPage />}>
+              <Route path="/dashboard/ultra" element={<AuthRequired><UltraDashboardPage /></AuthRequired>}>
                 <Route path="calendar" element={<CalendarPage />} />
                 <Route path="marketing" element={<MarketingHubPage />} />
                 <Route path="media-buyer" element={<MediaBuyerPage />} />
@@ -119,7 +133,7 @@ function App() {
                 <Route path="settings/notifications" element={<SettingsPage />} />
               </Route>
 
-              <Route path="/dashboard" element={<DashboardLayout />}>
+              <Route path="/dashboard" element={<AuthRequired><DashboardLayout /></AuthRequired>}>
                 <Route index element={<DashboardHome />} />
                 <Route path="calendar" element={<CalendarPage />} />
                 <Route path="marketing" element={<MarketingHubPage />} />
@@ -162,7 +176,7 @@ function App() {
                 <Route path="settings/notifications" element={<SettingsPage />} />
               </Route>
 
-              <Route path="/admin" element={<DashboardLayout variant="admin" />}>
+              <Route path="/admin" element={<AuthRequired><DashboardLayout variant="admin" /></AuthRequired>}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="tenants" element={<TenantsPage />} />
                 <Route path="users" element={<TenantsPage />} />
@@ -175,7 +189,7 @@ function App() {
                 <Route path="settings" element={<AdminSettingsPage />} />
               </Route>
 
-              <Route path="/portal" element={<PortalLayout />}>
+              <Route path="/portal" element={<AuthRequired><PortalLayout /></AuthRequired>}>
                 <Route index element={<PortalDashboard />} />
                 <Route path="messages" element={<PortalMessages />} />
                 <Route path="orders" element={<PortalDashboard />} />

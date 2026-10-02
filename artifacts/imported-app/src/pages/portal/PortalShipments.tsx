@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Button } from '../../components/ui/Button';
-import { supabase } from '../../lib/supabase';
+import { xisyncDb } from '../../lib/xisync-db';
 import { useAuth } from '../../lib/auth-context';
 import {
   Ship,
@@ -62,7 +62,7 @@ export function PortalShipments() {
       setLoading(true);
       try {
         if (tenant) {
-          const { data, error } = await supabase
+          const { data, error } = await xisyncDb
             .from('shipments')
             .select('*')
             .eq('tenant_id', tenant.id)

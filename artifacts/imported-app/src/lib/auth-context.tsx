@@ -1,15 +1,17 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { supabase, type Profile, type Tenant } from './supabase';
-import type { User, Session } from '@supabase/supabase-js';
+import { useAuth as useReplitAuth } from '@workspace/replit-auth-web';
+import type { AuthUser } from '@workspace/replit-auth-web';
+import { apiRequest } from './xisync-api';
+import type { Profile, Tenant } from './xisync-types';
 
+type WorkspaceContext = { profile: Profile; tenant: Tenant };
 type AuthContextType = {
-  user: User | null;
-  session: Session | null;
+  user: AuthUser | null;
   profile: Profile | null;
   tenant: Tenant | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
+  error: string | null;
+  signIn: () => void;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 };
@@ -17,144 +19,60 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const auth = useReplitAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [tenant, setTenant] = useState<Tenant | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [workspaceLoading, setWorkspaceLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchProfile = async (userId: string) => {
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
-
-    if (profileData) {
-      setProfile(profileData as Profile);
-
-      if (profileData.tenant_id) {
-        const { data: tenantData } = await supabase
-          .from('tenants')
-          .select('*')
-          .eq('id', profileData.tenant_id)
-          .maybeSingle();
-
-        if (tenantData) {
-          setTenant(tenantData as Tenant);
-        }
-      }
+  const refreshProfile = async () => {
+    if (!auth.user) {
+      setProfile(null);
+      setTenant(null);
+      return;
+    }
+    setWorkspaceLoading(true);
+    setError(null);
+    try {
+      const context = await apiRequest<WorkspaceContext>('/api/xisync/context');
+      setProfile(context.profile);
+      setTenant(context.tenant);
+    } catch (cause) {
+      setProfile(null);
+      setTenant(null);
+      setError(cause instanceof Error ? cause.message : 'Unable to load your XiSync workspace.');
+    } finally {
+      setWorkspaceLoading(false);
     }
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      }
-      setLoading(false);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        (async () => {
-          await fetchProfile(session.user.id);
-        })();
-      } else {
-        setProfile(null);
-        setTenant(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const signIn = async (email: string, password: string) => {
-    const demoEmails = ['admin@xisync.com', 'demo@exportco.com', 'buyer@abccorp.com'];
-    const cleanEmail = email.toLowerCase().trim();
-
-    if (demoEmails.includes(cleanEmail)) {
-      // Mock demo user session
-      const mockUser = {
-        id: cleanEmail === 'admin@xisync.com' ? 'demo-admin-id' : cleanEmail === 'buyer@abccorp.com' ? 'demo-buyer-id' : 'demo-exporter-id',
-        email: cleanEmail,
-        user_metadata: { full_name: cleanEmail === 'admin@xisync.com' ? 'SaaS Admin' : cleanEmail === 'buyer@abccorp.com' ? 'ABC Buyer' : 'Exporter Admin' },
-      } as unknown as User;
-
-      setUser(mockUser);
-      setProfile({
-        id: mockUser.id,
-        tenant_id: 'demo-tenant-id',
-        full_name: mockUser.user_metadata.full_name,
-        full_name_cn: null,
-        phone: null,
-        avatar_url: null,
-        role: cleanEmail === 'admin@xisync.com' ? 'super_admin' : cleanEmail === 'buyer@abccorp.com' ? 'viewer' : 'admin',
-        language: 'en',
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      } as Profile);
-      setLoading(false);
-      return { error: null };
+    if (auth.isLoading) return;
+    if (!auth.user) {
+      setProfile(null);
+      setTenant(null);
+      setError(null);
+      setWorkspaceLoading(false);
+      return;
     }
-
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error as Error | null };
-  };
-
-  const signUp = async (email: string, password: string, fullName: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: fullName },
-      },
-    });
-
-    if (!error && data.user) {
-      await supabase.from('profiles').insert({
-        id: data.user.id,
-        full_name: fullName,
-        role: 'admin',
-      });
-    }
-
-    return { error: error as Error | null };
-  };
+    void refreshProfile();
+  }, [auth.isLoading, auth.user?.id]);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
-    setProfile(null);
-    setTenant(null);
-  };
-
-  const refreshProfile = async () => {
-    if (user) {
-      await fetchProfile(user.id);
-    }
+    auth.logout();
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        session,
-        profile,
-        tenant,
-        loading,
-        signIn,
-        signUp,
-        signOut,
-        refreshProfile,
-      }}
-    >
+    <AuthContext.Provider value={{
+      user: auth.user,
+      profile,
+      tenant,
+      loading: auth.isLoading || workspaceLoading,
+      error,
+      signIn: auth.login,
+      signOut,
+      refreshProfile,
+    }}>
       {children}
     </AuthContext.Provider>
   );
@@ -162,8 +80,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 }

@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: Auth
+    description: Browser authentication operations.
 paths:
   /healthz:
     get:
@@ -24,6 +26,129 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /auth/user:
+    get:
+      tags: [Auth]
+      operationId: getCurrentAuthUser
+      summary: Get the authenticated Replit user
+      responses:
+        "200":
+          description: Authentication state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUserEnvelope"
+  /login:
+    get:
+      tags: [Auth]
+      operationId: beginBrowserLogin
+      summary: Start the secure browser login flow
+      parameters:
+        - name: returnTo
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Redirect to the identity provider
+  /callback:
+    get:
+      tags: [Auth]
+      operationId: handleBrowserLoginCallback
+      summary: Complete browser login
+      responses:
+        "302":
+          description: Redirect to the app
+  /logout:
+    get:
+      tags: [Auth]
+      operationId: logoutBrowserSession
+      summary: End the browser login session
+      responses:
+        "302":
+          description: Redirect to the identity provider
+  /xisync/context:
+    get:
+      tags: [Auth]
+      operationId: getXiSyncWorkspaceContext
+      summary: Get or create the signed-in user's XiSync workspace
+      responses:
+        "200":
+          description: User profile and isolated workspace
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/XiSyncContext"
+        "401":
+          description: Sign in required
+  /xisync/dashboard:
+    get:
+      tags: [health]
+      operationId: getXiSyncDashboard
+      summary: Read workspace metrics and recent activity
+      responses:
+        "200":
+          description: Workspace dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/XiSyncDashboard"
+        "401":
+          description: Sign in required
+  /xisync/leads:
+    get:
+      tags: [health]
+      operationId: listXiSyncLeads
+      summary: List leads in the signed-in user's workspace
+      responses:
+        "200":
+          description: Leads ordered by most recent
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/XiSyncLead"
+        "401":
+          description: Sign in required
+    post:
+      tags: [health]
+      operationId: createXiSyncLead
+      summary: Add a lead to the signed-in user's workspace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateXiSyncLead"
+      responses:
+        "201":
+          description: Lead created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/XiSyncLead"
+        "400":
+          description: Invalid lead
+        "401":
+          description: Sign in required
+  /xisync/tenants:
+    get:
+      tags: [health]
+      operationId: listXiSyncTenants
+      summary: List the signed-in user's workspaces
+      responses:
+        "200":
+          description: Tenants visible to the current user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/XiSyncTenant"
+        "401":
+          description: Sign in required
 components:
   schemas:
     HealthStatus:
@@ -33,4 +158,117 @@ components:
           type: string
       required:
         - status
+    AuthUser:
+      type: object
+      required: [id, email, firstName, lastName, profileImageUrl]
+      properties:
+        id: { type: string }
+        email: { type: [string, "null"], format: email }
+        firstName: { type: [string, "null"] }
+        lastName: { type: [string, "null"] }
+        profileImageUrl: { type: [string, "null"] }
+    AuthUserEnvelope:
+      type: object
+      required: [user]
+      properties:
+        user:
+          oneOf:
+            - $ref: "#/components/schemas/AuthUser"
+            - type: "null"
+    XiSyncTenant:
+      type: object
+      required: [id, name, slug, status, plan, created_at, updated_at, settings]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        name_cn: { type: [string, "null"] }
+        slug: { type: string }
+        industry: { type: [string, "null"] }
+        region: { type: [string, "null"] }
+        timezone: { type: [string, "null"] }
+        currency: { type: [string, "null"] }
+        default_language: { type: [string, "null"] }
+        logo_url: { type: [string, "null"] }
+        status: { type: string }
+        plan: { type: string }
+        settings: { type: object, additionalProperties: true }
+        trial_ends_at: { type: [string, "null"], format: date-time }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    XiSyncProfile:
+      type: object
+      required: [id, full_name, role, tenant_id, language, is_active, settings, created_at, updated_at]
+      properties:
+        id: { type: string }
+        full_name: { type: [string, "null"] }
+        role: { type: string }
+        tenant_id: { type: string, format: uuid }
+        full_name_cn: { type: [string, "null"] }
+        avatar_url: { type: [string, "null"] }
+        phone: { type: [string, "null"] }
+        language: { type: string }
+        is_active: { type: boolean }
+        settings: { type: object, additionalProperties: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    XiSyncContext:
+      type: object
+      required: [profile, tenant]
+      properties:
+        profile: { $ref: "#/components/schemas/XiSyncProfile" }
+        tenant: { $ref: "#/components/schemas/XiSyncTenant" }
+    XiSyncLead:
+      type: object
+      required: [id, contact_name, company_name, source, status, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        contact_name: { type: [string, "null"] }
+        company_name: { type: [string, "null"] }
+        email: { type: [string, "null"] }
+        phone: { type: [string, "null"] }
+        country: { type: [string, "null"] }
+        source: { type: [string, "null"] }
+        notes: { type: [string, "null"] }
+        status: { type: string }
+        score: { type: number }
+        created_at: { type: string, format: date-time }
+    CreateXiSyncLead:
+      type: object
+      required: [contact_name, email]
+      properties:
+        contact_name: { type: string, minLength: 1, maxLength: 200 }
+        company_name: { type: [string, "null"], maxLength: 250 }
+        email: { type: string, format: email, maxLength: 254 }
+        phone: { type: [string, "null"], maxLength: 60 }
+        country: { type: [string, "null"], maxLength: 100 }
+        source: { type: [string, "null"], maxLength: 100 }
+        notes: { type: [string, "null"], maxLength: 5000 }
+    XiSyncDashboard:
+      type: object
+      required: [lead_count, conversation_count, shipment_count, pipeline_value, recent_leads, recent_conversations]
+      properties:
+        lead_count: { type: integer }
+        conversation_count: { type: integer }
+        shipment_count: { type: integer }
+        pipeline_value: { type: number }
+        recent_leads:
+          type: array
+          items: { $ref: "#/components/schemas/XiSyncLead" }
+        recent_conversations:
+          type: array
+          items:
+            type: object
+            required: [id, subject, channel_type, last_message_at, contact]
+            properties:
+              id: { type: string, format: uuid }
+              subject: { type: [string, "null"] }
+              channel_type: { type: [string, "null"] }
+              last_message_at: { type: [string, "null"], format: date-time }
+              contact:
+                oneOf:
+                  - type: object
+                    properties:
+                      first_name: { type: [string, "null"] }
+                      last_name: { type: [string, "null"] }
+                  - type: "null"
 

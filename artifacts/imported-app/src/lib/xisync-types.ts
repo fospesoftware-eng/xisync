@@ -1,14 +1,3 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { createUnavailableSupabase } from './unavailable-supabase';
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
-export const supabase: SupabaseClient = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : createUnavailableSupabase() as unknown as SupabaseClient;
-
 export type Profile = {
   id: string;
   tenant_id: string | null;
@@ -19,7 +8,6 @@ export type Profile = {
   phone: string | null;
   language: string;
   is_active: boolean;
-  last_login_at: string | null;
   settings: Record<string, unknown>;
   created_at: string;
   updated_at: string;
@@ -32,9 +20,9 @@ export type Tenant = {
   slug: string;
   industry: string | null;
   region: string | null;
-  timezone: string;
-  currency: string;
-  default_language: string;
+  timezone: string | null;
+  currency: string | null;
+  default_language: string | null;
   logo_url: string | null;
   status: 'active' | 'suspended' | 'trial' | 'cancelled';
   plan: 'trial' | 'starter' | 'pro' | 'business' | 'enterprise';

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Button } from '../../components/ui/Button';
-import { supabase } from '../../lib/supabase';
+import { xisyncDb } from '../../lib/xisync-db';
 import { useAuth } from '../../lib/auth-context';
 import {
   Send,
@@ -31,7 +31,7 @@ export function PortalMessages() {
     if (!tenant || !profile) return;
     (async () => {
       setLoading(true);
-      const { data: conversations } = await supabase
+      const { data: conversations } = await xisyncDb
         .from('conversations')
         .select('id')
         .eq('tenant_id', tenant.id)
@@ -45,7 +45,7 @@ export function PortalMessages() {
       }
 
       const conversationId = (conversations[0] as { id: string }).id;
-      const { data: msgs } = await supabase
+      const { data: msgs } = await xisyncDb
         .from('messages')
         .select('*')
         .eq('conversation_id', conversationId)
@@ -73,7 +73,7 @@ export function PortalMessages() {
     setNewMessage('');
 
     let conversationId: string | null = null;
-    const { data: existing } = await supabase
+    const { data: existing } = await xisyncDb
       .from('conversations')
       .select('id')
       .eq('tenant_id', tenant.id)
@@ -83,7 +83,7 @@ export function PortalMessages() {
     if (existing && existing.length > 0) {
       conversationId = (existing[0] as { id: string }).id;
     } else {
-      const { data: newConv } = await supabase
+      const { data: newConv } = await xisyncDb
         .from('conversations')
         .insert({
           tenant_id: tenant.id,
@@ -98,7 +98,7 @@ export function PortalMessages() {
 
     if (!conversationId) return;
 
-    const { data } = await supabase
+    const { data } = await xisyncDb
       .from('messages')
       .insert({
         conversation_id: conversationId,

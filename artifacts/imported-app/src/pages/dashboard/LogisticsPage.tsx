@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { StatsCard } from '../../components/dashboard/StatsCard';
 import { GlobalShippingMap } from '../../components/logistics/GlobalShippingMap';
-import { supabase } from '../../lib/supabase';
+import { xisyncDb } from '../../lib/xisync-db';
 import { useAuth } from '../../lib/auth-context';
 import { Button } from '../../components/ui/Button';
 import {
@@ -89,7 +89,7 @@ export function LogisticsPage() {
     (async () => {
       try {
         if (tenant) {
-          const { data, error } = await supabase
+          const { data, error } = await xisyncDb
             .from('shipments')
             .select('*, account:accounts(name)')
             .eq('tenant_id', tenant.id)
@@ -117,6 +117,9 @@ export function LogisticsPage() {
       } catch (err) {
         console.error('LogisticsPage fetch error:', err);
       }
+
+      setShipments([]);
+      return;
 
       // Rich default mock shipments
       setShipments([
