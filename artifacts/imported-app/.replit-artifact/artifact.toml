@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Imported App"
+description = "The original Bolt application, migrated to Replit with its existing design, pages, and interactions preserved."
+version = "1.0.0"
+id = "artifacts/imported-app"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25650
+
+[services.development]
+run = "pnpm --filter @workspace/imported-app run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/imported-app", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/imported-app/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25650"
+BASE_PATH = "/"
