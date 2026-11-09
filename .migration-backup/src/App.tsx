@@ -8,6 +8,7 @@ import { AppGuard } from './components/AppGuard';
 
 import { HomePage } from './pages/marketing/HomePage';
 import { ProductPage } from './pages/marketing/ProductPage';
+import { SolutionsPage } from './pages/marketing/SolutionsPage';
 import { PricingPage } from './pages/marketing/PricingPage';
 import { IntegrationsPage } from './pages/marketing/IntegrationsPage';
 import { DemoPage } from './pages/marketing/DemoPage';
@@ -38,6 +39,7 @@ import { TenantsPage } from './pages/admin/TenantsPage';
 import { CMSPage } from './pages/admin/CMSPage';
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 import { MediaEngineAdminPage } from './pages/admin/mediaEngine/MediaEngineAdminPage';
+import { MarketplaceChannelsAdminPage } from './pages/admin/marketplace/MarketplaceChannelsAdminPage';
 import { MediaBuyerPage } from './pages/dashboard/mediaBuyer/MediaBuyerPage';
 
 import { PortalLayout } from './components/portal/PortalLayout';
@@ -46,6 +48,11 @@ import { PortalShipments } from './pages/portal/PortalShipments';
 import { PortalMessages } from './pages/portal/PortalMessages';
 
 import { ProductsPage } from './pages/dashboard/ProductsPage';
+import { ProductVideoStudioPage } from './pages/dashboard/products/ProductVideoStudioPage';
+import { MarketplaceHubPage } from './pages/dashboard/marketplace/MarketplaceHubPage';
+import { MarketplaceCatalogPage } from './pages/dashboard/marketplace/MarketplaceCatalogPage';
+import { MarketplaceImportQueuePage } from './pages/dashboard/marketplace/MarketplaceImportQueuePage';
+import { MarketplaceHistoryPage } from './pages/dashboard/marketplace/MarketplaceHistoryPage';
 import { CompliancePage } from './pages/dashboard/CompliancePage';
 import { CalendarPage } from './pages/dashboard/CalendarPage';
 import { PublishedWebsiteView } from './pages/public/PublishedWebsiteView';
@@ -62,6 +69,8 @@ function App() {
                   <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/product" element={<ProductPage />} />
+                    <Route path="/solutions" element={<SolutionsPage />} />
+                    <Route path="/solutions/:industry" element={<SolutionsPage />} />
                     <Route path="/pricing" element={<PricingPage />} />
                     <Route path="/integrations" element={<IntegrationsPage />} />
                     <Route path="/demo" element={<DemoPage />} />
@@ -96,6 +105,11 @@ function App() {
                 <Route path="website-builder/statistics" element={<WebsitePage />} />
                 <Route path="inbox" element={<InboxPage />} />
                 <Route path="products" element={<ProductsPage />} />
+                <Route path="products/video-studio" element={<ProductVideoStudioPage />} />
+                <Route path="marketplaces" element={<MarketplaceHubPage />} />
+                <Route path="marketplaces/catalog" element={<MarketplaceCatalogPage />} />
+                <Route path="marketplaces/imports" element={<MarketplaceImportQueuePage />} />
+                <Route path="marketplaces/history" element={<MarketplaceHistoryPage />} />
                 <Route path="logistics" element={<LogisticsPage />} />
                 <Route path="logistics/map" element={<LogisticsPage />} />
                 <Route path="logistics/tracking" element={<LogisticsPage />} />
@@ -139,6 +153,11 @@ function App() {
                 <Route path="website-builder/statistics" element={<WebsitePage />} />
                 <Route path="inbox" element={<InboxPage />} />
                 <Route path="products" element={<ProductsPage />} />
+                <Route path="products/video-studio" element={<ProductVideoStudioPage />} />
+                <Route path="marketplaces" element={<MarketplaceHubPage />} />
+                <Route path="marketplaces/catalog" element={<MarketplaceCatalogPage />} />
+                <Route path="marketplaces/imports" element={<MarketplaceImportQueuePage />} />
+                <Route path="marketplaces/history" element={<MarketplaceHistoryPage />} />
                 <Route path="logistics" element={<LogisticsPage />} />
                 <Route path="logistics/map" element={<LogisticsPage />} />
                 <Route path="logistics/tracking" element={<LogisticsPage />} />
@@ -168,6 +187,7 @@ function App() {
                 <Route path="users" element={<TenantsPage />} />
                 <Route path="cms" element={<CMSPage />} />
                 <Route path="media-engine" element={<MediaEngineAdminPage />} />
+                <Route path="marketplace-channels" element={<MarketplaceChannelsAdminPage />} />
                 <Route path="billing" element={<AdminDashboard />} />
                 <Route path="integrations" element={<AdminDashboard />} />
                 <Route path="security" element={<AdminDashboard />} />

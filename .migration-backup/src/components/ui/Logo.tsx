@@ -3,35 +3,40 @@ import { useI18n } from '../../lib/i18n';
 type LogoProps = {
   className?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
-  variant?: 'full' | 'icon';
+  variant?: 'full' | 'icon' | 'mark';
+  color?: 'ink' | 'brand' | 'white' | 'gradient';
 };
 
 const sizes = {
-  sm: { text: 'text-xl', height: 'h-6' },
-  md: { text: 'text-2xl', height: 'h-8' },
-  lg: { text: 'text-3xl', height: 'h-10' },
-  xl: { text: 'text-4xl', height: 'h-12' },
+  sm: 'text-xl',
+  md: 'text-2xl',
+  lg: 'text-3xl',
+  xl: 'text-4xl',
 };
 
-export function Logo({ className = '', size = 'md', variant = 'full' }: LogoProps) {
-  const sizeConfig = sizes[size];
-  const { language } = useI18n();
+const solidColors = {
+  ink: 'text-ink-950',
+  brand: 'text-brand-700',
+  white: 'text-white',
+};
 
-  if (variant === 'icon') {
-    return (
-      <div className={`font-extrabold ${sizeConfig.text} ${className}`}>
-        <span className="bg-gradient-to-r from-xisync-blue-500 via-xisync-cyan-400 to-xisync-lime-400 bg-clip-text text-transparent">
-          {language === 'zh' ? '犀' : 'X'}
-        </span>
-      </div>
-    );
-  }
+export function Logo({ className = '', size = 'md', color = 'ink' }: LogoProps) {
+  const { language } = useI18n();
+  const isZh = language === 'zh';
+  const sizeClass = sizes[size];
+  const isGradient = color === 'gradient';
 
   return (
-    <div className={`font-extrabold tracking-tight ${sizeConfig.text} ${className}`}>
-      <span className="bg-gradient-to-r from-xisync-blue-500 via-xisync-cyan-400 to-xisync-lime-400 bg-clip-text text-transparent">
-        {language === 'zh' ? '犀同步' : 'XiSync'}
-      </span>
-    </div>
+    <span
+      className={`inline-block font-logo font-extrabold leading-none ${sizeClass} ${
+        isZh ? 'tracking-[0.02em]' : 'tracking-[-0.03em]'
+      } ${className} ${
+        isGradient
+          ? 'bg-gradient-to-r from-xisync-blue-700 via-xisync-cyan-600 to-xisync-green-500 bg-clip-text text-transparent'
+          : solidColors[color as 'ink' | 'brand' | 'white']
+      }`}
+    >
+      {isZh ? '犀同步' : 'XiSync'}
+    </span>
   );
 }

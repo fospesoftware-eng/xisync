@@ -3,6 +3,7 @@ import { DataTable } from '../../../components/dashboard/DataTable';
 import { Button } from '../../../components/ui/Button';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../lib/auth-context';
+import { useI18n } from '../../../lib/i18n';
 import {
   Users,
   Mail,
@@ -29,6 +30,9 @@ type Contact = {
 
 export function ContactsPage() {
   const { tenant } = useAuth();
+  const { language } = useI18n();
+  const isZh = language === 'zh';
+  const t = (en: string, zh: string) => (isZh ? zh : en);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -51,14 +55,14 @@ export function ContactsPage() {
             setContacts(
               data.map((row: Record<string, unknown>) => ({
                 id: row.id as string,
-                name: `${row.first_name || ''} ${row.last_name || ''}`.trim() || 'Contact',
-                title: (row.job_title as string) || 'Procurement Specialist',
-                company: ((row.account as { name?: string } | null)?.name) || 'Company',
+                name: `${row.first_name || ''} ${row.last_name || ''}`.trim() || t('Contact', '联系人'),
+                title: (row.job_title as string) || t('Procurement Specialist', '采购专员'),
+                company: ((row.account as { name?: string } | null)?.name) || t('Company', '公司'),
                 email: (row.email as string) || '',
                 phone: (row.phone as string) || '',
-                country: (row.country as string) || 'Global',
+                country: (row.country as string) || t('Global', '全球'),
                 channel: 'whatsapp',
-                lastContacted: 'Today',
+                lastContacted: t('Today', '今天'),
               }))
             );
             return;
@@ -136,10 +140,26 @@ export function ContactsPage() {
       c.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const channelLabel: Record<Contact['channel'], string> = {
+    whatsapp: 'WhatsApp',
+    facebook: 'Facebook',
+    instagram: 'Instagram',
+    email: t('Email', '邮件'),
+    wechat: t('WeChat', '微信'),
+  };
+
+  const countryZh: Record<string, string> = {
+    'Ireland (EU)': '爱尔兰（欧盟）',
+    'Sweden (Nordic)': '瑞典（北欧）',
+    'United States (US)': '美国',
+    'France (EU)': '法国（欧盟）',
+    'United Arab Emirates (UAE)': '阿联酋',
+  };
+
   const columns = [
     {
       key: 'name',
-      header: 'Buyer Contact',
+      header: t('Buyer Contact', '采购商联系人'),
       sortable: true,
       render: (c: Contact) => (
         <div className="flex items-center gap-3">
@@ -155,7 +175,7 @@ export function ContactsPage() {
     },
     {
       key: 'company',
-      header: 'Company / Account',
+      header: t('Company / Account', '公司 / 客户'),
       sortable: true,
       render: (c: Contact) => (
         <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
@@ -166,7 +186,7 @@ export function ContactsPage() {
     },
     {
       key: 'email',
-      header: 'Email & Phone',
+      header: t('Email & Phone', '邮箱与电话'),
       sortable: true,
       render: (c: Contact) => (
         <div className="space-y-0.5 text-xs">
@@ -183,22 +203,22 @@ export function ContactsPage() {
     },
     {
       key: 'country',
-      header: 'Country',
+      header: t('Country', '国家'),
       sortable: true,
       render: (c: Contact) => (
         <div className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-300">
           <Globe className="w-3.5 h-3.5 text-cyan-500" />
-          <span>{c.country}</span>
+          <span>{isZh ? countryZh[c.country] || c.country : c.country}</span>
         </div>
       ),
     },
     {
       key: 'channel',
-      header: 'Preferred Channel',
+      header: t('Preferred Channel', '常用沟通渠道'),
       sortable: true,
       render: (c: Contact) => (
         <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold uppercase bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">
-          {c.channel}
+          {channelLabel[c.channel]}
         </span>
       ),
     },
@@ -213,16 +233,16 @@ export function ContactsPage() {
             <Users className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-extrabold tracking-tight">Buyer Contacts & Decision Makers</h1>
+            <h1 className="text-2xl font-extrabold tracking-tight">{t('Buyer Contacts & Decision Makers', '采购商联系人与决策者')}</h1>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-              Direct procurement managers, import directors, and purchasing agents across international accounts
+              {t('Direct procurement managers, import directors, and purchasing agents across international accounts', '海外客户公司的直采经理、进口总监与采购代理')}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <Button icon={<Plus className="w-4 h-4" />} onClick={() => setShowModal(true)}>
-            Add New Contact
+            {t('Add New Contact', '新增联系人')}
           </Button>
         </div>
       </div>
@@ -236,7 +256,7 @@ export function ContactsPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by contact name, company, or email..."
+              placeholder={t('Search by contact name, company, or email...', '按联系人姓名、公司或邮箱搜索…')}
               className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none focus:ring-2 focus:ring-cyan-500"
             />
           </div>
@@ -250,7 +270,7 @@ export function ContactsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-200 dark:border-slate-800 text-left">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <h3 className="font-extrabold text-base">Register Decision Maker Contact</h3>
+              <h3 className="font-extrabold text-base">{t('Register Decision Maker Contact', '登记决策者联系人')}</h3>
               <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600">
                 <X className="w-4 h-4" />
               </button>
@@ -258,16 +278,16 @@ export function ContactsPage() {
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="font-bold text-slate-500 block mb-1">Full Name</label>
+                <label className="font-bold text-slate-500 block mb-1">{t('Full Name', '姓名')}</label>
                 <input
                   type="text"
-                  placeholder="e.g. John Doe"
+                  placeholder={t('e.g. John Doe', '例如：张三')}
                   className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-bold outline-none"
                 />
               </div>
 
               <div>
-                <label className="font-bold text-slate-500 block mb-1">Business Email</label>
+                <label className="font-bold text-slate-500 block mb-1">{t('Business Email', '工作邮箱')}</label>
                 <input
                   type="email"
                   placeholder="e.g. buyer@company.com"
@@ -278,15 +298,15 @@ export function ContactsPage() {
 
             <div className="pt-2 flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowModal(false)}>
-                Cancel
+                {t('Cancel', '取消')}
               </Button>
               <Button
                 onClick={() => {
                   setShowModal(false);
-                  triggerToast('Buyer contact recorded!');
+                  triggerToast(t('Buyer contact recorded!', '采购商联系人已保存！'));
                 }}
               >
-                Save Contact
+                {t('Save Contact', '保存联系人')}
               </Button>
             </div>
           </div>

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Logo } from '../ui/Logo';
-import { Twitter, Linkedin, Youtube, Mail, Phone, MapPin } from 'lucide-react';
+import { Twitter, Linkedin, Youtube, Mail } from 'lucide-react';
 import { useI18n } from '../../lib/i18n';
 
 const socialLinks = [
@@ -11,108 +11,125 @@ const socialLinks = [
 
 export function Footer() {
   const { t, language } = useI18n();
+  const isZh = language === 'zh';
 
-  const footerLinks = {
-    product: {
-      title: t.nav.product,
-      links: [
-        { name: 'CRM', href: '/product#crm' },
-        { name: language === 'zh' ? '消息' : 'Messaging', href: '/product#messaging' },
-        { name: language === 'zh' ? '物流' : 'Logistics', href: '/product#logistics' },
-        { name: language === 'zh' ? '合规' : 'Compliance', href: '/product#compliance' },
-        { name: language === 'zh' ? '客户门户' : 'Customer Portal', href: '/product#portal' },
-        { name: t.nav.integrations, href: '/integrations' },
-      ],
-    },
-    resources: {
-      title: t.nav.resources,
-      links: [
-        { name: t.nav.helpCenter, href: '/help' },
-        { name: t.nav.apiReference, href: '/docs/api' },
-        { name: t.nav.blog, href: '/blog' },
-      ],
-    },
-    company: {
-      title: t.nav.company,
-      links: [
-        { name: t.nav.about, href: '/about' },
-        { name: t.nav.careers, href: '/careers' },
-        { name: t.nav.contact, href: '/contact' },
-      ],
-    },
-  };
+  const productLinks = [
+    { name: isZh ? '全渠道收件箱' : 'Omnichannel Inbox', href: '/product#inbox' },
+    { name: isZh ? '智能 CRM 与 RFQ 管道' : 'Smart CRM & RFQ Pipeline', href: '/product#crm' },
+    { name: isZh ? '多式联运物流枢纽' : 'Multimodal Logistics Hub', href: '/product#freight' },
+    { name: isZh ? '合规与贸易单据库' : 'Compliance & Trade Vault', href: '/product#compliance' },
+    { name: isZh ? '品牌化买家门户' : 'Branded Buyer Portal', href: '/product#portal' },
+    { name: isZh ? 'AI 助手' : 'AI Co-Pilot', href: '/product#ai' },
+    { name: isZh ? '集成生态' : 'Integrations', href: '/integrations' },
+  ];
+
+  const industryLinks = [
+    { name: isZh ? '电子与智能硬件' : 'Electronics & Hardware', href: '/solutions#electronics' },
+    { name: isZh ? '工业机械与零部件' : 'Industrial Machinery', href: '/solutions#machinery' },
+    { name: isZh ? '纺织品与服装' : 'Textiles & Apparel', href: '/solutions#textiles' },
+    { name: isZh ? '汽车与售后市场' : 'Automotive & Aftermarket', href: '/solutions#automotive' },
+    { name: isZh ? '消费品与家居' : 'Consumer Goods & Home', href: '/solutions#consumer' },
+  ];
+
+  const companyLinks = [
+    { name: isZh ? '关于 XiSync' : 'About XiSync', href: '#' },
+    { name: isZh ? '加入我们' : 'Careers', href: '#' },
+    { name: isZh ? '新闻与媒体' : 'Press & Media', href: '#' },
+    { name: isZh ? '合作伙伴计划' : 'Partner Program', href: '#' },
+  ];
+
+  const legalLinks = [
+    { name: isZh ? '安全架构' : 'Security Architecture', href: '#' },
+    { name: 'GDPR / PIPL', href: '#' },
+    { name: isZh ? '服务条款' : 'Terms of Service', href: '#' },
+    { name: isZh ? '服务状态' : 'Status Page', href: '#' },
+  ];
 
   return (
-    <footer className="bg-gray-900 text-white">
-      <div className="container-custom py-16">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 lg:gap-12">
-          <div className="col-span-2 md:col-span-3 lg:col-span-2">
-            <Logo size="lg" />
-            <p className="mt-4 text-gray-400 text-sm leading-relaxed max-w-sm">
-              {t.footer.description}
+    <footer className="relative bg-ink-950 text-white overflow-hidden">
+      {/* subtle top gradient */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      {/* soft glow */}
+      <div className="absolute -top-32 left-1/4 h-64 w-[30rem] rounded-full bg-xisync-blue-600/10 blur-[120px]" />
+      <div className="absolute -top-32 right-1/4 h-64 w-[30rem] rounded-full bg-xisync-green-500/10 blur-[120px]" />
+
+      <div className="container-custom relative py-20">
+        <div className="grid gap-12 lg:grid-cols-12">
+          {/* Brand */}
+          <div className="lg:col-span-4">
+            <Logo size="lg" color="white" />
+            <p className="mt-5 text-sm leading-relaxed text-ink-400 max-w-sm">
+              {isZh
+                ? '统一的 AI 驱动出口操作系统，助力制造商和贸易商更智能地拓展全球业务。'
+                : 'Unified AI-powered export OS for manufacturers and trading companies to grow globally, smarter.'}
             </p>
-            <div className="mt-6 space-y-3">
-              <div className="flex items-center gap-3 text-sm text-gray-400">
-                <Mail className="w-4 h-4" />
-                <span>hello@xisync.com</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-gray-400">
-                <Phone className="w-4 h-4" />
-                <span>+86 400-888-8888</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-gray-400">
-                <MapPin className="w-4 h-4" />
-                <span>{language === 'zh' ? '中国上海' : 'Shanghai, China'}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 mt-6">
+            <div className="mt-6 flex items-center gap-2">
               {socialLinks.map((link) => (
                 <a
                   key={link.name}
                   href={link.href}
-                  className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-800 text-gray-400 hover:bg-xisync-cyan-600 hover:text-white transition-colors"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-ink-400 transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white"
                 >
-                  <link.icon className="w-5 h-5" />
+                  <link.icon className="w-4 h-4" />
                 </a>
               ))}
             </div>
           </div>
 
-          {Object.values(footerLinks).map((section) => (
-            <div key={section.title}>
-              <h3 className="font-semibold text-white mb-4">{section.title}</h3>
-              <ul className="space-y-3">
-                {section.links.map((link) => (
-                  <li key={link.name}>
-                    <Link
-                      to={link.href}
-                      className="text-sm text-gray-400 hover:text-xisync-cyan-400 transition-colors"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {/* Product */}
+          <div className="lg:col-span-2">
+            <h3 className="text-sm font-semibold text-white">{isZh ? '产品功能' : 'Product'}</h3>
+            <ul className="mt-4 space-y-2.5">
+              {productLinks.map((l) => (
+                <li key={l.name}>
+                  <Link to={l.href} className="text-sm text-ink-400 hover:text-white transition-colors">{l.name}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Industry */}
+          <div className="lg:col-span-2">
+            <h3 className="text-sm font-semibold text-white">{isZh ? '行业方案' : 'Industries'}</h3>
+            <ul className="mt-4 space-y-2.5">
+              {industryLinks.map((l) => (
+                <li key={l.name}>
+                  <Link to={l.href} className="text-sm text-ink-400 hover:text-white transition-colors">{l.name}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Company */}
+          <div className="lg:col-span-2">
+            <h3 className="text-sm font-semibold text-white">{isZh ? '关于公司' : 'Company'}</h3>
+            <ul className="mt-4 space-y-2.5">
+              {companyLinks.map((l) => (
+                <li key={l.name}>
+                  <Link to={l.href} className="text-sm text-ink-400 hover:text-white transition-colors">{l.name}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div className="lg:col-span-2">
+            <h3 className="text-sm font-semibold text-white">{isZh ? '法律与合规' : 'Legal & Trust'}</h3>
+            <ul className="mt-4 space-y-2.5">
+              {legalLinks.map((l) => (
+                <li key={l.name}>
+                  <Link to={l.href} className="text-sm text-ink-400 hover:text-white transition-colors">{l.name}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-gray-800">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-gray-500">
-              © 2024 {language === 'zh' ? '犀同步' : 'XiSync'}. {t.footer.rights}
-            </p>
-            <div className="flex items-center gap-6">
-              <Link to="/privacy" className="text-sm text-gray-500 hover:text-gray-300">
-                {t.footer.privacy}
-              </Link>
-              <Link to="/terms" className="text-sm text-gray-500 hover:text-gray-300">
-                {t.footer.terms}
-              </Link>
-              <Link to="/cookies" className="text-sm text-gray-500 hover:text-gray-300">
-                {t.footer.cookies}
-              </Link>
-            </div>
+        <div className="mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-ink-500">© 2025 XiSync. {t.footer.rights}</p>
+          <div className="flex items-center gap-4 text-sm text-ink-500">
+            <span className="inline-flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" /> hello@xisync.com</span>
+            <span className="hidden sm:inline">SOC-2 · PIPL · AES-256</span>
           </div>
         </div>
       </div>

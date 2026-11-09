@@ -1,840 +1,509 @@
-import { useEffect, useMemo, useRef, type MouseEvent, type ReactNode } from 'react';
+import { useMemo, useState, type MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, useScroll, useMotionValue, useMotionTemplate } from 'framer-motion';
+import { motion, useMotionValue, useMotionTemplate, AnimatePresence } from 'framer-motion';
 import { Header } from '../../components/marketing/Header';
 import { Footer } from '../../components/marketing/Footer';
 import { Button } from '../../components/ui/Button';
 import { ChannelIcon } from '../../components/ui/ChannelIcon';
 import { Reveal } from '../../components/marketing/premium/Reveal';
-import { TiltCard } from '../../components/marketing/premium/TiltCard';
 import { CountUp } from '../../components/marketing/premium/CountUp';
-import { Parallax } from '../../components/marketing/premium/Parallax';
-import { ParticleField } from '../../components/marketing/premium/ParticleField';
 import { Marquee } from '../../components/marketing/premium/Marquee';
-import { useMouseParallax } from '../../components/marketing/premium/useMouseParallax';
+import { ScrollProgress } from '../../components/marketing/premium/ScrollProgress';
 import { useI18n } from '../../lib/i18n';
 import {
-  ArrowRight,
-  Users,
-  MessageCircle,
-  Share2,
-  Package,
-  FileCheck,
-  LayoutDashboard,
-  Play,
-  Globe,
-  TrendingUp,
-  Zap,
-  Star,
-  Check,
+  ArrowRight, MessageCircle, Package, FileCheck, LayoutDashboard,
+  Play, TrendingUp, Zap, Check, Languages, ShieldCheck,
+  Truck, Building2, ChevronDown, ChevronUp, Factory, Calculator,
+  Landmark, Bot, Cpu, Wrench, Shirt, Car, Boxes, Lock, RefreshCw, Eye,
   Sparkles,
-  Languages,
-  ShieldCheck,
-  LineChart,
-  Truck,
-  Building2,
-  Rocket,
 } from 'lucide-react';
 
-const EASE: [number, number, number, number] = [0.21, 0.65, 0.36, 1];
+const EASE = [0.22, 1, 0.36, 1] as const;
 
-/** Filmic grain overlay (inline SVG turbulence) */
-const NOISE_DATA_URI = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='0.55'/></svg>")`;
+function SplitText({ text, delay = 0, className = '' }: { text: string; delay?: number; className?: string }) {
+  const isCjk = /[\u4e00-\u9fff]/.test(text);
 
-function splitWords(text: string): string[] {
-  return /[\u4e00-\u9fff]/.test(text) ? Array.from(text) : text.split(' ');
-}
+  if (isCjk) {
+    return (
+      <motion.span
+        className={`inline-block ${className}`}
+        initial={{ opacity: 0, y: 20, filter: 'blur(4px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        transition={{ duration: 0.6, delay, ease: EASE }}
+      >
+        {text}
+      </motion.span>
+    );
+  }
 
-/** Word/character staggered headline reveal with a 3D pop */
-function StaggerText({ text, delay = 0, className = '' }: { text: string; delay?: number; className?: string }) {
-  const words = useMemo(() => splitWords(text), [text]);
+  const words = useMemo(() => text.split(' '), [text]);
   return (
-    <motion.span
-      className="inline-block"
-      initial="hidden"
-      animate="visible"
-      variants={{
-        hidden: {},
-        visible: { transition: { staggerChildren: 0.055, delayChildren: delay } },
-      }}
-    >
+    <span className="inline-block">
       {words.map((word, i) => (
         <motion.span
           key={`${word}-${i}`}
-          className={`inline-block will-change-transform ${className}`}
-          variants={{
-            hidden: { opacity: 0, y: 30, rotateX: 45, filter: 'blur(8px)' },
-            visible: {
-              opacity: 1,
-              y: 0,
-              rotateX: 0,
-              filter: 'blur(0px)',
-              transition: { duration: 0.65, ease: EASE },
-            },
-          }}
+          className={`inline-block whitespace-nowrap ${className}`}
+          initial={{ opacity: 0, y: 20, filter: 'blur(4px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          transition={{ duration: 0.5, delay: delay + i * 0.08, ease: EASE }}
         >
           {word}
           {i < words.length - 1 ? '\u00A0' : ''}
         </motion.span>
       ))}
-    </motion.span>
+    </span>
   );
 }
 
-function Eyebrow({ children }: { children: ReactNode }) {
+function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-xisync-cyan-200 bg-xisync-cyan-50 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-xisync-cyan-700">
-      <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-xisync-cyan-500 to-xisync-lime-500" />
+    <span className="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-white px-3.5 py-1 text-xs font-semibold text-ink-600 shadow-premium-sm">
+      <span className="h-1 w-1 rounded-full bg-brand-500" />
       {children}
     </span>
   );
 }
 
-function SectionHeading({
-  eyebrow,
-  title,
-  subtitle,
-}: {
-  eyebrow: string;
-  title: ReactNode;
-  subtitle?: string;
-}) {
+function SectionHeading({ eyebrow, title, subtitle }: { eyebrow: string; title: React.ReactNode; subtitle?: string }) {
   return (
-    <Reveal className="mx-auto mb-14 max-w-3xl text-center">
+    <Reveal className="mx-auto mb-16 max-w-3xl text-center">
       <Eyebrow>{eyebrow}</Eyebrow>
-      <h2 className="mt-5 text-3xl font-bold text-gray-900 md:text-4xl">{title}</h2>
-      {subtitle && <p className="mt-4 text-lg text-gray-600">{subtitle}</p>}
+      <h2 className="mt-5 text-3xl font-bold leading-tight text-ink-950 md:text-4xl lg:text-5xl">{title}</h2>
+      {subtitle && <p className="mt-5 text-base leading-relaxed text-ink-500 md:text-lg">{subtitle}</p>}
+    </Reveal>
+  );
+}
+
+function FAQItem({ q, a, isOpen, onToggle, index }: { q: string; a: string; isOpen: boolean; onToggle: () => void; index: number }) {
+  return (
+    <Reveal delay={index * 0.08} y={16}>
+      <div className="rounded-2xl border border-ink-200 bg-white p-5 transition-all duration-300 hover:border-ink-300 card-lift">
+        <button onClick={onToggle} className="flex w-full items-center justify-between gap-4 text-left">
+          <span className="text-base font-semibold text-ink-950">{q}</span>
+          <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink-100 text-ink-600 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
+            {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </span>
+        </button>
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: EASE }}
+              className="overflow-hidden"
+            >
+              <p className="mt-3 text-sm leading-relaxed text-ink-500">{a}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </Reveal>
   );
 }
 
 export function HomePage() {
-  const { t, language } = useI18n();
-  const { scrollYProgress } = useScroll();
+  const { language } = useI18n();
+  const isZh = language === 'zh';
 
-  const heroParallaxA = useMouseParallax(28);
-  const heroParallaxB = useMouseParallax(52);
-  const heroParallaxC = useMouseParallax(80);
-
-  // cursor spotlight (radial glow that follows the mouse across the hero)
   const spotlightX = useMotionValue(50);
   const spotlightY = useMotionValue(50);
-  const spotlightBg = useMotionTemplate`radial-gradient(640px circle at ${spotlightX}% ${spotlightY}%, rgba(34,211,238,0.14), rgba(59,130,246,0.06) 45%, transparent 68%)`;
-
-  // pause the background video for users who prefer reduced motion
-  const heroVideoRef = useRef<HTMLVideoElement>(null);
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const apply = () => {
-      const video = heroVideoRef.current;
-      if (!video) return;
-      if (mq.matches) video.pause();
-      else video.play().catch(() => undefined);
-    };
-    apply();
-    mq.addEventListener('change', apply);
-    return () => mq.removeEventListener('change', apply);
-  }, []);
-
-  const stats = [
-    { to: 10000, suffix: '+', label: language === 'zh' ? '活跃出口商' : 'Active Exporters' },
-    { to: 50, suffix: '+', label: language === 'zh' ? '覆盖国家' : 'Countries Reached' },
-    { prefix: '$', to: 2, suffix: 'B+', label: language === 'zh' ? '贸易额' : 'Trade Volume' },
-    { to: 99.9, decimals: 1, suffix: '%', label: language === 'zh' ? '正常运行时间' : 'Uptime' },
-  ];
+  const spotlightBg = useMotionTemplate`radial-gradient(500px circle at ${spotlightX}% ${spotlightY}%, rgba(37,99,235,0.07), transparent 60%)`;
 
   const modules = [
     {
-      icon: Users,
-      name: 'CRM',
-      title: language === 'zh' ? '客户管理' : 'Customer Management',
-      description:
-        language === 'zh'
-          ? '管理线索、账户、联系人和交易，全流程追踪销售管道。'
-          : 'Manage leads, accounts, contacts, and deals. Track your entire sales pipeline.',
-      href: '/product#crm',
-      color: 'from-xisync-blue-500 to-xisync-blue-700',
-      glow: 'group-hover:shadow-[0_30px_80px_-24px_rgba(59,130,246,0.55)]',
-      chip: 'bg-xisync-blue-50 text-xisync-blue-700',
-    },
-    {
       icon: MessageCircle,
-      name: 'Connect',
-      title: language === 'zh' ? '全渠道消息' : 'Omnichannel Messaging',
-      description:
-        language === 'zh'
-          ? 'WhatsApp、微信、邮件、Instagram 统一收件箱，配有 AI 实时翻译。'
-          : 'WhatsApp, WeChat, Email, Instagram in one inbox with AI translation.',
-      href: '/product#messaging',
-      color: 'from-xisync-cyan-500 to-xisync-cyan-700',
-      glow: 'group-hover:shadow-[0_30px_80px_-24px_rgba(6,182,212,0.55)]',
-      chip: 'bg-xisync-cyan-50 text-xisync-cyan-700',
+      title: isZh ? '全渠道沟通收件箱' : 'Omnichannel Communication Inbox',
+      tagline: isZh ? '再也不会在零散的聊天应用中流失海外买家' : 'Never lose an overseas buyer in fragmented chat apps again.',
+      features: [
+        isZh ? '实时双向神经翻译，支持 7+ 种语言' : 'Real-time bidirectional translation across 7+ languages',
+        isZh ? '统一管理 WhatsApp、微信、邮件、Instagram、Messenger' : 'Unify WhatsApp, WeChat, Email, Instagram, Messenger',
+        isZh ? 'AI 自动生成高转化的跟进消息' : 'AI auto-drafts high-converting follow-ups',
+      ],
+      accent: 'bg-brand-50 text-brand-600',
     },
     {
-      icon: Share2,
-      name: 'Social',
-      title: language === 'zh' ? '社媒营销' : 'Social Media',
-      description:
-        language === 'zh'
-          ? '定时发布、多账号管理，将社媒互动转化为业务线索。'
-          : 'Schedule posts, manage accounts, and convert social engagement to leads.',
-      href: '/product#social',
-      color: 'from-teal-500 to-teal-700',
-      glow: 'group-hover:shadow-[0_30px_80px_-24px_rgba(20,184,166,0.55)]',
-      chip: 'bg-teal-50 text-teal-700',
+      icon: Zap,
+      title: isZh ? '智能出口 CRM 与销售管道' : 'Smart Export CRM & Pipeline',
+      tagline: isZh ? '借助订单智能，高效成交高价值海外订单' : 'Close high-ticket international orders with deal intelligence.',
+      features: [
+        isZh ? 'AI 潜客评分，精准锁定真实采购意向' : 'AI lead scoring prioritizes verified buyers',
+        isZh ? '即时多币种报价，自动计算国际贸易术语' : 'Instant multi-currency PI with Incoterms calculation',
+        isZh ? '预测式销售管道，适配 30-90 天出口周期' : 'Predictive pipeline for 30-to-90 day export cycles',
+      ],
+      accent: 'bg-ink-100 text-ink-900',
     },
     {
-      icon: Package,
-      name: 'Logistics',
-      title: language === 'zh' ? '物流追踪' : 'Shipment Tracking',
-      description:
-        language === 'zh'
-          ? '从工厂到目的地全程追踪出货，支持买家实时提醒。'
-          : 'Track shipments from factory to destination with customer notifications.',
-      href: '/product#logistics',
-      color: 'from-xisync-green-500 to-xisync-green-700',
-      glow: 'group-hover:shadow-[0_30px_80px_-24px_rgba(34,197,94,0.55)]',
-      chip: 'bg-xisync-green-50 text-xisync-green-700',
+      icon: Truck,
+      title: isZh ? '实时货运与物流追踪' : 'Real-Time Freight & Logistics Tracker',
+      tagline: isZh ? '从工厂到买家门口，全程零盲区' : 'Factory floor to buyer\'s door with zero blind spots.',
+      features: [
+        isZh ? '直连马士基、中远、DHL、FedEx、UPS 官方 API' : 'Direct API feeds from Maersk, COSCO, DHL, FedEx, UPS',
+        isZh ? '自动检测延误、集装箱滚装、海关扣留' : 'Auto delay, vessel roll-over, customs alerts',
+        isZh ? '自动向海外买家推送里程碑通知' : 'Auto milestone dispatch to overseas buyers',
+      ],
+      accent: 'bg-cyan-50 text-cyan-600',
     },
     {
       icon: FileCheck,
-      name: 'Compliance',
-      title: language === 'zh' ? '合规中心' : 'Compliance Center',
-      description:
-        language === 'zh'
-          ? '管理出口证书，追踪到期时间，满足目标国监管要求。'
-          : 'Manage certificates, track expirations, meet destination requirements.',
-      href: '/product#compliance',
-      color: 'from-xisync-lime-500 to-xisync-lime-700',
-      glow: 'group-hover:shadow-[0_30px_80px_-24px_rgba(132,204,22,0.5)]',
-      chip: 'bg-xisync-lime-50 text-xisync-lime-700',
+      title: isZh ? '合规、海关与单据库' : 'Compliance, Customs & Document Vault',
+      tagline: isZh ? '杜绝海关扣留与滞箱费用' : 'Eliminate customs hold-ups and lost container fees.',
+      features: [
+        isZh ? '智能 OCR 解析提单、装箱单、发票、原产地证' : 'OCR parses B/L, Packing Lists, Invoices, CO',
+        isZh ? '欧盟 CE/RoHS、美国 FDA/FCC、沙特 SASO 合规清单' : 'EU CE/RoHS, US FDA/FCC, SASO checklists',
+        isZh ? '证书到期自动提醒' : 'Certificate expiry monitoring',
+      ],
+      accent: 'bg-emerald-50 text-emerald-600',
     },
     {
       icon: LayoutDashboard,
-      name: 'Portal',
-      title: language === 'zh' ? '买家自助门户' : 'Customer Portal',
-      description:
-        language === 'zh'
-          ? '为海外买家提供专属门户，便捷追踪订单及文档。'
-          : 'Branded self-service portal for buyers to track orders and documents.',
-      href: '/product#portal',
-      color: 'from-orange-500 to-orange-700',
-      glow: 'group-hover:shadow-[0_30px_80px_-24px_rgba(249,115,22,0.5)]',
-      chip: 'bg-orange-50 text-orange-700',
+      title: isZh ? '白标买家自助门户' : 'White-Label Buyer Self-Service Portal',
+      tagline: isZh ? '为海外客户提供企业级追踪体验' : 'Give overseas clients an enterprise-grade tracking experience.',
+      features: [
+        isZh ? '自定义域名与品牌形象（track.yourcompany.com）' : 'Custom domain & branding',
+        isZh ? '多语言生产进度展示与追踪地图' : 'Multi-language production & tracking maps',
+        isZh ? '一键下载质检报告、发票、测试证书' : 'One-click download: reports, invoices, certificates',
+      ],
+      accent: 'bg-amber-50 text-amber-600',
+    },
+    {
+      icon: Bot,
+      title: isZh ? '嵌入式 AI 助手' : 'Embedded AI Co-Pilot',
+      tagline: isZh ? '您 24/7 在线的双语出口客户经理' : 'Your 24/7 bilingual export account executive.',
+      features: [
+        isZh ? '深度跨境 OCR，可识别手写单据' : 'Deep cross-border OCR for handwritten slips',
+        isZh ? '合规预筛：缺失 HS 编码、重量不符等预警' : 'Compliance pre-screening for missing HS codes',
+        isZh ? '推荐最优集装箱装柜方案与贸易术语' : 'Optimal container & Incoterms recommendations',
+      ],
+      accent: 'bg-violet-50 text-violet-600',
     },
   ];
 
-  const pages = [
+  const extensions = [
     {
-      title: language === 'zh' ? '产品介绍' : 'Product',
-      description: language === 'zh' ? '探索六大强大模块，了解协同工作原理' : 'Explore all six modules and see how they work together',
-      href: '/product',
-      icon: Zap,
+      icon: Factory,
+      title: isZh ? '🏭 工厂生产与里程碑联动' : '🏭 Factory Production & Milestone Link',
+      subtitle: isZh ? 'OEM / ODM 就绪' : 'OEM / ODM Ready',
+      items: [
+        isZh ? '实时批次状态：对接 ERP/MES，买家可见模具、原料、QA 进度' : 'Live Batch Status: ERP/MES for tooling, materials, QA updates',
+        isZh ? '数字化装船前检验：上传 QA 图片、跌落测试视频、SGS/TÜV 报告' : 'Digital PSI: QA images, drop-test videos, SGS/TÜV reports',
+      ],
     },
     {
-      title: language === 'zh' ? '平台集成' : 'Integrations',
-      description: language === 'zh' ? '无缝对接 WhatsApp, 微信, Shopify, 阿里等平台' : 'Connect WhatsApp, WeChat, Shopify, Alibaba and more',
-      href: '/integrations',
-      icon: Globe,
+      icon: Calculator,
+      title: isZh ? '📦 智能 CBM 与集装箱优化' : '📦 Intelligent CBM & Container Optimization',
+      subtitle: isZh ? '3D 装柜预览' : '3D Stuffing Preview',
+      items: [
+        isZh ? '3D 集装箱装柜预览：基于产品规格模拟 20GP/40GP/40HQ 布局' : '3D preview for 20GP, 40GP, 40HQ from product specs',
+        isZh ? '体积重量优化，空运附加费即时提醒' : 'Dimensional weight optimization with instant warnings',
+      ],
     },
     {
-      title: language === 'zh' ? '价格方案' : 'Pricing',
-      description: language === 'zh' ? '简单透明的定价，支持 14 天免费试用' : 'Simple, transparent pricing with a 14-day free trial',
-      href: '/pricing',
-      icon: TrendingUp,
-    },
-    {
-      title: language === 'zh' ? '预约演示' : 'Book Demo',
-      description: language === 'zh' ? '获取专家团队的一对一个性化演示' : 'Get a personalized walkthrough from our team',
-      href: '/demo',
-      icon: Play,
+      icon: Landmark,
+      title: isZh ? '🛡️ 贸易融资与外汇风险管理' : '🛡️ Trade Finance & FX Risk Management',
+      subtitle: isZh ? '实时汇率监控' : 'Real-Time FX Monitor',
+      items: [
+        isZh ? '美元/欧元/人民币汇率锁定，报价有效期到期提醒' : 'FX rate locks & quotation validity alerts',
+        isZh ? '信用证不符点检查：按 UCP 600 规则自动扫描' : 'L/C Discrepancy Checker against UCP 600 rules',
+      ],
     },
   ];
 
-  const testimonials = [
-    {
-      quote:
-        language === 'zh'
-          ? 'XiSync 彻底改变了我们管理海外买家的方式。仅实时翻译功能就为我们节省了无数工作时间。'
-          : 'XiSync transformed how we manage international buyers. The real-time translation alone saved us countless hours.',
-      author: language === 'zh' ? '张伟' : 'Zhang Wei',
-      role: language === 'zh' ? '出口经理，深圳电子' : 'Export Manager, Shenzhen Electronics',
-      rating: 5,
-    },
-    {
-      quote:
-        language === 'zh'
-          ? '我们将买家响应时间从几天缩短到了几分钟。客户非常喜欢专用的买家门户。'
-          : 'We reduced our response time from days to minutes. Our buyers love the customer portal.',
-      author: language === 'zh' ? '李明' : 'Li Ming',
-      role: language === 'zh' ? '总经理，杭州纺织' : 'CEO, Hangzhou Textiles',
-      rating: 5,
-    },
+  const industries = [
+    { icon: Cpu, name: isZh ? '电子与智能硬件' : 'Electronics & Hardware', desc: isZh ? 'RoHS/CE/FCC、序列号追踪、锂电池' : 'RoHS/CE/FCC, serial tracking, lithium' },
+    { icon: Wrench, name: isZh ? '工业机械与设备' : 'Industrial Machinery', desc: isZh ? '长周期管道、散货物流、里程碑付款' : 'Long-cycle pipeline, breakbulk, milestone' },
+    { icon: Shirt, name: isZh ? '纺织品与服装' : 'Textiles & Apparel', desc: isZh ? '样品追踪、OEKO-TEX/GOTS、阿里巴巴 RFQ' : 'Sample tracking, OEKO-TEX/GOTS, Alibaba' },
+    { icon: Car, name: isZh ? '汽车与售后市场' : 'Automotive & Aftermarket', desc: isZh ? '零件目录、VIN 匹配、全球分销' : 'Parts catalog, VIN matching, global' },
+    { icon: Boxes, name: isZh ? '消费品与家居' : 'Consumer Goods & Home', desc: isZh ? '季节性船期、条码生成、多语言' : 'Seasonal dates, barcode gen, multi-lang' },
+  ];
+
+  const valueMetrics = [
+    { value: '-68%', label: isZh ? '买家询盘响应时间' : 'Buyer Inquiry Response Time', icon: Zap },
+    { value: '+34%', label: isZh ? 'RFQ 到订单转化率' : 'RFQ-to-Order Conversion Rate', icon: TrendingUp },
+    { value: '0', label: isZh ? '合规延误' : 'Compliance Delays', icon: ShieldCheck },
+    { value: '100%', label: isZh ? '多式联运货物可见性' : 'Multimodal Shipment Visibility', icon: Eye },
+  ];
+
+  const stats = [
+    { to: 10000, suffix: '+', label: isZh ? '活跃出口商' : 'Active Exporters' },
+    { to: 50, suffix: '+', label: isZh ? '覆盖国家数' : 'Countries Reached' },
+    { prefix: '$', to: 2, suffix: 'B+', label: isZh ? '贸易总额' : 'Trade Volume' },
+    { to: 99.9, decimals: 1, suffix: '%', label: isZh ? '系统可用率' : 'Uptime' },
   ];
 
   const channels = ['WhatsApp', 'WeChat', 'Email', 'Instagram', 'Facebook', 'TikTok'];
+  const brands = ['Alibaba', 'Made-in-China', 'WhatsApp Business', 'WeChat Work', 'Gmail', 'Microsoft 365', 'Slack', 'Zapier', 'Google Drive', 'Dropbox'];
 
   const heroMouseHandler = (e: MouseEvent<HTMLElement>) => {
-    heroParallaxA.onMouseMove(e);
-    heroParallaxB.onMouseMove(e);
-    heroParallaxC.onMouseMove(e);
     const rect = e.currentTarget.getBoundingClientRect();
     spotlightX.set(((e.clientX - rect.left) / rect.width) * 100);
     spotlightY.set(((e.clientY - rect.top) / rect.height) * 100);
   };
 
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+
   return (
-    <div className="min-h-screen overflow-x-clip">
-      {/* scroll progress bar */}
-      <motion.div
-        className="fixed inset-x-0 top-0 z-[70] h-[3px] origin-left bg-gradient-to-r from-xisync-blue-500 via-xisync-cyan-400 to-xisync-lime-400"
-        style={{ scaleX: scrollYProgress }}
-      />
+    <div className="min-h-screen overflow-x-clip bg-ink-50">
+      <ScrollProgress />
 
       <Header />
 
       <main>
-        {/* ============ HERO (3D parallax, immersive dark) ============ */}
+        {/* ============ HERO ============ */}
         <section
-          className="relative overflow-hidden bg-slate-950 pb-24 pt-32 lg:pb-32 lg:pt-40"
+          className="relative overflow-hidden pt-28 pb-24 lg:pt-36 lg:pb-32"
           onMouseMove={heroMouseHandler}
         >
-          {/* base radial wash */}
-          <div className="absolute inset-0 bg-[radial-gradient(120%_120%_at_50%_-20%,#0d2a55_0%,#020617_60%)]" />
-          {/* perspective grid */}
-          <div className="absolute inset-0 bg-grid-dark mask-radial-fade opacity-70" />
+          {/* soft gradient wash */}
+          <div className="absolute inset-0 bg-wash" />
+          {/* subtle grid */}
+          <div className="absolute inset-0 bg-grid-subtle" />
 
-          {/* generated aurora video (loops seamlessly, poster fallback) */}
-          <video
-            ref={heroVideoRef}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            poster="/hero-bg-poster.jpg"
-            aria-hidden
-            className="absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-45 mix-blend-screen"
-          >
-            <source src="/hero-bg.mp4" type="video/mp4" />
-          </video>
+          {/* soft floating blobs */}
+          <div className="absolute -top-40 -left-40 h-[32rem] w-[32rem] rounded-full bg-xisync-blue-200/50 blur-[120px] animate-drift" />
+          <div className="absolute top-10 -right-40 h-[28rem] w-[28rem] rounded-full bg-xisync-green-200/60 blur-[120px] animate-drift" style={{ animationDelay: '-6s' }} />
+          <div className="absolute bottom-0 left-1/2 h-[24rem] w-[24rem] -translate-x-1/2 rounded-full bg-xisync-cyan-100/60 blur-[120px] animate-drift" style={{ animationDelay: '-10s' }} />
 
-          {/* filmic grain */}
-          <div
-            aria-hidden
-            className="absolute inset-0 opacity-[0.06] mix-blend-overlay"
-            style={{ backgroundImage: NOISE_DATA_URI }}
-          />
-
-          {/* floating 3D wireframe globe (mouse parallax + slow spin) */}
-          <motion.div
-            style={{ x: heroParallaxB.sx, y: heroParallaxB.sy }}
-            className="absolute -right-20 -top-24 hidden h-72 w-72 opacity-50 lg:block"
-          >
-            <div className="animate-orbit-slow h-full w-full">
-              <svg viewBox="0 0 200 200" fill="none" className="h-full w-full drop-shadow-[0_0_24px_rgba(34,211,238,0.35)]">
-                <circle cx="100" cy="100" r="78" stroke="rgba(34,211,238,0.55)" strokeWidth="1" />
-                <ellipse cx="100" cy="100" rx="78" ry="30" stroke="rgba(34,211,238,0.4)" strokeWidth="1" />
-                <ellipse cx="100" cy="100" rx="30" ry="78" stroke="rgba(34,211,238,0.35)" strokeWidth="1" />
-                <ellipse cx="100" cy="100" rx="78" ry="58" stroke="rgba(148,197,253,0.3)" strokeWidth="1" transform="rotate(30 100 100)" />
-                <ellipse cx="100" cy="100" rx="78" ry="58" stroke="rgba(148,197,253,0.3)" strokeWidth="1" transform="rotate(-30 100 100)" />
-                <line x1="22" y1="100" x2="178" y2="100" stroke="rgba(34,211,238,0.45)" strokeWidth="1" />
-              </svg>
-            </div>
-          </motion.div>
-
-          {/* orbit rings behind the mockup */}
-          <motion.div
-            style={{ x: heroParallaxC.sx, y: heroParallaxC.sy }}
-            className="pointer-events-none absolute left-1/2 top-[58%] hidden h-[46rem] w-[46rem] -translate-x-1/2 -translate-y-1/2 lg:block"
-          >
-            <div className="animate-orbit-slow absolute inset-0 rounded-full border border-dashed border-xisync-cyan-400/15" />
-            <div className="animate-spin-reverse-slow absolute inset-10 rounded-full border border-xisync-blue-400/10" />
-            <div className="absolute left-1/2 top-0 h-3 w-3 -translate-x-1/2 rounded-full bg-xisync-cyan-400/60 shadow-[0_0_18px_4px_rgba(34,211,238,0.5)]" />
-          </motion.div>
-
-          {/* aurora orbs at different parallax depths (motion wrapper = mouse parallax, inner = CSS drift) */}
-          <motion.div
-            style={{ x: heroParallaxA.sx, y: heroParallaxA.sy }}
-            className="absolute -left-32 -top-32 h-[34rem] w-[34rem]"
-          >
-            <div className="h-full w-full rounded-full bg-xisync-blue-600/30 blur-3xl animate-aurora" />
-          </motion.div>
-          <motion.div
-            style={{ x: heroParallaxB.sx, y: heroParallaxB.sy }}
-            className="absolute right-[-12%] top-24 h-[30rem] w-[30rem]"
-          >
-            <div className="h-full w-full rounded-full bg-xisync-cyan-500/25 blur-3xl animate-aurora" style={{ animationDelay: '-6s' }} />
-          </motion.div>
-          <motion.div
-            style={{ x: heroParallaxC.sx, y: heroParallaxC.sy }}
-            className="absolute bottom-[-20%] left-[35%] h-[26rem] w-[26rem]"
-          >
-            <div className="h-full w-full rounded-full bg-xisync-lime-500/15 blur-3xl animate-aurora" style={{ animationDelay: '-10s' }} />
-          </motion.div>
-
-          <ParticleField density={70} className="opacity-70" />
-
-          {/* cursor spotlight */}
-          <motion.div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 z-[5] hidden lg:block"
-            style={{ background: spotlightBg }}
-          />
+          <motion.div aria-hidden className="pointer-events-none absolute inset-0 z-[2] hidden lg:block" style={{ background: spotlightBg }} />
 
           <div className="container-custom relative z-10">
-            <div className="mx-auto max-w-4xl text-center perspective-1200">
+            <div className="mx-auto max-w-5xl text-center">
               {/* badge */}
               <motion.div
-                initial={{ opacity: 0, y: 18, scale: 0.94 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.6, delay: 0.05, ease: EASE }}
-                className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 px-4 py-2 backdrop-blur-md"
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.05, ease: EASE }}
+                className="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-white px-4 py-1.5 shadow-premium-sm"
               >
                 <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-xisync-lime-400 opacity-60" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-xisync-lime-400" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                 </span>
-                <span className="text-sm font-medium text-white/90">
-                  {language === 'zh' ? 'AI 驱动的外贸 CRM' : 'AI powered CRM'}
+                <span className="text-xs font-medium text-ink-700">
+                  {isZh ? '⚡ 10,000+ 跨境出口商与制造商信赖' : '⚡ Trusted by 10,000+ Cross-Border Exporters'}
                 </span>
-                <Sparkles className="h-3.5 w-3.5 text-xisync-cyan-300" />
               </motion.div>
 
               {/* headline */}
-              <h1 className="mt-8 text-4xl font-bold leading-[1.12] text-white sm:text-5xl lg:text-6xl">
-                <StaggerText text={language === 'zh' ? '智能出口，' : 'Export Smarter,'} delay={0.2} />
-                {language === 'zh' ? '' : ' '}
-                <StaggerText
-                  text={language === 'zh' ? '拓展全球市场' : 'Grow Globally'}
-                  delay={0.45}
-                  className="animate-shimmer bg-gradient-to-r from-xisync-blue-300 via-xisync-cyan-300 to-xisync-lime-300 bg-clip-text text-transparent"
+              <h1 className="mt-8 text-5xl font-bold leading-[1.05] tracking-tight text-ink-950 sm:text-6xl lg:text-7xl xl:text-8xl">
+                <SplitText text={isZh ? 'AI 驱动的全球' : 'The AI-Powered'} delay={0.15} />
+                <br />
+                <SplitText
+                  text={isZh ? '出口操作系统' : 'Export Operating System'}
+                  delay={0.35}
+                  className="gradient-text"
                 />
               </h1>
 
               {/* subtitle */}
               <motion.p
-                initial={{ opacity: 0, y: 22 }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.75, ease: EASE }}
-                className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-300 md:text-xl"
+                transition={{ duration: 0.6, delay: 0.6 }}
+                className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-ink-500 md:text-xl"
               >
-                {t.hero.description}
+                {isZh
+                  ? '整合全球询盘、加速海外订单成交、自动化海关合规、追踪工厂到港口货运——这一切都集成于专为现代制造商打造的统一平台。'
+                  : 'Consolidate global inquiries, close overseas deals faster, automate customs compliance, and track factory-to-port freight—all in one unified platform built for modern manufacturers.'}
               </motion.p>
 
               {/* CTAs */}
               <motion.div
-                initial={{ opacity: 0, y: 22 }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.9, ease: EASE }}
-                className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
+                transition={{ duration: 0.6, delay: 0.75 }}
+                className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row"
               >
-                <Link
-                  to="/demo"
-                  className="group relative inline-flex items-center gap-2 overflow-hidden rounded-xl bg-white px-7 py-3.5 text-base font-semibold text-xisync-blue-900 shadow-[0_0_50px_-10px_rgba(34,211,238,0.6)] transition-transform duration-300 hover:scale-[1.04] active:scale-[0.98]"
-                >
-                  <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/70 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-                  <span className="relative">{t.nav.startFreeTrial}</span>
-                  <ArrowRight className="relative h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
+                <Link to="/demo" className="btn-primary magnetic">
+                  <span>{isZh ? '开始 14 天免费试用' : 'Start 14-Day Free Trial'}</span>
+                  <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
                 </Link>
-                <Link
-                  to="/login"
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-7 py-3.5 text-base font-semibold text-white backdrop-blur-md transition-colors duration-300 hover:border-white/40 hover:bg-white/10"
-                >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10">
-                    <Play className="h-3.5 w-3.5 text-white" />
+                <Link to="/demo" className="btn-secondary magnetic">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-ink-100">
+                    <Play className="h-3 w-3 text-ink-700" />
                   </span>
-                  {t.hero.demo}
+                  {isZh ? '预约现场演示' : 'Book a Live Demo'}
                 </Link>
               </motion.div>
 
-              {/* trust chips */}
+              {/* social proof */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 1.05 }}
-                className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-slate-400"
+                transition={{ duration: 0.7, delay: 0.9 }}
+                className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-ink-500"
               >
-                <span className="inline-flex items-center gap-1.5">
-                  <ShieldCheck className="h-4 w-4 text-xisync-cyan-400" />
-                  {language === 'zh' ? '企业级安全' : 'Enterprise-grade security'}
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <Languages className="h-4 w-4 text-xisync-cyan-400" />
-                  {language === 'zh' ? '多语言支持' : 'Multi-language support'}
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <LineChart className="h-4 w-4 text-xisync-cyan-400" />
-                  {language === 'zh' ? '智能分析' : 'Smart analytics'}
-                </span>
+                <span className="inline-flex items-center gap-1.5"><RefreshCw className="h-3.5 w-3.5" /> Alibaba.com {isZh ? '认证合作伙伴' : 'Verified'}</span>
+                <span className="inline-flex items-center gap-1.5"><RefreshCw className="h-3.5 w-3.5" /> Made-in-China {isZh ? '已对接' : 'Connected'}</span>
+                <span className="inline-flex items-center gap-1.5"><RefreshCw className="h-3.5 w-3.5" /> WhatsApp Business BSP</span>
+                <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5" /> SOC-2 · PIPL</span>
               </motion.div>
             </div>
 
-            {/* ===== 3D tilt dashboard mockup with layered floating chips ===== */}
+            {/* dashboard mockup */}
             <motion.div
-              initial={{ opacity: 0, y: 60, scale: 0.96 }}
+              initial={{ opacity: 0, y: 40, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.9, delay: 1.15, ease: EASE }}
+              transition={{ duration: 0.8, delay: 1, ease: EASE }}
               className="relative mx-auto mt-16 max-w-5xl"
             >
-              {/* ambient glow */}
-              <div className="absolute -inset-8 rounded-[2.5rem] bg-gradient-to-r from-xisync-blue-500/25 via-xisync-cyan-400/20 to-xisync-lime-400/25 blur-3xl" />
+              <div className="absolute -inset-8 rounded-[2rem] bg-gradient-to-br from-xisync-blue-200/40 via-white to-xisync-green-200/40 blur-2xl" />
 
-              <TiltCard maxTilt={6} glareOpacity={0.09} className="mx-auto">
-                <div className="animate-gradient-x rounded-2xl bg-gradient-to-r from-xisync-blue-500/60 via-xisync-cyan-400/60 to-xisync-lime-400/60 p-[1.5px] shadow-[0_60px_140px_-40px_rgba(2,6,23,0.95)]">
-                  <div className="overflow-hidden rounded-[calc(1rem-1.5px)] bg-slate-900/80 backdrop-blur-xl">
-                  {/* browser chrome */}
-                  <div className="flex items-center gap-3 border-b border-white/10 bg-white/[0.04] px-4 py-3">
-                    <div className="flex gap-1.5">
-                      <span className="h-3 w-3 rounded-full bg-red-400/90" />
-                      <span className="h-3 w-3 rounded-full bg-yellow-400/90" />
-                      <span className="h-3 w-3 rounded-full bg-green-400/90" />
+              <div className="relative rounded-2xl border border-ink-200 bg-white shadow-premium-lg overflow-hidden">
+                {/* browser chrome */}
+                <div className="flex items-center gap-2 border-b border-ink-100 px-4 py-2.5">
+                  <div className="flex gap-1.5">
+                    <span className="h-3 w-3 rounded-full bg-ink-200" />
+                    <span className="h-3 w-3 rounded-full bg-ink-200" />
+                    <span className="h-3 w-3 rounded-full bg-ink-200" />
+                  </div>
+                  <div className="mx-auto w-full max-w-md rounded-lg bg-ink-50 px-3 py-1 text-center text-xs text-ink-500 border border-ink-100">
+                    app.xisync.com/dashboard
+                  </div>
+                  <div className="w-8" />
+                </div>
+
+                <div className="grid grid-cols-3 gap-3 p-4 sm:gap-4 sm:p-6">
+                  <div className="col-span-2 rounded-xl border border-ink-100 bg-ink-50/50 p-4 sm:p-5">
+                    <div className="mb-4 flex items-center justify-between">
+                      <div className="h-2.5 w-24 rounded bg-ink-200" />
+                      <div className="h-6 w-6 rounded-lg bg-brand-100" />
                     </div>
-                    <div className="mx-auto w-full max-w-md rounded-lg bg-white/10 px-4 py-1.5 text-center text-xs text-slate-300">
-                      app.xisync.com/dashboard
+                    <div className="space-y-2.5">
+                      <div className="h-2 w-full rounded bg-ink-200" />
+                      <div className="h-2 w-3/4 rounded bg-ink-200" />
+                      <div className="h-2 w-1/2 rounded bg-ink-200" />
                     </div>
-                    <div className="w-10" />
+                    <div className="mt-5 flex h-16 items-end gap-1.5">
+                      {[35, 55, 42, 70, 58, 85, 64, 92, 76, 100].map((h, i) => (
+                        <div key={i} className="flex-1 rounded-t-sm bg-gradient-to-t from-xisync-blue-700 via-xisync-cyan-500 to-xisync-green-400" style={{ height: `${h}%` }} />
+                      ))}
+                    </div>
+                    <div className="mt-5 flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-xisync-blue-100" />
+                      <div className="flex-1">
+                        <div className="mb-1 h-2 w-16 rounded bg-ink-200" />
+                        <div className="h-2 w-28 rounded bg-ink-200" />
+                      </div>
+                    </div>
                   </div>
 
-                  {/* dashboard skeleton */}
-                  <div className="grid grid-cols-3 gap-3 p-4 sm:gap-4 sm:p-6">
-                    <div className="col-span-2 rounded-xl border border-white/10 bg-white/[0.05] p-4 sm:p-5">
-                      <div className="mb-4 flex items-center justify-between">
-                        <div className="h-3 w-24 rounded bg-white/15" />
-                        <div className="h-7 w-7 rounded-lg bg-xisync-cyan-500/40" />
+                  <div className="space-y-3">
+                    <div className="rounded-xl border border-ink-100 bg-white p-4">
+                      <div className="mb-2 h-2 w-14 rounded bg-ink-200" />
+                      <div className="text-2xl font-bold text-ink-950">$45.2K</div>
+                      <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-xisync-green-50 px-2 py-0.5">
+                        <TrendingUp className="h-3 w-3 text-xisync-green-600" />
+                        <span className="text-xs font-medium text-xisync-green-600">+12%</span>
                       </div>
-                      <div className="space-y-3">
-                        <div className="h-2 w-full rounded bg-white/10" />
-                        <div className="h-2 w-3/4 rounded bg-white/10" />
-                        <div className="h-2 w-1/2 rounded bg-white/10" />
+                    </div>
+                    <div className="rounded-xl border border-ink-100 bg-white p-4">
+                      <div className="mb-2 h-2 w-14 rounded bg-ink-200" />
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-ink-100">
+                          <div className="h-full w-3/4 rounded-full bg-gradient-to-r from-xisync-blue-600 to-xisync-green-500" />
+                        </div>
+                        <span className="text-xs font-medium text-ink-600">75%</span>
                       </div>
-                      {/* mini chart */}
-                      <div className="mt-6 flex h-16 items-end gap-1.5">
-                        {[35, 55, 42, 70, 58, 85, 64, 92, 76, 100].map((h, i) => (
-                          <div
-                            key={i}
-                            className="flex-1 rounded-t-sm bg-gradient-to-t from-xisync-blue-600/70 to-xisync-cyan-400/80"
-                            style={{ height: `${h}%` }}
-                          />
+                    </div>
+                    <div className="rounded-xl border border-ink-100 bg-white p-4">
+                      <div className="mb-2 h-2 w-14 rounded bg-ink-200" />
+                      <div className="flex h-8 items-end gap-1">
+                        {[30, 45, 38, 62, 55, 80, 70, 95].map((h, i) => (
+                          <div key={i} className="flex-1 rounded-t-sm bg-gradient-to-t from-xisync-blue-600 to-xisync-green-400" style={{ height: `${h}%` }} />
                         ))}
                       </div>
-                      <div className="mt-6 flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-lg bg-xisync-blue-500/40" />
-                        <div className="flex-1">
-                          <div className="mb-1.5 h-2 w-20 rounded bg-white/15" />
-                          <div className="h-2 w-32 rounded bg-white/10" />
-                        </div>
-                      </div>
                     </div>
-
-                    <div className="space-y-3 sm:space-y-4">
-                      <div className="rounded-xl border border-white/10 bg-white/[0.05] p-4">
-                        <div className="mb-2 h-2.5 w-16 rounded bg-white/15" />
-                        <div className="text-2xl font-bold text-white">$45.2K</div>
-                        <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-xisync-green-500/15 px-2 py-0.5">
-                          <TrendingUp className="h-3 w-3 text-xisync-green-400" />
-                          <span className="text-xs font-medium text-xisync-green-400">+12%</span>
-                        </div>
-                      </div>
-                      <div className="rounded-xl border border-white/10 bg-white/[0.05] p-4">
-                        <div className="mb-2 h-2.5 w-16 rounded bg-white/15" />
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/10">
-                            <div className="h-full w-3/4 rounded-full bg-gradient-to-r from-xisync-cyan-500 to-xisync-lime-400" />
-                          </div>
-                          <span className="text-xs font-medium text-slate-300">75%</span>
-                        </div>
-                      </div>
-                      <div className="rounded-xl border border-white/10 bg-white/[0.05] p-4">
-                        <div className="mb-2 h-2.5 w-16 rounded bg-white/15" />
-                        <div className="flex h-10 items-end gap-1">
-                          {[30, 45, 38, 62, 55, 80, 70, 95].map((h, i) => (
-                            <div
-                              key={i}
-                              className="flex-1 rounded-t-sm bg-gradient-to-t from-xisync-lime-500/60 to-xisync-lime-400/80"
-                              style={{ height: `${h}%` }}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                   </div>
                 </div>
-              </TiltCard>
+              </div>
 
-              {/* floating chips — mouse parallax (motion) + CSS float (inner) */}
+              {/* floating chips */}
               <motion.div
-                style={{ x: heroParallaxB.sx, y: heroParallaxB.sy }}
-                className="absolute -left-12 top-14 z-20 hidden xl:block"
+                className="absolute -left-8 top-10 z-20 hidden xl:block"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 1.4 }}
               >
-                <div className="animate-float glass-dark flex items-center gap-3 rounded-xl px-4 py-3 shadow-2xl">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-xisync-cyan-500/25">
-                    <Languages className="h-4 w-4 text-xisync-cyan-300" />
+                <div className="animate-float flex items-center gap-3 rounded-xl border border-ink-200 bg-white px-4 py-3 shadow-premium">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-100 text-brand-600">
+                    <Languages className="h-4 w-4" />
                   </span>
                   <div>
-                    <div className="text-xs font-semibold text-white">
-                      {language === 'zh' ? 'AI 实时翻译' : 'AI Live Translation'}
-                    </div>
-                    <div className="text-[11px] text-slate-400">EN → 中文</div>
+                    <div className="text-xs font-semibold text-ink-950">{isZh ? 'AI 实时翻译' : 'AI Live Translation'}</div>
+                    <div className="text-[11px] text-ink-500">EN → 中文 · ES · AR</div>
                   </div>
                 </div>
               </motion.div>
 
               <motion.div
-                style={{ x: heroParallaxA.sx, y: heroParallaxA.sy }}
-                className="absolute -right-14 top-24 z-20 hidden xl:block"
+                className="absolute -right-6 top-20 z-20 hidden xl:block"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 1.55 }}
               >
-                <div className="animate-float-slow glass-dark flex items-center gap-3 rounded-xl px-4 py-3 shadow-2xl" style={{ animationDelay: '-3s' }}>
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-xisync-green-500/25">
-                    <Package className="h-4 w-4 text-xisync-green-400" />
+                <div className="animate-float-slow flex items-center gap-3 rounded-xl border border-ink-200 bg-white px-4 py-3 shadow-premium" style={{ animationDelay: '-3s' }}>
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+                    <Package className="h-4 w-4" />
                   </span>
                   <div>
-                    <div className="text-xs font-semibold text-white">
-                      {language === 'zh' ? '货物已发货' : 'Shipment dispatched'}
-                    </div>
-                    <div className="text-[11px] text-slate-400">#XS-2024-0918</div>
-                  </div>
-                </div>
-              </motion.div>
-
-              <motion.div
-                style={{ x: heroParallaxC.sx, y: heroParallaxC.sy }}
-                className="absolute -bottom-8 right-16 z-20 hidden xl:block"
-              >
-                <div className="animate-float glass-dark flex items-center gap-3 rounded-xl px-4 py-3 shadow-2xl" style={{ animationDelay: '-6s' }}>
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-xisync-lime-500/25">
-                    <Star className="h-4 w-4 fill-xisync-lime-400 text-xisync-lime-400" />
-                  </span>
-                  <div>
-                    <div className="text-xs font-semibold text-white">
-                      {language === 'zh' ? '新买家好评' : 'New 5★ buyer review'}
-                    </div>
-                    <div className="text-[11px] text-slate-400">WhatsApp</div>
+                    <div className="text-xs font-semibold text-ink-950">{isZh ? '货物已发出' : 'Shipment dispatched'}</div>
+                    <div className="text-[11px] text-ink-500">#XS-2024-0918 · ETA 14d</div>
                   </div>
                 </div>
               </motion.div>
             </motion.div>
 
-            {/* ===== stats (animated counters) ===== */}
-            <div className="mx-auto mt-20 grid max-w-4xl grid-cols-2 gap-8 md:grid-cols-4">
+            {/* stats */}
+            <div className="mx-auto mt-16 grid max-w-4xl grid-cols-2 gap-6 md:grid-cols-4">
               {stats.map((stat, i) => (
-                <Reveal key={stat.label} delay={i * 0.1} y={24}>
-                  <div className="group text-center">
-                    <CountUp
-                      to={stat.to}
-                      prefix={stat.prefix}
-                      suffix={stat.suffix}
-                      decimals={stat.decimals}
-                      className="text-3xl font-bold text-white transition-shadow duration-300 group-hover:[text-shadow:0_0_30px_rgba(34,211,238,0.6)] md:text-4xl"
-                    />
-                    <div className="mt-1.5 text-sm text-slate-400">{stat.label}</div>
+                <Reveal key={stat.label} delay={i * 0.08} y={20}>
+                  <div className="text-center">
+                    <CountUp to={stat.to} prefix={stat.prefix} suffix={stat.suffix} decimals={stat.decimals} className="gradient-text text-3xl font-bold md:text-4xl" />
+                    <div className="mt-1 text-sm text-ink-500">{stat.label}</div>
                   </div>
                 </Reveal>
               ))}
             </div>
           </div>
 
-          {/* bottom fade into the light section */}
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-slate-50" />
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-ink-50" />
         </section>
 
-        {/* ============ EXPLORE XISYNC ============ */}
-        <section className="relative bg-slate-50 py-20 lg:py-28">
+        {/* ============ VALUE METRICS ============ */}
+        <section className="relative py-4 lg:py-6">
           <div className="container-custom">
-            <SectionHeading
-              eyebrow={language === 'zh' ? '平台导览' : 'Platform Guide'}
-              title={
-                language === 'zh' ? (
-                  <>
-                    探索<span className="gradient-text-shimmer">犀同步</span>
-                  </>
-                ) : (
-                  <>
-                    Explore <span className="gradient-text-shimmer">XiSync</span>
-                  </>
-                )
-              }
-              subtitle={language === 'zh' ? '快速了解我们平台的不同核心板块' : 'Navigate to different sections of our platform'}
-            />
-
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {pages.map((page, i) => (
-                <Reveal key={page.title} delay={i * 0.08} className="h-full">
-                  <Link to={page.href} className="block h-full">
-                    <TiltCard maxTilt={9} className="group h-full">
-                      <div className="relative h-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition-all duration-300 group-hover:border-xisync-cyan-300/70 group-hover:shadow-[0_28px_70px_-24px_rgba(6,182,212,0.4)]">
-                        <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-xisync-cyan-100 opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100" />
-                        <div className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-xisync-blue-500 to-xisync-cyan-500 shadow-lg transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
-                          <page.icon className="h-6 w-6 text-white" />
-                        </div>
-                        <h3 className="relative mt-4 text-lg font-semibold text-gray-900 transition-colors group-hover:text-xisync-cyan-700">
-                          {page.title}
-                        </h3>
-                        <p className="relative mt-1.5 text-sm text-gray-600">{page.description}</p>
-                        <div className="relative mt-5 flex items-center gap-1.5 text-sm font-semibold text-xisync-cyan-600 transition-all duration-300 group-hover:gap-3">
-                          {t.nav.learnMore}
-                          <ArrowRight className="h-4 w-4" />
-                        </div>
-                      </div>
-                    </TiltCard>
-                  </Link>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ============ SIX MODULES ============ */}
-        <section className="relative overflow-hidden bg-white py-20 lg:py-28">
-          <Parallax speed={40} className="pointer-events-none absolute -left-40 top-1/3 h-[26rem] w-[26rem] rounded-full bg-xisync-cyan-100 blur-3xl opacity-60" />
-          <Parallax speed={-40} className="pointer-events-none absolute -right-40 bottom-1/4 h-[24rem] w-[24rem] rounded-full bg-xisync-lime-100 blur-3xl opacity-60" />
-
-          <div className="container-custom relative">
-            <SectionHeading
-              eyebrow={language === 'zh' ? '核心能力' : 'Core Capabilities'}
-              title={
-                language === 'zh' ? (
-                  <>
-                    六大核心<span className="gradient-text-shimmer">模块</span>
-                  </>
-                ) : (
-                  <>
-                    Six Powerful <span className="gradient-text-shimmer">Modules</span>
-                  </>
-                )
-              }
-              subtitle={t.features.subtitle}
-            />
-
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {modules.map((module, i) => (
-                <Reveal key={module.name} delay={(i % 3) * 0.1} className="h-full">
-                  <Link to={module.href} className="block h-full">
-                    <TiltCard maxTilt={8} className="group h-full">
-                      <div
-                        className={`relative h-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition-all duration-300 ${module.glow}`}
-                      >
-                        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-xisync-cyan-400/60 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                        <div
-                          className={`relative flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${module.color} shadow-lg transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6`}
-                        >
-                          <module.icon className="h-6 w-6 text-white" />
-                        </div>
-                        <div
-                          className={`relative mt-4 inline-block rounded-md px-2 py-0.5 text-xs font-bold ${module.chip}`}
-                        >
-                          {module.name}
-                        </div>
-                        <h3 className="relative mt-2 text-lg font-semibold text-gray-900">{module.title}</h3>
-                        <p className="relative mt-1.5 text-sm text-gray-600">{module.description}</p>
-                        <div className="relative mt-5 flex items-center gap-1.5 text-sm font-semibold text-xisync-cyan-600 opacity-0 transition-all duration-300 group-hover:gap-3 group-hover:opacity-100">
-                          {t.nav.learnMore}
-                          <ArrowRight className="h-4 w-4" />
-                        </div>
-                      </div>
-                    </TiltCard>
-                  </Link>
-                </Reveal>
-              ))}
-            </div>
-
-            <Reveal delay={0.2} className="mt-14 text-center">
-              <Link to="/product">
-                <Button size="lg" icon={<ArrowRight className="h-5 w-5" />} iconPosition="right">
-                  {t.nav.viewAll}
-                </Button>
-              </Link>
+            <Reveal y={24}>
+              <div className="mx-auto grid max-w-5xl grid-cols-2 gap-3 rounded-2xl border border-ink-200 bg-white p-4 shadow-premium-md md:grid-cols-4 md:p-5">
+                {valueMetrics.map((m) => (
+                  <div key={m.label} className="group flex items-center gap-3 rounded-xl p-2.5 transition-all duration-200 hover:bg-ink-50">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ink-950 text-white transition-transform duration-200 group-hover:scale-105">
+                      <m.icon className="h-4 w-4" />
+                    </span>
+                    <div className="min-w-0">
+                      <div className="text-2xl font-bold text-ink-950 md:text-3xl">{m.value}</div>
+                      <div className="text-xs text-ink-500 leading-snug">{m.label}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </Reveal>
           </div>
         </section>
 
-        {/* ============ CONNECT ALL CHANNELS ============ */}
-        <section className="relative overflow-hidden bg-slate-50 py-20 lg:py-28">
-          <div className="absolute inset-0 bg-grid-light mask-radial-fade opacity-50" />
-          <div className="container-custom relative">
-            <div className="grid items-center gap-14 lg:grid-cols-2">
-              <div>
-                <Reveal>
-                  <Eyebrow>{language === 'zh' ? '全渠道' : 'Omnichannel'}</Eyebrow>
-                  <h2 className="mt-5 text-3xl font-bold text-gray-900 md:text-4xl">
-                    {language === 'zh' ? (
-                      <>
-                        连接您的所有<span className="gradient-text-shimmer">沟通渠道</span>
-                      </>
-                    ) : (
-                      <>
-                        Connect All Your <span className="gradient-text-shimmer">Channels</span>
-                      </>
-                    )}
-                  </h2>
-                </Reveal>
-                <Reveal delay={0.1}>
-                  <p className="mt-5 text-lg leading-relaxed text-gray-600">
-                    {language === 'zh'
-                      ? '在买家最习惯的渠道触达他们。WhatsApp、微信、电子邮件、Instagram、Facebook——所有对话聚合在一个收件箱中，并支持 AI 实时翻译。'
-                      : 'Meet your customers where they are. WhatsApp, WeChat, Email, Instagram, Facebook — all conversations in one place with instant AI translation.'}
-                  </p>
-                </Reveal>
-                <ul className="mt-8 space-y-3.5">
-                  {(language === 'zh'
-                    ? ['统一收件箱', '实时 AI 翻译', '智能回复建议', '完整对话历史记录']
-                    : ['Single unified inbox', 'Real-time translation', 'Smart reply suggestions', 'Full conversation history']
-                  ).map((item, i) => (
-                    <Reveal key={item} delay={0.15 + i * 0.07} x={-20} y={0}>
-                      <li className="group flex items-center gap-3 text-gray-700">
-                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-xisync-green-500 to-xisync-cyan-500 shadow-sm transition-transform duration-300 group-hover:scale-110">
-                          <Check className="h-3.5 w-3.5 text-white" />
-                        </span>
-                        <span className="font-medium">{item}</span>
-                      </li>
-                    </Reveal>
-                  ))}
-                </ul>
-                <Reveal delay={0.45}>
-                  <Link to="/integrations" className="mt-9 inline-block">
-                    <Button variant="secondary" icon={<Globe className="h-4 w-4" />}>
-                      {language === 'zh' ? '查看所有集成' : 'View All Integrations'}
-                    </Button>
-                  </Link>
-                </Reveal>
-              </div>
-
-              {/* floating channel tiles */}
-              <div className="relative">
-                <div className="absolute -inset-10 rounded-[3rem] bg-gradient-to-br from-xisync-blue-100 via-white to-xisync-cyan-100 blur-2xl" />
-                <div className="relative grid grid-cols-2 gap-4 sm:grid-cols-3">
-                  {channels.map((channel, i) => (
-                    <motion.div
-                      key={channel}
-                      initial={{ opacity: 0, y: 28, scale: 0.92 }}
-                      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                      viewport={{ once: true, margin: '-60px' }}
-                      transition={{ duration: 0.6, delay: i * 0.09, ease: EASE }}
-                    >
-                      <div className="animate-float h-full" style={{ animationDelay: `${(i % 3) * -2.2}s`, animationDuration: `${6 + (i % 3)}s` }}>
-                        <div className="group flex h-full flex-col items-center justify-center gap-2.5 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-xisync-cyan-300 hover:shadow-[0_24px_60px_-20px_rgba(6,182,212,0.45)]">
-                          <span className="transition-transform duration-500 group-hover:scale-110">
-                            <ChannelIcon channel={channel} size="lg" />
-                          </span>
-                          <span className="text-xs font-semibold text-slate-500 transition-colors group-hover:text-xisync-cyan-700">
-                            {channel}
-                          </span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* marquee band */}
-            <Reveal delay={0.1} className="mt-20">
-              <Marquee duration={38} className="mask-fade-x">
-                {channels.map((channel) => (
-                  <span key={channel} className="mx-8 flex items-center gap-8 text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
-                    {channel}
-                    <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-xisync-cyan-400 to-xisync-lime-400" />
+        {/* ============ BRAND MARQUEE ============ */}
+        <section className="relative bg-ink-50 py-10 border-y border-ink-100">
+          <div className="container-custom">
+            <Reveal>
+              <p className="text-center text-xs font-medium uppercase tracking-widest text-ink-400">
+                {isZh ? '已对接的平台' : 'Integrated with'}
+              </p>
+            </Reveal>
+            <Reveal delay={0.1}>
+              <Marquee duration={40} className="mt-6 mask-fade-x">
+                {brands.map((brand) => (
+                  <span key={brand} className="mx-10 text-sm font-semibold uppercase tracking-[0.2em] text-ink-300">
+                    {brand}
                   </span>
                 ))}
               </Marquee>
@@ -842,50 +511,179 @@ export function HomePage() {
           </div>
         </section>
 
-        {/* ============ TESTIMONIALS ============ */}
+        {/* ============ 6 CORE ENGINES ============ */}
         <section className="relative overflow-hidden bg-white py-20 lg:py-28">
-          <Parallax speed={30} className="pointer-events-none absolute -left-32 top-10 h-96 w-96 rounded-full bg-xisync-blue-50 blur-3xl opacity-70" />
-          <Parallax speed={-30} className="pointer-events-none absolute -right-32 bottom-10 h-96 w-96 rounded-full bg-xisync-cyan-50 blur-3xl opacity-70" />
-
-          <div className="container-custom relative">
+          <div className="container-custom">
             <SectionHeading
-              eyebrow={language === 'zh' ? '客户见证' : 'Customer Stories'}
+              eyebrow={isZh ? '六大核心引擎' : 'Six Core Engines'}
               title={
-                language === 'zh' ? (
-                  <>
-                    深受 <span className="gradient-text-shimmer">10,000+ 出口商</span>信赖
-                  </>
+                isZh ? (
+                  <>为 <span className="gradient-text">现代出口商</span> 打造的平台</>
                 ) : (
-                  <>
-                    Trusted by <span className="gradient-text-shimmer">10,000+ Exporters</span>
-                  </>
+                  <>Built for <span className="gradient-text">Modern Exporters</span></>
                 )
               }
+              subtitle={isZh ? '从询盘到交付、从合规到物流——全部集成于一个 AI 驱动的统一系统中。' : 'From inquiry to delivery, compliance to logistics—all in one unified AI-driven platform.'}
             />
 
-            <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-2">
-              {testimonials.map((testimonial, i) => (
-                <Reveal key={testimonial.author} delay={i * 0.15} className="h-full">
-                  <TiltCard maxTilt={6} className="group h-full">
-                    <div className="relative h-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-7 shadow-lg shadow-slate-200/60 transition-shadow duration-300 group-hover:shadow-[0_32px_80px_-24px_rgba(30,64,175,0.3)]">
-                      <span className="absolute -right-3 -top-5 font-serif text-[7rem] leading-none text-xisync-cyan-100">"</span>
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: testimonial.rating }).map((_, s) => (
-                          <Star key={s} className="h-5 w-5 fill-yellow-400 text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.6)]" />
-                        ))}
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {modules.map((mod, i) => (
+                <Reveal key={mod.title} delay={(i % 3) * 0.08} y={20} className="h-full">
+                  <div className="group h-full">
+                    <div className="card-lift h-full rounded-2xl border border-ink-200 bg-white p-6">
+                      <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${mod.accent}`}>
+                        <mod.icon className="h-5 w-5" />
                       </div>
-                      <p className="relative mt-4 leading-relaxed text-gray-700">"{testimonial.quote}"</p>
-                      <div className="mt-6 flex items-center gap-3">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-xisync-blue-500 to-xisync-cyan-500 font-semibold text-white shadow-md">
-                          {testimonial.author.charAt(0)}
+                      <h3 className="mt-4 text-lg font-semibold text-ink-950">{mod.title}</h3>
+                      <p className="mt-1.5 text-sm italic text-ink-400">"{mod.tagline}"</p>
+                      <ul className="mt-4 space-y-2">
+                        {mod.features.map((f) => (
+                          <li key={f} className="flex items-start gap-2 text-sm text-ink-500">
+                            <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-300" />
+                            <span>{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ============ OMNICHANNEL ============ */}
+        <section className="relative overflow-hidden bg-ink-50 py-20 lg:py-28">
+          <div className="container-custom">
+            <div className="grid items-center gap-14 lg:grid-cols-2">
+              <div>
+                <Reveal>
+                  <Eyebrow>{isZh ? '全渠道' : 'Omnichannel'}</Eyebrow>
+                  <h2 className="mt-5 text-3xl font-bold leading-tight text-ink-950 md:text-4xl lg:text-5xl">
+                    {isZh ? (
+                      <>在买家最常用的 <span className="gradient-text">渠道</span> 触达他们</>
+                    ) : (
+                      <>Meet Buyers on Their <span className="gradient-text">Channels</span></>
+                    )}
+                  </h2>
+                </Reveal>
+                <Reveal delay={0.1}>
+                  <p className="mt-5 text-base leading-relaxed text-ink-500 md:text-lg">
+                    {isZh ? 'WhatsApp、微信、邮件、Instagram、Facebook——所有对话汇聚于一个收件箱，配备即时 AI 翻译。' : 'WhatsApp, WeChat, Email, Instagram, Facebook — all conversations in one place with instant AI translation.'}
+                  </p>
+                </Reveal>
+                <ul className="mt-7 space-y-3">
+                  {(isZh
+                    ? ['统一收件箱', '实时 AI 翻译（支持 7+ 种语言）', 'AI 智能回复建议', '完整对话历史', '团队协作收件箱']
+                    : ['Single unified inbox', 'Real-time translation (7+ languages)', 'AI smart reply suggestions', 'Full conversation history', 'Collaborative team inbox']
+                  ).map((item, i) => (
+                    <Reveal key={item} delay={0.12 + i * 0.06} x={-16}>
+                      <li className="flex items-center gap-3 text-ink-700">
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-ink-950 text-white">
+                          <Check className="h-3 w-3" />
+                        </span>
+                        <span className="text-sm font-medium">{item}</span>
+                      </li>
+                    </Reveal>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="relative">
+                <div className="absolute -inset-8 rounded-[2.5rem] bg-gradient-to-br from-brand-100 via-white to-cyan-100 blur-2xl" />
+                <div className="relative grid grid-cols-3 gap-3">
+                  {channels.map((channel, i) => (
+                    <motion.div
+                      key={channel}
+                      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                      viewport={{ once: true, margin: '-60px' }}
+                      transition={{ duration: 0.5, delay: i * 0.07, ease: EASE }}
+                    >
+                      <div className="animate-float" style={{ animationDelay: `${(i % 3) * -2}s`, animationDuration: `${6 + (i % 3)}s` }}>
+                        <div className="card-lift group flex h-full flex-col items-center justify-center gap-2 rounded-2xl border border-ink-200 bg-white p-5 shadow-premium-sm">
+                          <ChannelIcon channel={channel} size="lg" />
+                          <span className="text-xs font-semibold text-ink-500">{channel}</span>
                         </div>
-                        <div>
-                          <div className="font-semibold text-gray-900">{testimonial.author}</div>
-                          <div className="text-sm text-gray-500">{testimonial.role}</div>
-                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ============ INDUSTRY EXTENSIONS ============ */}
+        <section className="relative overflow-hidden bg-white py-20 lg:py-28">
+          <SectionHeading
+            eyebrow={isZh ? '战略性扩展能力' : 'Strategic Extensions'}
+            title={
+              isZh ? (
+                <>超越 CRM 的 <span className="gradient-text">专属能力</span></>
+              ) : (
+                <>Unique Additions That Go <span className="gradient-text">Beyond CRM</span></>
+              )
+            }
+            subtitle={isZh ? '专为出口商打造的专业能力。' : 'Purpose-built for exporters.'}
+          />
+
+          <div className="container-custom">
+            <div className="grid gap-5 lg:grid-cols-3">
+              {extensions.map((ext, i) => (
+                <Reveal key={ext.title} delay={i * 0.1} y={24} className="h-full">
+                  <div className="card-lift h-full rounded-2xl border border-ink-200 bg-white p-6">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-ink-950 text-white">
+                      <ext.icon className="h-6 w-6" />
+                    </div>
+                    <div className="mt-4">
+                      <div className="text-xs font-medium text-ink-400">{ext.subtitle}</div>
+                      <h3 className="mt-1 text-lg font-bold text-ink-950">{ext.title}</h3>
+                    </div>
+                    <ul className="mt-4 space-y-2.5">
+                      {ext.items.map((item) => (
+                        <li key={item} className="flex items-start gap-2.5 text-sm text-ink-500">
+                          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-ink-300" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ============ INDUSTRIES ============ */}
+        <section className="relative overflow-hidden bg-ink-50 py-20 lg:py-28">
+          <SectionHeading
+            eyebrow={isZh ? '行业解决方案' : 'Industry Solutions'}
+            title={
+              isZh ? (
+                <>为您的 <span className="gradient-text">行业</span> 专属打造</>
+              ) : (
+                <>Tailored for <span className="gradient-text">Your Industry</span></>
+              )
+            }
+          />
+          <div className="container-custom">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+              {industries.map((ind, i) => (
+                <Reveal key={ind.name} delay={i * 0.06} y={16}>
+                  <Link to="/product" className="group block">
+                    <div className="card-lift h-full rounded-2xl border border-ink-200 bg-white p-5">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-ink-100 text-ink-700 transition-transform duration-300 group-hover:scale-110">
+                        <ind.icon className="h-5 w-5" />
+                      </div>
+                      <h3 className="mt-4 text-sm font-semibold text-ink-950">{ind.name}</h3>
+                      <p className="mt-1 text-xs text-ink-500 leading-snug">{ind.desc}</p>
+                      <div className="mt-3 flex items-center gap-1 text-xs font-semibold text-ink-950 opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:gap-2">
+                        {isZh ? '查看详情' : 'Explore'}
+                        <ArrowRight className="h-3 w-3" />
                       </div>
                     </div>
-                  </TiltCard>
+                  </Link>
                 </Reveal>
               ))}
             </div>
@@ -893,165 +691,137 @@ export function HomePage() {
         </section>
 
         {/* ============ PRICING ============ */}
-        <section className="relative overflow-hidden bg-slate-50 py-20 lg:py-28">
+        <section className="relative overflow-hidden bg-white py-20 lg:py-28">
           <div className="container-custom">
             <SectionHeading
-              eyebrow={language === 'zh' ? '价格方案' : 'Pricing'}
+              eyebrow={isZh ? '价格方案' : 'Pricing'}
               title={
-                language === 'zh' ? (
-                  <>
-                    清晰透明的<span className="gradient-text-shimmer">价格方案</span>
-                  </>
+                isZh ? (
+                  <>简单透明，<span className="gradient-text">随业务扩展</span></>
                 ) : (
-                  <>
-                    Simple, Transparent <span className="gradient-text-shimmer">Pricing</span>
-                  </>
+                  <>Simple, Transparent, <span className="gradient-text">Scalable</span></>
                 )
               }
-              subtitle={t.pricing.subtitle}
+              subtitle={isZh ? '所有方案均以人民币（RMB）计价，支持按年或按月付费。' : 'All plans billed in Chinese Yuan (RMB). Billed annually or monthly.'}
             />
 
-            <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-3 lg:gap-6">
+            <div className="mx-auto grid max-w-6xl gap-5 md:grid-cols-2 lg:grid-cols-4">
               {[
-                {
-                  name: language === 'zh' ? '基础版' : 'Starter',
-                  price: '$49',
-                  desc: language === 'zh' ? '适合初创及小型出口商' : 'For small exporters',
-                  features: language === 'zh' ? ['3 名团队成员', '每月 500 条消息', '邮件集成'] : ['3 team members', '500 messages/mo', 'Email integration'],
-                  popular: false,
-                },
-                {
-                  name: language === 'zh' ? '专业版' : 'Pro',
-                  price: '$149',
-                  desc: language === 'zh' ? '适合快速发展的出口团队' : 'For growing teams',
-                  features: language === 'zh'
-                    ? ['10 名团队成员', '每月 5,000 条消息', '支持所有渠道', 'AI 实时翻译']
-                    : ['10 team members', '5,000 messages/mo', 'All channels', 'AI translation'],
-                  popular: true,
-                },
-                {
-                  name: language === 'zh' ? '企业版' : 'Business',
-                  price: '$399',
-                  desc: language === 'zh' ? '适合成熟的大型外贸企业' : 'For established exporters',
-                  features: language === 'zh'
-                    ? ['25 名团队成员', '每月 25,000 条消息', '合规中心', 'API 接口支持']
-                    : ['25 team members', '25,000 messages/mo', 'Compliance center', 'API access'],
-                  popular: false,
-                },
+                { name: isZh ? '入门版' : 'Starter', price: '¥1,000', suffix: isZh ? '/月' : '/mo', desc: isZh ? '适合初创及小型出口商' : 'For small exporters', features: [isZh ? '3 名团队成员' : '3 Team Members', isZh ? '每月 500 条消息' : '500 Messages / mo', isZh ? '2 个邮箱 + 1 个 WhatsApp' : '2 Email + 1 WhatsApp', isZh ? '1 个店铺' : '1 Storefront', isZh ? '每月 50 次物流追踪' : '50 Shipments / mo', isZh ? '5 GB 合规单据库' : '5 GB Storage', isZh ? 'XiSync 子域名门户' : 'XiSync Subdomain', isZh ? '标准支持' : 'Standard Support'], popular: false },
+                { name: isZh ? '专业版' : 'Pro', price: isZh ? '联系销售' : 'Contact Sales', desc: isZh ? '适合快速发展的出口团队' : 'For growing teams', features: [isZh ? '10 名团队成员' : '10 Team Members', isZh ? '每月 5,000 条消息' : '5,000 Messages / mo', isZh ? '5 个邮箱 + 3 个 WhatsApp + 微信' : '5 Email + 3 WhatsApp + WeChat', isZh ? '3 个店铺' : '3 Storefronts', isZh ? '每月 250 次物流追踪' : '250 Shipments / mo', isZh ? '50 GB 存储 + OCR' : '50 GB + OCR', isZh ? '自定义品牌域名' : 'Custom Branded Domain', isZh ? '专属优先客户经理' : 'Dedicated Priority Manager'], popular: true },
+                { name: isZh ? '企业版' : 'Business', price: isZh ? '联系销售' : 'Contact Sales', desc: isZh ? '适合成熟的大型外贸企业' : 'For established exporters', features: [isZh ? '25 名团队成员' : '25 Team Members', isZh ? '每月 25,000 条消息' : '25,000 Messages / mo', isZh ? '所有渠道无限连接' : 'Unlimited Channels', isZh ? '所有支持的店铺' : 'All Stores', isZh ? '每月 1,000 次物流追踪' : '1,000 Shipments / mo', isZh ? '250 GB 存储 + OCR' : '250 GB + OCR', isZh ? '完整白标门户' : 'Full White-Label', isZh ? '7×24 SLA + 专属入职对接' : '24/7 SLA + Onboarding'], popular: false },
+                { name: isZh ? '旗舰版' : 'Enterprise', price: isZh ? '定制报价' : 'Custom Pricing', desc: isZh ? '高 API 调用量与私有化部署' : 'High-volume & private deployments', features: [isZh ? '无限席位' : 'Unlimited Seats', isZh ? '无限消息' : 'Unlimited Messages', isZh ? '专属基础设施' : 'Dedicated Infrastructure', isZh ? '定制 ERP / 平台集成' : 'Custom ERP / Marketplace', isZh ? '高吞吐专属物流 API' : 'High-Volume Dedicated API', isZh ? '无限存储 + 自定义 AI 引擎' : 'Unlimited + Custom AI Engine', isZh ? '多品牌定制门户' : 'Multi-Brand Custom Portals', isZh ? '定制 SLA + 工程对接' : 'Custom SLA & Engineering Lead'], popular: false },
               ].map((plan, i) => (
-                <Reveal key={plan.name} delay={i * 0.12} className="h-full">
-                  <TiltCard maxTilt={6} className="group h-full">
-                    <div
-                      className={`relative flex h-full flex-col rounded-2xl p-6 ${
-                        plan.popular
-                          ? 'border-animated shadow-[0_36px_90px_-30px_rgba(6,182,212,0.45)]'
-                          : 'border border-slate-200/80 bg-white shadow-sm transition-all duration-300 group-hover:border-xisync-cyan-300/60 group-hover:shadow-[0_28px_70px_-28px_rgba(6,182,212,0.35)]'
-                      }`}
-                    >
-                      {plan.popular && (
-                        <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-gradient-to-r from-xisync-blue-600 via-xisync-cyan-500 to-xisync-lime-500 px-4 py-1.5 text-xs font-bold text-white shadow-lg animate-pulse-glow">
-                          {language === 'zh' ? '最受欢迎' : 'Most Popular'}
-                        </span>
-                      )}
-                      <h3 className="mt-2 text-lg font-semibold text-gray-900">{plan.name}</h3>
-                      <div className="mt-2">
-                        <span className={`text-3xl font-bold ${plan.popular ? 'gradient-text-shimmer' : 'text-gray-900'}`}>{plan.price}</span>
-                        <span className="text-gray-500">/{language === 'zh' ? '月' : 'mo'}</span>
-                      </div>
-                      <p className="mt-1 text-sm text-gray-500">{plan.desc}</p>
-                      <ul className="mt-6 flex-1 space-y-2.5">
-                        {plan.features.map((feature) => (
-                          <li key={feature} className="flex items-center gap-2.5 text-sm text-gray-600">
-                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-xisync-green-100">
-                              <Check className="h-3 w-3 text-xisync-green-600" />
-                            </span>
-                            {feature}
-                          </li>
-                        ))}
-                      </ul>
-                      <Link to="/pricing" className="mt-7 block">
-                        <Button variant={plan.popular ? 'primary' : 'outline'} className="w-full">
-                          {language === 'zh' ? '查看详情' : 'View Details'}
-                        </Button>
-                      </Link>
+                <Reveal key={plan.name} delay={i * 0.1} className="h-full">
+                  <div className={`card-lift h-full rounded-2xl border-2 bg-white p-6 relative ${plan.popular ? 'border-xisync-blue-500 shadow-premium-md' : 'border-ink-200'}`}>
+                    {plan.popular && (
+                      <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-xisync-blue-700 via-xisync-cyan-600 to-xisync-green-500 px-3 py-1 text-xs font-semibold text-white">
+                        {isZh ? '最受欢迎' : 'Most Popular'}
+                      </span>
+                    )}
+                    <h3 className="text-base font-semibold text-ink-950">{plan.name}</h3>
+                    <div className="mt-2">
+                      <span className={`text-3xl font-bold ${plan.popular ? 'gradient-text' : 'text-ink-950'}`}>{plan.price}</span>
+                      {plan.suffix && <span className="text-ink-500 text-sm">{plan.suffix}</span>}
                     </div>
-                  </TiltCard>
+                    <p className="mt-1 text-sm text-ink-500">{plan.desc}</p>
+                    <ul className="mt-5 space-y-2">
+                      {plan.features.map((feature) => (
+                        <li key={feature} className="flex items-center gap-2 text-sm text-ink-600">
+                          <Check className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                    <Link to="/pricing" className="mt-6 block">
+                      <Button
+                        className={`w-full rounded-full ${plan.popular ? 'text-white' : 'bg-white text-ink-950 border-2 border-ink-200 hover:bg-ink-50'}`}
+                      >
+                        {isZh ? '联系销售' : 'Contact Sales'}
+                      </Button>
+                    </Link>
+                  </div>
                 </Reveal>
               ))}
             </div>
 
-            <Reveal delay={0.2} className="mt-9 text-center">
-              <Link to="/pricing" className="group inline-flex items-center gap-1.5 font-semibold text-xisync-cyan-600 transition-colors hover:text-xisync-cyan-800">
-                {language === 'zh' ? '对比所有方案和详细功能' : 'Compare all plans and features'}
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            <Reveal delay={0.2} className="mt-8 text-center">
+              <Link to="/pricing" className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-700 hover:text-ink-950 transition-colors">
+                {isZh ? '对比所有方案与详细功能' : 'Compare all plans and features'}
+                <ArrowRight className="h-4 w-4 transition-transform hover:translate-x-0.5" />
               </Link>
             </Reveal>
           </div>
         </section>
 
-        {/* ============ CTA ============ */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-xisync-blue-950 via-xisync-blue-900 to-xisync-cyan-950 py-24 lg:py-32">
-          {/* background fx */}
-          <div className="absolute inset-0 bg-[radial-gradient(100%_100%_at_50%_0%,rgba(6,182,212,0.18)_0%,transparent_55%)]" />
-          <motion.div className="absolute -left-24 top-10 h-80 w-80 rounded-full bg-xisync-cyan-500/20 blur-3xl animate-aurora" />
-          <motion.div className="absolute -right-24 bottom-10 h-80 w-80 rounded-full bg-xisync-blue-500/25 blur-3xl animate-aurora" style={{ animationDelay: '-8s' }} />
-          <ParticleField density={50} />
+        {/* ============ FAQ ============ */}
+        <section className="relative overflow-hidden bg-ink-50 py-20 lg:py-28">
+          <SectionHeading
+            eyebrow={isZh ? '常见问题' : 'FAQ'}
+            title={
+              isZh ? (
+                <>关于 <span className="gradient-text">XiSync</span>，您可能想了解的</>
+              ) : (
+                <>What You Might Want to Know About <span className="gradient-text">XiSync</span></>
+              )
+            }
+          />
+          <div className="container-custom">
+            <div className="mx-auto grid max-w-3xl gap-3">
+              {[
+                { q: isZh ? 'XiSync 如何与我的阿里巴巴和 Made-in-China 店铺对接？' : 'How does XiSync connect with Alibaba and Made-in-China stores?', a: isZh ? '通过安全的 OAuth API 对接，自动将所有询盘、消息和买家数据汇聚到全渠道收件箱中。' : 'Connects via secure OAuth APIs. Aggregates all inquiries, messages, and buyer metadata into your Omnichannel Inbox.' },
+                { q: isZh ? '海外客户会看到中文字符或 XiSync 品牌吗？' : 'Will overseas clients see Chinese characters or XiSync branding?', a: isZh ? '不会。客户门户和对外通信完全白标，买家可以在所选语言下、以您的品牌查看一切内容。' : 'No. Fully white-labeled. Overseas clients view everything in their selected language under your brand.' },
+                { q: isZh ? 'AI 助手如何处理专业的技术产品术语？' : 'How does the AI Co-Pilot handle specialized technical product terms?', a: isZh ? '基于国际贸易语料库、HS 编码数据库和行业词汇表训练。可上传内部产品目录，训练专属词汇库。' : 'Trained on international trade corpora, HS code databases, and industry glossaries. Upload your catalog to train a private vocabulary.' },
+                { q: isZh ? '我们的客户名单和报价数据安全吗？' : 'Is our customer list and quotation pricing secure?', a: isZh ? '绝对安全。采用 RBAC 权限控制、AES-256 端到端加密，租户环境严格隔离，业务员仅能访问其负责的客户。' : 'Absolutely. RBAC, AES-256 encryption, strict tenant isolation. Reps only access their assigned accounts.' },
+              ].map((faq, i) => (
+                <FAQItem
+                  key={i}
+                  q={faq.q} a={faq.a}
+                  isOpen={openFaq === i}
+                  onToggle={() => setOpenFaq(openFaq === i ? null : i)}
+                  index={i}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ============ FINAL CTA ============ */}
+        <section className="relative overflow-hidden bg-ink-950 py-24 lg:py-32">
+          <div className="absolute inset-0 bg-grid-subtle opacity-30" />
+          <div className="absolute inset-0 bg-[radial-gradient(80%_60%_at_50%_0%,rgba(34,197,94,0.12)_0%,transparent_60%)]" />
+          <div className="absolute -top-20 -left-20 h-72 w-72 rounded-full bg-xisync-blue-600/10 blur-[100px]" />
+          <div className="absolute -bottom-20 -right-20 h-72 w-72 rounded-full bg-xisync-green-500/10 blur-[100px]" />
 
           <div className="container-custom relative z-10">
-            <Parallax speed={26}>
+            <Reveal>
               <div className="mx-auto max-w-3xl text-center">
-                <Reveal>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-xisync-cyan-200 backdrop-blur-md">
-                    <Rocket className="h-3.5 w-3.5" />
-                    {language === 'zh' ? '立即开始' : 'Get Started'}
-                  </div>
-                  <h2 className="mt-6 text-3xl font-bold text-white md:text-4xl">
-                    {language === 'zh' ? '准备好拓展您的全球业务了吗？' : 'Ready to Grow Your Global Business?'}
-                  </h2>
-                  <p className="mx-auto mt-5 max-w-2xl text-lg text-xisync-blue-100">
-                    {language === 'zh'
-                      ? '加入成千上万精简运营、提升海外销售额的优秀出口企业。'
-                      : 'Join thousands of exporters who are streamlining operations and growing sales.'}
-                  </p>
-                </Reveal>
-
-                <Reveal delay={0.15} className="mt-10">
-                  <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-                    <Link
-                      to="/demo"
-                      className="group relative inline-flex items-center gap-2 overflow-hidden rounded-xl bg-white px-8 py-4 text-base font-semibold text-xisync-blue-900 shadow-[0_0_60px_-10px_rgba(34,211,238,0.7)] transition-transform duration-300 hover:scale-[1.04] active:scale-[0.98]"
-                    >
-                      <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/70 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-                      <span className="relative">{t.nav.startFreeTrial}</span>
-                      <ArrowRight className="relative h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
-                    </Link>
-                    <Link
-                      to="/login"
-                      className="inline-flex items-center gap-2 rounded-xl border border-white/25 bg-white/5 px-8 py-4 text-base font-semibold text-white backdrop-blur-md transition-colors duration-300 hover:border-white/45 hover:bg-white/10"
-                    >
-                      {t.hero.demo}
-                    </Link>
-                  </div>
-                </Reveal>
-
-                <Reveal delay={0.25} className="mt-10">
-                  <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-xisync-blue-200/90">
-                    <span className="inline-flex items-center gap-2">
-                      <Truck className="h-4 w-4 text-xisync-cyan-300" />
-                      {language === 'zh' ? '全球物流追踪' : 'Global logistics tracking'}
-                    </span>
-                    <span className="inline-flex items-center gap-2">
-                      <Building2 className="h-4 w-4 text-xisync-cyan-300" />
-                      {language === 'zh' ? '服务 10,000+ 出口企业' : 'Trusted by 10,000+ exporters'}
-                    </span>
-                    <span className="inline-flex items-center gap-2">
-                      <ShieldCheck className="h-4 w-4 text-xisync-cyan-300" />
-                      {language === 'zh' ? '14 天免费试用' : '14-day free trial'}
-                    </span>
-                  </div>
-                </Reveal>
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold text-white/80 backdrop-blur-sm">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {isZh ? '立即开始' : 'Get Started'}
+                </div>
+                <h2 className="mt-6 text-3xl font-bold text-white md:text-4xl lg:text-5xl">
+                  {isZh ? '准备好拓展您的全球业务了吗？' : 'Ready to Grow Your Global Business?'}
+                </h2>
+                <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-ink-400 md:text-lg">
+                  {isZh ? '加入成千上万家正在精简运营、提升海外销售额的优秀出口企业。' : 'Join thousands of exporters who are streamlining operations and growing overseas sales.'}
+                </p>
+                <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                  <Link to="/demo" className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink-950 hover:bg-ink-100 transition-all duration-200 shadow-premium-lg">
+                    {isZh ? '开始 14 天免费试用' : 'Start 14-Day Free Trial'}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <Link to="/demo" className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:border-white/25 hover:bg-white/10">
+                    {isZh ? '预约平台演示' : 'Schedule Platform Walkthrough'}
+                  </Link>
+                </div>
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-ink-500">
+                  <span className="inline-flex items-center gap-1.5"><Lock className="h-3.5 w-3.5" /> AES-256 {isZh ? '加密' : 'encrypted'}</span>
+                  <span className="inline-flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5" /> 10,000+ {isZh ? '出口企业' : 'exporters'}</span>
+                  <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5" /> {isZh ? '14 天免费试用' : '14-day free trial'}</span>
+                </div>
               </div>
-            </Parallax>
+            </Reveal>
           </div>
         </section>
       </main>

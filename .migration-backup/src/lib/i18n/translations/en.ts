@@ -297,6 +297,16 @@ export const en = {
       step6: 'Step 6: Review & Direct API Publish',
     },
   },
+  marketplace: {
+    title: 'Marketplaces',
+    nav: {
+      hub: 'Channels & Overview',
+      catalog: 'Catalog Sync',
+      imports: 'Import Queue',
+      history: 'Sync History',
+      admin: 'Marketplace Channels',
+    },
+  },
   crm: {
     leads: {
       title: 'Leads',

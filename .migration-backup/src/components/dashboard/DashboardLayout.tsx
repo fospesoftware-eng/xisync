@@ -31,6 +31,7 @@ import {
   Wand2,
   Sparkles,
   Calendar,
+  Store,
 } from 'lucide-react';
 
 type NavItem = {
@@ -55,7 +56,7 @@ export function DashboardLayout({ variant = 'client' }: DashboardLayoutProps) {
   const clientNavigation: NavItem[] = [
     { name: t.dashboard.nav.dashboard, href: '/dashboard', icon: LayoutDashboard },
     {
-      name: (t as any).marketing?.nav?.marketing || (language === 'zh' ? '犀同步 全球数字营销' : 'Global Marketing'),
+      name: (t as any).marketing?.nav?.marketing || (language === 'zh' ? 'XiSync 全球数字营销' : 'Global Marketing'),
       href: '/dashboard/marketing',
       icon: Megaphone,
       children: [
@@ -90,7 +91,26 @@ export function DashboardLayout({ variant = 'client' }: DashboardLayoutProps) {
       ],
     },
     { name: t.dashboard.nav.inbox, href: '/dashboard/inbox', icon: MessageSquare },
-    { name: language === 'zh' ? '产品' : 'Products', href: '/dashboard/products', icon: Package },
+    {
+      name: language === 'zh' ? '产品' : 'Products',
+      href: '/dashboard/products',
+      icon: Package,
+      children: [
+        { name: language === 'zh' ? '产品目录' : 'Product Catalog', href: '/dashboard/products' },
+        { name: language === 'zh' ? '🎬 产品视频广告 (Veo)' : 'Video Ad Studio (Veo)', href: '/dashboard/products/video-studio' },
+      ],
+    },
+    {
+      name: (t as any).marketplace?.title || (language === 'zh' ? '跨境电商平台' : 'Marketplaces'),
+      href: '/dashboard/marketplaces',
+      icon: Store,
+      children: [
+        { name: (t as any).marketplace?.nav?.hub || (language === 'zh' ? '渠道总览' : 'Channels & Overview'), href: '/dashboard/marketplaces' },
+        { name: (t as any).marketplace?.nav?.catalog || (language === 'zh' ? '产品发布与同步' : 'Catalog Sync'), href: '/dashboard/marketplaces/catalog' },
+        { name: (t as any).marketplace?.nav?.imports || (language === 'zh' ? '平台回传导入' : 'Import Queue'), href: '/dashboard/marketplaces/imports' },
+        { name: (t as any).marketplace?.nav?.history || (language === 'zh' ? '同步日志' : 'Sync History'), href: '/dashboard/marketplaces/history' },
+      ],
+    },
     {
       name: t.dashboard.nav.logistics,
       href: '/dashboard/logistics/tracking',
@@ -135,8 +155,9 @@ export function DashboardLayout({ variant = 'client' }: DashboardLayoutProps) {
     { name: t.dashboard.nav.dashboard, href: '/admin', icon: LayoutDashboard },
     { name: t.admin.tenants, href: '/admin/tenants', icon: Building2 },
     { name: t.admin.users, href: '/admin/users', icon: Users },
-    { name: 'Website CMS', href: '/admin/cms', icon: FileText },
+    { name: language === 'zh' ? '网站内容管理' : 'Website CMS', href: '/admin/cms', icon: FileText },
     { name: language === 'zh' ? '跨国投流总控' : 'Media Engine Admin', href: '/admin/media-engine', icon: Zap },
+    { name: (t as any).marketplace?.nav?.admin || (language === 'zh' ? '跨境平台凭证总控' : 'Marketplace Channels'), href: '/admin/marketplace-channels', icon: Store },
     { name: t.admin.billing, href: '/admin/billing', icon: CreditCard },
     { name: t.dashboard.nav.integrations, href: '/admin/integrations', icon: Zap },
     { name: t.admin.security, href: '/admin/security', icon: Shield },

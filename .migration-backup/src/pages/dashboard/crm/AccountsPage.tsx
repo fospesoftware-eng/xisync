@@ -3,6 +3,7 @@ import { DataTable } from '../../../components/dashboard/DataTable';
 import { Button } from '../../../components/ui/Button';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../lib/auth-context';
+import { useI18n } from '../../../lib/i18n';
 import {
   Building2,
   Globe,
@@ -28,6 +29,9 @@ type Account = {
 
 export function AccountsPage() {
   const { tenant } = useAuth();
+  const { language } = useI18n();
+  const isZh = language === 'zh';
+  const t = (en: string, zh: string) => (isZh ? zh : en);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -50,15 +54,15 @@ export function AccountsPage() {
             setAccounts(
               data.map((row: Record<string, unknown>) => ({
                 id: row.id as string,
-                name: (row.name as string) || 'Company',
-                industry: (row.industry as string) || 'Consumer Goods',
-                country: (row.country as string) || 'Global',
+                name: (row.name as string) || t('Company', '公司'),
+                industry: (row.industry as string) || t('Consumer Goods', '消费品'),
+                country: (row.country as string) || t('Global', '全球'),
                 tier: (row.tier as Account['tier']) || 'tier_2_wholesale',
                 creditScore: Number(row.credit_score) || 88,
                 paymentTerm: (row.payment_terms as string) || '30/70 T/T',
                 totalAnnualOrders: Number(row.annual_revenue) || 120000,
                 activeDealsCount: 2,
-                contactPerson: (row.primary_contact as string) || 'Purchasing Director',
+                contactPerson: (row.primary_contact as string) || t('Purchasing Director', '采购总监'),
                 website: (row.domain as string) || 'example.com',
               }))
             );
@@ -147,10 +151,18 @@ export function AccountsPage() {
       a.industry.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const countryZh: Record<string, string> = {
+    'Ireland (EU)': '爱尔兰（欧盟）',
+    'Sweden (Nordic)': '瑞典（北欧）',
+    'United States (US)': '美国',
+    'France (EU)': '法国（欧盟）',
+    'United Arab Emirates (UAE)': '阿联酋',
+  };
+
   const columns = [
     {
       key: 'name',
-      header: 'Company / Account',
+      header: t('Company / Account', '公司 / 客户'),
       sortable: true,
       render: (acc: Account) => (
         <div className="flex items-center gap-3">
@@ -166,34 +178,34 @@ export function AccountsPage() {
     },
     {
       key: 'industry',
-      header: 'Industry & Market',
+      header: t('Industry & Market', '行业与市场'),
       sortable: true,
       render: (acc: Account) => (
         <div>
           <div className="text-xs font-bold text-slate-800 dark:text-slate-200">{acc.industry}</div>
           <div className="text-[10px] text-slate-400 flex items-center gap-1">
             <Globe className="w-3 h-3 text-cyan-500" />
-            <span>{acc.country}</span>
+            <span>{isZh ? countryZh[acc.country] || acc.country : acc.country}</span>
           </div>
         </div>
       ),
     },
     {
       key: 'creditScore',
-      header: 'Credit Risk Score',
+      header: t('Credit Risk Score', '信用风险评分'),
       sortable: true,
       render: (acc: Account) => (
         <div className="flex items-center gap-2">
           <div className="px-2.5 py-1 rounded-lg text-xs font-mono font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
             {acc.creditScore}/100
           </div>
-          <span className="text-[10px] text-slate-400 font-medium">Sinosure AAA</span>
+          <span className="text-[10px] text-slate-400 font-medium">{t('Sinosure AAA', '中信保 AAA')}</span>
         </div>
       ),
     },
     {
       key: 'paymentTerm',
-      header: 'Payment Terms',
+      header: t('Payment Terms', '付款条件'),
       sortable: true,
       render: (acc: Account) => (
         <div className="text-xs font-bold text-slate-700 dark:text-slate-300 font-mono">
@@ -203,7 +215,7 @@ export function AccountsPage() {
     },
     {
       key: 'totalAnnualOrders',
-      header: 'Annual Volume (USD)',
+      header: t('Annual Volume (USD)', '年交易额（美元）'),
       sortable: true,
       render: (acc: Account) => (
         <div className="font-mono font-black text-xs text-slate-900 dark:text-white">
@@ -213,7 +225,7 @@ export function AccountsPage() {
     },
     {
       key: 'contactPerson',
-      header: 'Primary Contact',
+      header: t('Primary Contact', '主要联系人'),
       sortable: true,
       render: (acc: Account) => (
         <div className="text-xs font-bold text-slate-800 dark:text-slate-200">
@@ -232,16 +244,16 @@ export function AccountsPage() {
             <Building2 className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-extrabold tracking-tight">Global Client Accounts & Importers</h1>
+            <h1 className="text-2xl font-extrabold tracking-tight">{t('Global Client Accounts & Importers', '全球客户公司与进口商')}</h1>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-              Verified international buyer enterprises, corporate credit ratings, and trade agreements
+              {t('Verified international buyer enterprises, corporate credit ratings, and trade agreements', '已认证的海外采购企业、企业信用评级与贸易协议')}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <Button icon={<Plus className="w-4 h-4" />} onClick={() => setShowModal(true)}>
-            Add Importer Account
+            {t('Add Importer Account', '新增进口商客户')}
           </Button>
         </div>
       </div>
@@ -249,19 +261,19 @@ export function AccountsPage() {
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
-          <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Total Verified Accounts</span>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">{accounts.length} Importers</div>
+          <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">{t('Total Verified Accounts', '已认证客户总数')}</span>
+          <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">{accounts.length} {t('Importers', '家进口商')}</div>
         </div>
 
         <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
-          <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Total Annual Contract Volume</span>
+          <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">{t('Total Annual Contract Volume', '年度合同总额')}</span>
           <div className="text-2xl font-black text-emerald-500 mt-1 font-mono">
             ${accounts.reduce((sum, a) => sum + a.totalAnnualOrders, 0).toLocaleString()} USD
           </div>
         </div>
 
         <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
-          <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Average Sinosure Credit Score</span>
+          <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">{t('Average Sinosure Credit Score', '中信保平均信用评分')}</span>
           <div className="text-2xl font-black text-cyan-500 mt-1 font-mono">93.8 / 100</div>
         </div>
       </div>
@@ -275,7 +287,7 @@ export function AccountsPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by company, country, or industry..."
+              placeholder={t('Search by company, country, or industry...', '按公司、国家或行业搜索…')}
               className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none focus:ring-2 focus:ring-cyan-500"
             />
           </div>
@@ -289,7 +301,7 @@ export function AccountsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-200 dark:border-slate-800 text-left">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <h3 className="font-extrabold text-base">Create New Importer Account</h3>
+              <h3 className="font-extrabold text-base">{t('Create New Importer Account', '新建进口商客户')}</h3>
               <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600">
                 <X className="w-4 h-4" />
               </button>
@@ -297,25 +309,25 @@ export function AccountsPage() {
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="font-bold text-slate-500 block mb-1">Company Legal Name</label>
+                <label className="font-bold text-slate-500 block mb-1">{t('Company Legal Name', '公司法定名称')}</label>
                 <input
                   type="text"
-                  placeholder="e.g. Nordic Toys Wholesale AB"
+                  placeholder={t('e.g. Nordic Toys Wholesale AB', '例如：Nordic Toys Wholesale AB')}
                   className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-bold outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-slate-500 block mb-1">Country / Market</label>
+                  <label className="font-bold text-slate-500 block mb-1">{t('Country / Market', '国家 / 市场')}</label>
                   <input
                     type="text"
-                    placeholder="e.g. Germany (EU)"
+                    placeholder={t('e.g. Germany (EU)', '例如：德国（欧盟）')}
                     className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-bold outline-none"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-500 block mb-1">Payment Term</label>
+                  <label className="font-bold text-slate-500 block mb-1">{t('Payment Term', '付款条件')}</label>
                   <select className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-bold outline-none">
                     <option>30/70 T/T Split</option>
                     <option>100% L/C at Sight</option>
@@ -327,15 +339,15 @@ export function AccountsPage() {
 
             <div className="pt-2 flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowModal(false)}>
-                Cancel
+                {t('Cancel', '取消')}
               </Button>
               <Button
                 onClick={() => {
                   setShowModal(false);
-                  triggerToast('New Importer Account registered and verified!');
+                  triggerToast(t('New Importer Account registered and verified!', '新进口商客户已注册并通过认证！'));
                 }}
               >
-                Create Account
+                {t('Create Account', '创建客户')}
               </Button>
             </div>
           </div>

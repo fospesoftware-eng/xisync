@@ -13,6 +13,7 @@ import {
   ArrowUp,
   ArrowDown,
   Monitor,
+  RefreshCw,
 } from 'lucide-react';
 import { DevicePreviewModal } from '../DevicePreviewModal';
 
@@ -36,11 +37,17 @@ export function BuildTab({ website, onUpdateWebsite }: BuildTabProps) {
 
   const activePage = website.pages.find((p) => p.slug === activePageSlug) || website.pages[0];
 
+  const refreshInventory = async () => {
+    const items = await WebsiteInventorySyncService.fetchClientDeskInventory(true);
+    setInventoryItems(items);
+  };
+
   useEffect(() => {
-    (async () => {
-      const items = await WebsiteInventorySyncService.fetchClientDeskInventory();
-      setInventoryItems(items);
-    })();
+    refreshInventory();
+    // Auto-refresh every 4s so marketplace-imported products appear
+    // automatically without a manual refresh click.
+    const timer = setInterval(refreshInventory, 4000);
+    return () => clearInterval(timer);
   }, []);
 
   const triggerToast = (msg: string) => {
@@ -456,8 +463,18 @@ export function BuildTab({ website, onUpdateWebsite }: BuildTabProps) {
               <div className="flex items-center gap-2">
                 <Package className="w-4 h-4 text-amber-500" />
                 <h3 className="font-extrabold text-sm">Client Desk Inventory Catalog</h3>
+                <span className="text-[10px] font-mono text-slate-400">({inventoryItems.length} SKUs)</span>
               </div>
-              <span className="text-[10px] font-mono font-bold text-emerald-500">CONNECTED</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={refreshInventory}
+                  title="Refresh from catalog"
+                  className="p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </button>
+                <span className="text-[10px] font-mono font-bold text-emerald-500">CONNECTED</span>
+              </div>
             </div>
 
             <div className="space-y-3 text-xs">
@@ -467,7 +484,12 @@ export function BuildTab({ website, onUpdateWebsite }: BuildTabProps) {
                   className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-between"
                 >
                   <div>
-                    <div className="font-extrabold text-slate-900 dark:text-white">{prod.name[activeLang]}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-extrabold text-slate-900 dark:text-white">{prod.name[activeLang]}</span>
+                      {prod.status === 'DRAFT' && (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700">DRAFT</span>
+                      )}
+                    </div>
                     <div className="text-[10px] font-mono text-slate-400 mt-0.5">
                       SKU: {prod.sku} • ${prod.price_usd} • Stock: {prod.stock_count}
                     </div>
