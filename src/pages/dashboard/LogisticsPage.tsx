@@ -4,6 +4,7 @@ import { StatsCard } from '../../components/dashboard/StatsCard';
 import { GlobalShippingMap } from '../../components/logistics/GlobalShippingMap';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/auth-context';
+import { useI18n } from '../../lib/i18n';
 import { Button } from '../../components/ui/Button';
 import {
   Package,
@@ -47,19 +48,29 @@ const modeIcons = {
   road: <Truck className="w-4 h-4" />,
 };
 
-const statusConfig: Record<Shipment['status'], { label: string; color: string; icon: any }> = {
-  booked: { label: 'Booked', color: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300', icon: Clock },
-  picked_up: { label: 'Picked Up', color: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300', icon: Clock },
-  export_cleared: { label: 'Export Cleared', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300', icon: CheckCircle2 },
-  in_transit: { label: 'In Transit', color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300', icon: Ship },
-  arrived: { label: 'Arrived', color: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300', icon: Clock },
-  import_cleared: { label: 'Import Cleared', color: 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300', icon: CheckCircle2 },
-  delivered: { label: 'Delivered', color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', icon: CheckCircle2 },
-  exception: { label: 'Exception', color: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300', icon: AlertTriangle },
+const statusConfig: Record<Shipment['status'], { label: { en: string; zh: string }; color: string; icon: any }> = {
+  booked: { label: { en: 'Booked', zh: '已订舱' }, color: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300', icon: Clock },
+  picked_up: { label: { en: 'Picked Up', zh: '已提货' }, color: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300', icon: Clock },
+  export_cleared: { label: { en: 'Export Cleared', zh: '出口已清关' }, color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300', icon: CheckCircle2 },
+  in_transit: { label: { en: 'In Transit', zh: '运输中' }, color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300', icon: Ship },
+  arrived: { label: { en: 'Arrived', zh: '已到港' }, color: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300', icon: Clock },
+  import_cleared: { label: { en: 'Import Cleared', zh: '进口已清关' }, color: 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300', icon: CheckCircle2 },
+  delivered: { label: { en: 'Delivered', zh: '已送达' }, color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', icon: CheckCircle2 },
+  exception: { label: { en: 'Exception', zh: '异常' }, color: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300', icon: AlertTriangle },
+};
+
+const modeLabels: Record<Shipment['mode'], { en: string; zh: string }> = {
+  sea: { en: 'Sea', zh: '海运' },
+  air: { en: 'Air', zh: '空运' },
+  rail: { en: 'Rail', zh: '铁路' },
+  road: { en: 'Road', zh: '公路' },
 };
 
 export function LogisticsPage() {
   const { tenant } = useAuth();
+  const { language } = useI18n();
+  const isZh = language === 'zh';
+  const t = (en: string, zh: string) => (isZh ? zh : en);
   const location = useLocation();
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
@@ -181,47 +192,47 @@ export function LogisticsPage() {
   }, [tenant]);
 
   const stats = [
-    { title: 'Active Shipments', value: String(shipments.filter(s => !['delivered', 'exception'].includes(s.status)).length || 12), icon: <Package className="w-5 h-5" />, iconColor: 'bg-xisync-cyan-100 text-xisync-cyan-600' },
-    { title: 'In Transit', value: String(shipments.filter(s => s.status === 'in_transit').length || 8), icon: <Ship className="w-5 h-5" />, iconColor: 'bg-xisync-blue-100 text-xisync-blue-600' },
-    { title: 'Delivered', value: String(shipments.filter(s => s.status === 'delivered').length || 45), icon: <CheckCircle2 className="w-5 h-5" />, iconColor: 'bg-xisync-green-100 text-xisync-green-600' },
-    { title: 'Exceptions', value: String(shipments.filter(s => s.status === 'exception').length || 1), icon: <AlertTriangle className="w-5 h-5" />, iconColor: 'bg-red-100 text-red-600' },
+    { title: t('Active Shipments', '在途货件'), value: String(shipments.filter(s => !['delivered', 'exception'].includes(s.status)).length || 12), icon: <Package className="w-5 h-5" />, iconColor: 'bg-xisync-cyan-100 text-xisync-cyan-600' },
+    { title: t('In Transit', '运输中'), value: String(shipments.filter(s => s.status === 'in_transit').length || 8), icon: <Ship className="w-5 h-5" />, iconColor: 'bg-xisync-blue-100 text-xisync-blue-600' },
+    { title: t('Delivered', '已送达'), value: String(shipments.filter(s => s.status === 'delivered').length || 45), icon: <CheckCircle2 className="w-5 h-5" />, iconColor: 'bg-xisync-green-100 text-xisync-green-600' },
+    { title: t('Exceptions', '异常件'), value: String(shipments.filter(s => s.status === 'exception').length || 1), icon: <AlertTriangle className="w-5 h-5" />, iconColor: 'bg-red-100 text-red-600' },
   ];
 
   const carrierRates = [
     {
       carrier: 'COSCO Ocean Freight',
-      mode: 'Sea FCL (40ft High Cube)',
+      mode: { en: 'Sea FCL (40ft High Cube)', zh: '海运整柜（40 尺高柜）' },
       price: '$2,450',
       days: '14 Days',
       co2: '1.2 Tons CO2',
-      tag: 'Best Rate ⭐',
+      tag: { en: 'Best Rate ⭐', zh: '最优运价 ⭐' },
       tagColor: 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/80 dark:text-emerald-300',
     },
     {
       carrier: 'Maersk Ocean Express',
-      mode: 'Sea FCL (40ft High Cube)',
+      mode: { en: 'Sea FCL (40ft High Cube)', zh: '海运整柜（40 尺高柜）' },
       price: '$2,890',
       days: '12 Days',
       co2: '1.1 Tons CO2',
-      tag: 'Fastest Sea ⚡',
+      tag: { en: 'Fastest Sea ⚡', zh: '最快海运 ⚡' },
       tagColor: 'bg-cyan-100 text-cyan-800 border-cyan-300 dark:bg-cyan-950/80 dark:text-cyan-300',
     },
     {
       carrier: 'DHL Air Cargo Charter',
-      mode: 'Air Freight Express',
+      mode: { en: 'Air Freight Express', zh: '空运快递' },
       price: '$6,800',
       days: '3 Days',
       co2: '4.5 Tons CO2',
-      tag: 'Express Air ✈️',
+      tag: { en: 'Express Air ✈️', zh: '空运特快 ✈️' },
       tagColor: 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950/80 dark:text-blue-300',
     },
     {
       carrier: 'China-Europe Rail Express',
-      mode: 'Rail Intermodal',
+      mode: { en: 'Rail Intermodal', zh: '铁路多式联运' },
       price: '$3,200',
       days: '16 Days',
       co2: '0.8 Tons CO2',
-      tag: 'Low Carbon 🌱',
+      tag: { en: 'Low Carbon 🌱', zh: '低碳排放 🌱' },
       tagColor: 'bg-lime-100 text-lime-800 border-lime-300 dark:bg-lime-950/80 dark:text-lime-300',
     },
   ];
@@ -235,13 +246,13 @@ export function LogisticsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 shadow-xs">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Global Trade Logistics & Freight Hub
+            {t('Global Trade Logistics & Freight Hub', '全球贸易物流与货运中心')}
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-300 font-medium mt-0.5">
-            Manage exporter cargo shipments, compare spot rates, track vessel transit, and view global maritime AIS heatmap
+            {t('Manage exporter cargo shipments, compare spot rates, track vessel transit, and view global maritime AIS heatmap', '管理出口货件、对比现货运价、追踪船舶运输动态，并查看全球海运 AIS 热力图')}
           </p>
         </div>
-        <Button icon={<Plus className="w-4 h-4" />}>Create Shipment</Button>
+        <Button icon={<Plus className="w-4 h-4" />}>{t('Create Shipment', '新建货件')}</Button>
       </div>
 
       {/* Stats Deck */}
@@ -269,7 +280,7 @@ export function LogisticsPage() {
           }`}
         >
           <Navigation className="w-3.5 h-3.5" />
-          <span>Tracking</span>
+          <span>{t('Tracking', '追踪')}</span>
         </Link>
 
         <Link
@@ -282,7 +293,7 @@ export function LogisticsPage() {
           }`}
         >
           <DollarSign className="w-3.5 h-3.5" />
-          <span>Rates</span>
+          <span>{t('Rates', '运价')}</span>
         </Link>
 
         <Link
@@ -295,7 +306,7 @@ export function LogisticsPage() {
           }`}
         >
           <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-          <span>AI Risk</span>
+          <span>{t('AI Risk', 'AI 风险')}</span>
         </Link>
 
         <Link
@@ -308,7 +319,7 @@ export function LogisticsPage() {
           }`}
         >
           <FileText className="w-3.5 h-3.5" />
-          <span>Customs</span>
+          <span>{t('Customs', '清关')}</span>
         </Link>
 
         <Link
@@ -321,7 +332,7 @@ export function LogisticsPage() {
           }`}
         >
           <Globe className="w-3.5 h-3.5" />
-          <span>Map</span>
+          <span>{t('Map', '地图')}</span>
         </Link>
       </div>
 
@@ -340,12 +351,12 @@ export function LogisticsPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search shipments..."
+                placeholder={t('Search shipments...', '搜索货件…')}
                 className="w-full pl-9 pr-4 py-2 text-xs font-semibold border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none"
               />
             </div>
             <Button variant="outline" size="sm" icon={<Filter className="w-4 h-4" />}>
-              Filter
+              {t('Filter', '筛选')}
             </Button>
           </div>
 
@@ -353,13 +364,13 @@ export function LogisticsPage() {
             <table className="w-full text-xs">
               <thead>
                 <tr className="bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800">
-                  <th className="px-6 py-3 text-left font-bold text-slate-500 uppercase">Shipment</th>
-                  <th className="px-6 py-3 text-left font-bold text-slate-500 uppercase">Customer</th>
-                  <th className="px-6 py-3 text-left font-bold text-slate-500 uppercase">Route</th>
-                  <th className="px-6 py-3 text-left font-bold text-slate-500 uppercase">Mode</th>
-                  <th className="px-6 py-3 text-left font-bold text-slate-500 uppercase">Status</th>
-                  <th className="px-6 py-3 text-left font-bold text-slate-500 uppercase">ETA</th>
-                  <th className="px-6 py-3 text-right font-bold text-slate-500 uppercase">Actions</th>
+                  <th className="px-6 py-3 text-left font-bold text-slate-500 uppercase">{t('Shipment', '货件')}</th>
+                  <th className="px-6 py-3 text-left font-bold text-slate-500 uppercase">{t('Customer', '客户')}</th>
+                  <th className="px-6 py-3 text-left font-bold text-slate-500 uppercase">{t('Route', '路线')}</th>
+                  <th className="px-6 py-3 text-left font-bold text-slate-500 uppercase">{t('Mode', '运输方式')}</th>
+                  <th className="px-6 py-3 text-left font-bold text-slate-500 uppercase">{t('Status', '状态')}</th>
+                  <th className="px-6 py-3 text-left font-bold text-slate-500 uppercase">{t('ETA', '预计到达')}</th>
+                  <th className="px-6 py-3 text-right font-bold text-slate-500 uppercase">{t('Actions', '操作')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-semibold">
@@ -376,24 +387,24 @@ export function LogisticsPage() {
                     <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{shipment.customer}</td>
                     <td className="px-6 py-4">
                       <div className="text-slate-900 dark:text-white">{shipment.origin}</div>
-                      <div className="text-slate-400 font-normal">to {shipment.destination}</div>
+                      <div className="text-slate-400 font-normal">{t('to', '至')} {shipment.destination}</div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                           {modeIcons[shipment.mode]}
                         </div>
-                        <span className="capitalize">{shipment.mode}</span>
+                        <span>{isZh ? modeLabels[shipment.mode].zh : modeLabels[shipment.mode].en}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold ${statusConfig[shipment.status].color}`}>
-                        {statusConfig[shipment.status].label}
+                        {isZh ? statusConfig[shipment.status].label.zh : statusConfig[shipment.status].label.en}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-slate-500">{shipment.eta || '—'}</td>
                     <td className="px-6 py-4 text-right">
-                      <button className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                      <button title={t('View details', '查看详情')} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white">
                         <ExternalLink className="w-4 h-4" />
                       </button>
                     </td>
@@ -409,24 +420,24 @@ export function LogisticsPage() {
       {activeTab === 'rates' && (
         <div className="space-y-4">
           <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
-            <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">Live Carrier Spot Freight Rates</h3>
+            <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">{t('Live Carrier Spot Freight Rates', '承运商现货运价实时对比')}</h3>
             <div className="grid md:grid-cols-2 gap-4">
               {carrierRates.map((rate) => (
                 <div key={rate.carrier} className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex flex-col justify-between space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="font-extrabold text-slate-900 dark:text-white text-sm">{rate.carrier}</div>
-                      <div className="text-xs text-slate-400 font-medium">{rate.mode}</div>
+                      <div className="text-xs text-slate-400 font-medium">{isZh ? rate.mode.zh : rate.mode.en}</div>
                     </div>
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${rate.tagColor}`}>{rate.tag}</span>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${rate.tagColor}`}>{isZh ? rate.tag.zh : rate.tag.en}</span>
                   </div>
                   <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-800 pt-3">
                     <div className="font-extrabold text-lg text-emerald-600 dark:text-emerald-400">{rate.price}</div>
                     <button
-                      onClick={() => triggerToast(`Booked ${rate.carrier} spot freight rate!`)}
+                      onClick={() => triggerToast(t(`Booked ${rate.carrier} spot freight rate!`, `已预订 ${rate.carrier} 现货运价！`))}
                       className="px-4 py-1.5 rounded-xl bg-slate-900 text-white font-bold text-xs shadow-xs"
                     >
-                      Book Rate
+                      {t('Book Rate', '预订运价')}
                     </button>
                   </div>
                 </div>
@@ -441,12 +452,12 @@ export function LogisticsPage() {
         <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-amber-400" />
-            <h3 className="font-extrabold text-base text-slate-900 dark:text-white">AI Route & Port Congestion Optimizer</h3>
+            <h3 className="font-extrabold text-base text-slate-900 dark:text-white">{t('AI Route & Port Congestion Optimizer', 'AI 路线与港口拥堵优化器')}</h3>
           </div>
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs space-y-2">
-            <div className="font-bold text-slate-900 dark:text-white">Suggested Suez Canal Alternate Passage</div>
+            <div className="font-bold text-slate-900 dark:text-white">{t('Suggested Suez Canal Alternate Passage', '建议苏伊士运河替代航线')}</div>
             <p className="text-slate-500 dark:text-slate-400">
-              Rerouting cargo via Cape of Good Hope reduces port congestion waiting time by 4.2 days for Rotterdam bound vessels.
+              {t('Rerouting cargo via Cape of Good Hope reduces port congestion waiting time by 4.2 days for Rotterdam bound vessels.', '绕行好望角可使前往鹿特丹的船舶减少 4.2 天港口拥堵等待时间。')}
             </p>
           </div>
         </div>
@@ -457,12 +468,12 @@ export function LogisticsPage() {
         <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-blue-500" />
-            <h3 className="font-extrabold text-base text-slate-900 dark:text-white">Automated Customs Entry & Duty Saver</h3>
+            <h3 className="font-extrabold text-base text-slate-900 dark:text-white">{t('Automated Customs Entry & Duty Saver', '自动报关与关税节省')}</h3>
           </div>
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs space-y-2">
-            <div className="font-bold text-slate-900 dark:text-white">US Section 301 Tariff Exemption Check</div>
+            <div className="font-bold text-slate-900 dark:text-white">{t('US Section 301 Tariff Exemption Check', '美国 301 关税豁免核查')}</div>
             <p className="text-slate-500 dark:text-slate-400">
-              Verified HTS Code 8504.40.9580 eligible for 25% duty exemption. Estimated savings: $2,800 / container.
+              {t('Verified HTS Code 8504.40.9580 eligible for 25% duty exemption. Estimated savings: $2,800 / container.', '经核实 HTS 编码 8504.40.9580 符合 25% 关税豁免条件。预计每个集装箱节省 2,800 美元。')}
             </p>
           </div>
         </div>
@@ -485,31 +496,31 @@ export function LogisticsPage() {
             <div className="space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
                 <div>
-                  <div className="text-slate-400 font-bold">Origin</div>
+                  <div className="text-slate-400 font-bold">{t('Origin', '起运港')}</div>
                   <div className="font-extrabold text-slate-900 dark:text-white text-sm">{selectedShipment.origin}</div>
-                  <div className="text-slate-400 mt-1">ETD: {selectedShipment.etd}</div>
+                  <div className="text-slate-400 mt-1">{t('ETD:', '预计发运：')} {selectedShipment.etd}</div>
                 </div>
                 <div>
-                  <div className="text-slate-400 font-bold">Destination</div>
+                  <div className="text-slate-400 font-bold">{t('Destination', '目的港')}</div>
                   <div className="font-extrabold text-slate-900 dark:text-white text-sm">{selectedShipment.destination}</div>
-                  <div className="text-slate-400 mt-1">ETA: {selectedShipment.eta}</div>
+                  <div className="text-slate-400 mt-1">{t('ETA:', '预计到达：')} {selectedShipment.eta}</div>
                 </div>
               </div>
 
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2">
                 <div className="flex items-center justify-between font-bold">
-                  <span className="text-slate-400">Carrier Line:</span>
+                  <span className="text-slate-400">{t('Carrier Line:', '承运商：')}</span>
                   <span className="text-slate-900 dark:text-white">{selectedShipment.carrier}</span>
                 </div>
                 <div className="flex items-center justify-between font-bold">
-                  <span className="text-slate-400">Tracking Number:</span>
+                  <span className="text-slate-400">{t('Tracking Number:', '追踪号：')}</span>
                   <span className="text-cyan-600 dark:text-cyan-400 font-mono">{selectedShipment.tracking}</span>
                 </div>
               </div>
             </div>
 
             <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-              <Button onClick={() => setSelectedShipment(null)}>Close</Button>
+              <Button onClick={() => setSelectedShipment(null)}>{t('Close', '关闭')}</Button>
             </div>
           </div>
         </div>

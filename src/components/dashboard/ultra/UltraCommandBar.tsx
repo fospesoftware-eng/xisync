@@ -71,7 +71,7 @@ export function UltraCommandBar({ userName, language, onSendPrompt }: UltraComma
       {/* Hero Executive Title */}
       <div className="space-y-1">
         <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight drop-shadow-xl bg-gradient-to-r from-white via-xisync-cyan-100 to-slate-200 bg-clip-text text-transparent">
-          {language === 'zh' ? `犀同步 全球外贸数字指挥中心` : `XiSync ULTRA Command Center`}
+          {language === 'zh' ? `XiSync 全球外贸数字指挥中心` : `XiSync ULTRA Command Center`}
         </h1>
         <p className="text-sm font-semibold text-slate-300">
           {language === 'zh' ? `您好 ${userName}，今日实时抓取 48 条海外商机，广告 ROI 环比提升 +14.2%` : `Hello ${userName}, 48 overseas leads captured today. Ad ROI +14.2% DoD.`}

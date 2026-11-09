@@ -207,7 +207,7 @@ export function UltraAiPanel({ language, onClose, onExecuteAction }: UltraAiPane
           type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder={language === 'zh' ? '发送消息给 犀同步.ai...' : 'Message to XiSync.ai'}
+          placeholder={language === 'zh' ? '发送消息给 XiSync.ai...' : 'Message to XiSync.ai'}
           className="flex-1 bg-transparent text-xs text-white placeholder-slate-400 outline-none font-medium px-2"
         />
 

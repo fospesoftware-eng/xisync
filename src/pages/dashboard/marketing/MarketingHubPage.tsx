@@ -91,7 +91,7 @@ export function MarketingHubPage() {
         <div>
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 text-[11px] font-semibold tracking-wider rounded-full bg-gradient-to-r from-xisync-blue-900 to-xisync-cyan-800 text-xisync-cyan-300 uppercase">
-              {language === 'zh' ? '犀同步 全球数字营销枢纽' : 'XiSync Global Marketing Command'}
+              {language === 'zh' ? 'XiSync 全球数字营销枢纽' : 'XiSync Global Marketing Command'}
             </span>
             <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/50">
               <Radio className="w-3 h-3 text-emerald-500 animate-pulse" />

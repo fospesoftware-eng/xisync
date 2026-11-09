@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import { useI18n } from '../../lib/i18n';
 import { Plus, Edit, Trash2, Save } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 
@@ -23,6 +24,9 @@ interface CMSSection {
 }
 
 export function CMSPage() {
+  const { language } = useI18n();
+  const isZh = language === 'zh';
+  const t = (en: string, zh: string) => (isZh ? zh : en);
   const [pages, setPages] = useState<CMSPage[]>([]);
   const [selectedPage, setSelectedPage] = useState<CMSPage | null>(null);
   const [sections, setSections] = useState<CMSSection[]>([]);
@@ -77,7 +81,7 @@ export function CMSPage() {
   };
 
   const handleDeletePage = async (pageId: string) => {
-    if (!confirm('Are you sure? This will delete all sections in this page.')) return;
+    if (!confirm(t('Are you sure? This will delete all sections in this page.', '确定要删除吗？这将删除该页面下的所有板块。'))) return;
 
     const { error } = await supabase
       .from('cms_pages')
@@ -117,8 +121,8 @@ export function CMSPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Website CMS</h1>
-        <p className="text-gray-600">Manage your website content and pages</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('Website CMS', '网站内容管理')}</h1>
+        <p className="text-gray-600">{t('Manage your website content and pages', '管理网站内容与页面')}</p>
       </div>
 
       <div className="grid grid-cols-12 gap-8">
@@ -126,7 +130,7 @@ export function CMSPage() {
         <div className="col-span-3">
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Pages</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{t('Pages', '页面')}</h2>
               <button
                 onClick={() => setShowNewPageForm(!showNewPageForm)}
                 className="p-2 hover:bg-gray-100 rounded-lg"
@@ -139,21 +143,21 @@ export function CMSPage() {
               <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
                 <input
                   type="text"
-                  placeholder="Page slug (e.g., home)"
+                  placeholder={t('Page slug (e.g., home)', '页面标识（如 home）')}
                   value={newPageData.slug}
                   onChange={(e) => setNewPageData({ ...newPageData, slug: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
                 />
                 <input
                   type="text"
-                  placeholder="Page title"
+                  placeholder={t('Page title', '页面标题')}
                   value={newPageData.title}
                   onChange={(e) => setNewPageData({ ...newPageData, title: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
                 />
                 <input
                   type="text"
-                  placeholder="Description"
+                  placeholder={t('Description', '描述')}
                   value={newPageData.description}
                   onChange={(e) => setNewPageData({ ...newPageData, description: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
@@ -163,13 +167,13 @@ export function CMSPage() {
                     onClick={handleCreatePage}
                     className="flex-1 px-3 py-2 bg-xisync-cyan-600 text-white rounded-lg text-sm font-medium hover:bg-xisync-cyan-700"
                   >
-                    Create
+                    {t('Create', '创建')}
                   </button>
                   <button
                     onClick={() => setShowNewPageForm(false)}
                     className="flex-1 px-3 py-2 bg-gray-100 text-gray-900 rounded-lg text-sm font-medium hover:bg-gray-200"
                   >
-                    Cancel
+                    {t('Cancel', '取消')}
                   </button>
                 </div>
               </div>
@@ -214,15 +218,15 @@ export function CMSPage() {
         <div className="col-span-9">
           {selectedPage ? (
             <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">{selectedPage.title} - Sections</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">{selectedPage.title} - {t('Sections', '板块')}</h2>
 
               {editingSection ? (
                 <div className="mb-6 p-6 bg-gray-50 rounded-lg border border-gray-200">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Edit Section</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">{t('Edit Section', '编辑板块')}</h3>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Section Type
+                        {t('Section Type', '板块类型')}
                       </label>
                       <input
                         type="text"
@@ -235,7 +239,7 @@ export function CMSPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Content (JSON)
+                        {t('Content (JSON)', '内容（JSON）')}
                       </label>
                       <textarea
                         value={JSON.stringify(editingSection.content, null, 2)}
@@ -258,13 +262,13 @@ export function CMSPage() {
                         className="flex items-center gap-2"
                       >
                         <Save className="w-4 h-4" />
-                        Save Changes
+                        {t('Save Changes', '保存修改')}
                       </Button>
                       <button
                         onClick={() => setEditingSection(null)}
                         className="px-4 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200"
                       >
-                        Cancel
+                        {t('Cancel', '取消')}
                       </button>
                     </div>
                   </div>
@@ -273,7 +277,7 @@ export function CMSPage() {
 
               <div className="space-y-3">
                 {sections.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No sections yet</p>
+                  <p className="text-gray-500 text-center py-8">{t('No sections yet', '暂无板块')}</p>
                 ) : (
                   sections.map((section) => (
                     <div key={section.id} className="p-4 border border-gray-200 rounded-lg">
@@ -282,7 +286,7 @@ export function CMSPage() {
                           <div className="font-medium text-gray-900">{section.section_key}</div>
                           <div className="text-sm text-gray-600">{section.section_type}</div>
                           <div className="text-xs text-gray-500 mt-1">
-                            Order: {section.order} | Active: {section.is_active ? 'Yes' : 'No'}
+                            {t('Order', '排序')}: {section.order} | {t('Active', '启用')}: {section.is_active ? t('Yes', '是') : t('No', '否')}
                           </div>
                         </div>
                         <div className="flex gap-2">
@@ -307,7 +311,7 @@ export function CMSPage() {
             </div>
           ) : (
             <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-              <p className="text-gray-500">Select a page to manage its content</p>
+              <p className="text-gray-500">{t('Select a page to manage its content', '请选择一个页面以管理其内容')}</p>
             </div>
           )}
         </div>

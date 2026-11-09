@@ -94,7 +94,7 @@ export function UltraDashboardPage() {
       title: prompt,
       content:
         language === 'zh'
-          ? `针对您的指令：「${prompt}」\n\n犀同步 ULTRA 引擎已完成实时全图谱检索：\n1. 本周外贸广告 ROI 环比提升 +14.2%，获得 48 条优质买家询盘；\n2. 推荐对 Meta Ads 服装及机械品类出价加权 15%；\n3. 已自动触发 37 条高价值待跟进线索至外贸 CRM 系统。`
+          ? `针对您的指令：「${prompt}」\n\nXiSync ULTRA 引擎已完成实时全图谱检索：\n1. 本周外贸广告 ROI 环比提升 +14.2%，获得 48 条优质买家询盘；\n2. 推荐对 Meta Ads 服装及机械品类出价加权 15%；\n3. 已自动触发 37 条高价值待跟进线索至外贸 CRM 系统。`
           : `Analysis complete for prompt: "${prompt}"\n\n1. Global Ad ROI increased +14.2% DoD across Meta & Google Ads;\n2. 48 high-intent B2B inquiries captured in past 24 hours;\n3. Recommended +15% budget scaling for North American & Middle East WhatsApp direct ads.`,
     });
   };
@@ -180,7 +180,7 @@ export function UltraDashboardPage() {
     {
       categoryEn: 'Growth & Ads',
       categoryZh: '数字营销与获客',
-      name: (t as any).marketing?.nav?.marketing || (language === 'zh' ? '犀同步 全球数字营销' : 'Global Marketing'),
+      name: (t as any).marketing?.nav?.marketing || (language === 'zh' ? 'XiSync 全球数字营销' : 'Global Marketing'),
       href: '/dashboard/ultra/marketing',
       icon: Megaphone,
       children: [

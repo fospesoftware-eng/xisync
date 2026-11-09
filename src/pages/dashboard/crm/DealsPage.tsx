@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '../../../components/ui/Button';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../lib/auth-context';
+import { useI18n } from '../../../lib/i18n';
 import {
   Plus,
   MoreVertical,
@@ -22,16 +23,19 @@ type Deal = {
 };
 
 const stages = [
-  { id: 'qualification', name: 'Qualification', color: 'bg-blue-500' },
-  { id: 'discovery', name: 'Discovery', color: 'bg-cyan-500' },
-  { id: 'proposal', name: 'Proposal', color: 'bg-yellow-500' },
-  { id: 'negotiation', name: 'Negotiation', color: 'bg-orange-500' },
-  { id: 'closed_won', name: 'Won', color: 'bg-green-500' },
-  { id: 'closed_lost', name: 'Lost', color: 'bg-red-500' },
+  { id: 'qualification', name: 'Qualification', zh: '资格确认', color: 'bg-blue-500' },
+  { id: 'discovery', name: 'Discovery', zh: '需求挖掘', color: 'bg-cyan-500' },
+  { id: 'proposal', name: 'Proposal', zh: '方案报价', color: 'bg-yellow-500' },
+  { id: 'negotiation', name: 'Negotiation', zh: '谈判中', color: 'bg-orange-500' },
+  { id: 'closed_won', name: 'Won', zh: '已成交', color: 'bg-green-500' },
+  { id: 'closed_lost', name: 'Lost', zh: '已流失', color: 'bg-red-500' },
 ];
 
 export function DealsPage() {
   const { tenant } = useAuth();
+  const { language } = useI18n();
+  const isZh = language === 'zh';
+  const t = (en: string, zh: string) => (isZh ? zh : en);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'board' | 'list'>('board');
@@ -50,13 +54,13 @@ export function DealsPage() {
             setDeals(
               data.map((row: Record<string, unknown>) => ({
                 id: row.id as string,
-                name: (row.name as string) || 'Untitled',
+                name: (row.name as string) || t('Untitled', '未命名'),
                 company: ((row.account as { name?: string } | null)?.name) || '—',
                 value: Number(row.value) || 0,
                 stage: row.stage as Deal['stage'],
                 probability: (row.probability as number) || 0,
                 expectedCloseDate: (row.expected_close_date as string) || '',
-                assignedTo: 'Unassigned',
+                assignedTo: t('Unassigned', '未分配'),
               })),
             );
             return;
@@ -90,6 +94,15 @@ export function DealsPage() {
   const getStageDeals = (stageId: string) => deals.filter((deal) => deal.stage === stageId);
   const getStageTotalValue = (stageId: string) => getStageDeals(stageId).reduce((sum, deal) => sum + deal.value, 0);
 
+  const stageLabel: Record<Deal['stage'], string> = {
+    qualification: t('Qualification', '资格确认'),
+    discovery: t('Discovery', '需求挖掘'),
+    proposal: t('Proposal', '方案报价'),
+    negotiation: t('Negotiation', '谈判中'),
+    closed_won: t('Won', '已成交'),
+    closed_lost: t('Lost', '已流失'),
+  };
+
   const activeDeals = deals.filter(d => d.stage !== 'closed_lost');
   const totalPipeline = activeDeals.reduce((sum, deal) => sum + deal.value, 0);
   const weightedPipeline = activeDeals.reduce((sum, deal) => sum + (deal.value * deal.probability / 100), 0);
@@ -106,8 +119,8 @@ export function DealsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Deals</h1>
-          <p className="text-gray-600">Track and manage your sales pipeline</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('Deals', '订单')}</h1>
+          <p className="text-gray-600">{t('Track and manage your sales pipeline', '跟踪和管理你的销售管道')}</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center rounded-lg border border-gray-200 p-1">
@@ -115,36 +128,36 @@ export function DealsPage() {
               onClick={() => setView('board')}
               className={`px-3 py-1.5 rounded text-sm font-medium ${view === 'board' ? 'bg-xisync-cyan-50 text-xisync-cyan-700' : 'text-gray-600'}`}
             >
-              Board
+              {t('Board', '看板')}
             </button>
             <button
               onClick={() => setView('list')}
               className={`px-3 py-1.5 rounded text-sm font-medium ${view === 'list' ? 'bg-xisync-cyan-50 text-xisync-cyan-700' : 'text-gray-600'}`}
             >
-              List
+              {t('List', '列表')}
             </button>
           </div>
-          <Button icon={<Plus className="w-4 h-4" />}>Add Deal</Button>
+          <Button icon={<Plus className="w-4 h-4" />}>{t('Add Deal', '新增订单')}</Button>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-          <div className="text-sm text-gray-500 mb-1">Total Pipeline</div>
+          <div className="text-sm text-gray-500 mb-1">{t('Total Pipeline', '销售管道总额')}</div>
           <div className="text-2xl font-bold text-gray-900">{formatCurrency(totalPipeline)}</div>
-          <div className="text-sm text-gray-500 mt-1">{activeDeals.length} deals</div>
+          <div className="text-sm text-gray-500 mt-1">{activeDeals.length} {t('deals', '个订单')}</div>
         </div>
         <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-          <div className="text-sm text-gray-500 mb-1">Weighted Pipeline</div>
+          <div className="text-sm text-gray-500 mb-1">{t('Weighted Pipeline', '加权管道金额')}</div>
           <div className="text-2xl font-bold text-xisync-cyan-600">{formatCurrency(weightedPipeline)}</div>
-          <div className="text-sm text-gray-500 mt-1">Based on probability</div>
+          <div className="text-sm text-gray-500 mt-1">{t('Based on probability', '按成交概率加权')}</div>
         </div>
         <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-          <div className="text-sm text-gray-500 mb-1">Avg. Deal Size</div>
+          <div className="text-sm text-gray-500 mb-1">{t('Avg. Deal Size', '平均订单金额')}</div>
           <div className="text-2xl font-bold text-gray-900">
             {formatCurrency(activeDeals.length > 0 ? totalPipeline / activeDeals.length : 0)}
           </div>
-          <div className="text-sm text-gray-500 mt-1">Per opportunity</div>
+          <div className="text-sm text-gray-500 mt-1">{t('Per opportunity', '每个商机')}</div>
         </div>
       </div>
 
@@ -156,7 +169,7 @@ export function DealsPage() {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${stage.color}`} />
-                    <span className="font-semibold text-gray-900">{stage.name}</span>
+                    <span className="font-semibold text-gray-900">{isZh ? stage.zh : stage.name}</span>
                     <span className="text-sm text-gray-500">({getStageDeals(stage.id).length})</span>
                   </div>
                   <span className="text-sm font-medium text-gray-600">
@@ -208,12 +221,12 @@ export function DealsPage() {
                   ))}
 
                   {getStageDeals(stage.id).length === 0 && (
-                    <div className="text-center py-4 text-sm text-gray-400">No deals</div>
+                    <div className="text-center py-4 text-sm text-gray-400">{t('No deals', '暂无订单')}</div>
                   )}
 
                   <button className="w-full py-2 text-sm text-gray-500 hover:text-xisync-cyan-600 hover:bg-white rounded-lg transition-colors flex items-center justify-center gap-1">
                     <Plus className="w-4 h-4" />
-                    Add deal
+                    {t('Add deal', '新增订单')}
                   </button>
                 </div>
               </div>
@@ -225,13 +238,13 @@ export function DealsPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Deal</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Company</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Value</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Stage</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Probability</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Close Date</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Owner</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{t('Deal', '订单')}</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{t('Company', '公司')}</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{t('Value', '金额')}</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{t('Stage', '阶段')}</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{t('Probability', '成交概率')}</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{t('Close Date', '预计成交日期')}</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{t('Owner', '负责人')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -242,7 +255,7 @@ export function DealsPage() {
                   <td className="px-6 py-4 font-medium text-xisync-cyan-600">{formatCurrency(deal.value)}</td>
                   <td className="px-6 py-4">
                     <span className="px-2 py-1 rounded-full text-xs font-medium bg-xisync-cyan-100 text-xisync-cyan-700 capitalize">
-                      {deal.stage.replace('_', ' ')}
+                      {stageLabel[deal.stage]}
                     </span>
                   </td>
                   <td className="px-6 py-4">
@@ -271,7 +284,7 @@ export function DealsPage() {
               ))}
               {deals.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-400">No deals yet</td>
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-400">{t('No deals yet', '暂无订单')}</td>
                 </tr>
               )}
             </tbody>

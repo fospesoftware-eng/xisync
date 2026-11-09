@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { VisualWorkflowBuilder } from '../../components/workflow/VisualWorkflowBuilder';
+import { useI18n } from '../../lib/i18n';
 import {
   Settings,
   Settings2,
@@ -41,6 +42,9 @@ interface ChannelAuthItem {
 export function SettingsPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { language } = useI18n();
+  const isZh = language === 'zh';
+  const t = (en: string, zh: string) => (isZh ? zh : en);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   const isUltra = location.pathname.includes('/dashboard/ultra');
@@ -171,14 +175,14 @@ export function SettingsPage() {
     setSyncingId(chId);
     setTimeout(() => {
       setSyncingId(null);
-      triggerToast(`Live Webhook Ping Verified! Incoming leads and chats routing directly to Unified Inbox.`);
+      triggerToast(t('Live Webhook Ping Verified! Incoming leads and chats routing directly to Unified Inbox.', 'Webhook 实时连通验证成功！新增线索与会话已直接路由至统一收件箱。'));
     }, 800);
   };
 
   const handleSaveChannelModal = (updated: ChannelAuthItem) => {
     setChannels((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
     setEditingChannel(null);
-    triggerToast(`Updated API Credentials for ${updated.name}! Webhook & Access Tokens synchronized.`);
+    triggerToast(t(`Updated API Credentials for ${updated.name}! Webhook & Access Tokens synchronized.`, `已更新 ${updated.name} 的 API 凭据！Webhook 与访问令牌已同步。`));
   };
 
   return (
@@ -193,23 +197,23 @@ export function SettingsPage() {
             <div className="flex items-center gap-2 mb-0.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-[10px] font-bold font-mono text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-                System Administration & Omnichannel Controls
+                {t('System Administration & Omnichannel Controls', '系统管理与全渠道控制台')}
               </span>
             </div>
             <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-              Client Settings & Configuration Hub
+              {t('Client Settings & Configuration Hub', '客户设置与配置中心')}
             </h1>
             <p className="text-xs text-slate-500 dark:text-slate-300 font-medium mt-0.5">
-              Manage social chat channel authorizations, workflow engines, AI pricing rules, factory credentials, and API webhooks
+              {t('Manage social chat channel authorizations, workflow engines, AI pricing rules, factory credentials, and API webhooks', '管理社交会话渠道授权、工作流引擎、AI 定价规则、工厂凭据与 API Webhook')}
             </p>
           </div>
         </div>
 
         <Button
-          onClick={() => triggerToast('All configuration settings and live authorization tokens saved!')}
+          onClick={() => triggerToast(t('All configuration settings and live authorization tokens saved!', '所有配置项与实时授权令牌已保存！'))}
           icon={<Check className="w-4 h-4" />}
         >
-          Save All Settings
+          {t('Save All Settings', '保存全部设置')}
         </Button>
       </div>
 
@@ -224,7 +228,7 @@ export function SettingsPage() {
           }`}
         >
           <Radio className="w-3.5 h-3.5" />
-          <span>Channel API & Auth</span>
+          <span>{t('Channel API & Auth', '渠道 API 与授权')}</span>
         </button>
 
         <button
@@ -236,7 +240,7 @@ export function SettingsPage() {
           }`}
         >
           <Settings2 className="w-3.5 h-3.5" />
-          <span>Workflow Builder</span>
+          <span>{t('Workflow Builder', '工作流构建器')}</span>
         </button>
 
         <button
@@ -248,7 +252,7 @@ export function SettingsPage() {
           }`}
         >
           <Building2 className="w-3.5 h-3.5" />
-          <span>Manufacturer Profile</span>
+          <span>{t('Manufacturer Profile', '制造商资料')}</span>
         </button>
 
         <button
@@ -260,7 +264,7 @@ export function SettingsPage() {
           }`}
         >
           <Bot className="w-3.5 h-3.5" />
-          <span>AI Chatbot & Negotiation Rules</span>
+          <span>{t('AI Chatbot & Negotiation Rules', 'AI 聊天机器人与谈判规则')}</span>
         </button>
 
         <button
@@ -272,7 +276,7 @@ export function SettingsPage() {
           }`}
         >
           <Ship className="w-3.5 h-3.5" />
-          <span>Logistics & Freight</span>
+          <span>{t('Logistics & Freight', '物流与货运')}</span>
         </button>
 
         <button
@@ -284,7 +288,7 @@ export function SettingsPage() {
           }`}
         >
           <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
-          <span>Credit Shield & Security</span>
+          <span>{t('Credit Shield & Security', '信用盾与安全')}</span>
         </button>
 
         <button
@@ -296,7 +300,7 @@ export function SettingsPage() {
           }`}
         >
           <Bell className="w-3.5 h-3.5" />
-          <span>API Keys & Webhooks</span>
+          <span>{t('API Keys & Webhooks', 'API 密钥与 Webhook')}</span>
         </button>
       </div>
 
@@ -308,15 +312,15 @@ export function SettingsPage() {
               <div>
                 <h2 className="font-extrabold text-base text-slate-900 dark:text-white flex items-center gap-2">
                   <Radio className="w-5 h-5 text-cyan-500" />
-                  <span>Omnichannel Social Chat & Messaging Channels API Hub</span>
+                  <span>{t('Omnichannel Social Chat & Messaging Channels API Hub', '全渠道社交会话与消息渠道 API 中心')}</span>
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Click <strong>&quot;Configure API Credentials&quot;</strong> on any channel to enter Meta App ID, Permanent Access Token, WABA ID, and Webhook Verify Tokens.
+                  {t('Click "Configure API Credentials" on any channel to enter Meta App ID, Permanent Access Token, WABA ID, and Webhook Verify Tokens.', '在任一渠道上点击「配置 API 凭据」，即可填写 Meta App ID、长期访问令牌、WABA ID 与 Webhook 验证令牌。')}
                 </p>
               </div>
 
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 self-start sm:self-auto">
-                ALL 5 CHANNELS ACTIVE
+                {t('ALL 5 CHANNELS ACTIVE', '全部 5 个渠道已启用')}
               </span>
             </div>
 
@@ -339,28 +343,28 @@ export function SettingsPage() {
                     </div>
 
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                      LIVE CONNECTED
+                      {t('LIVE CONNECTED', '已在线连接')}
                     </span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 text-xs p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
                     <div>
-                      <span className="text-[10px] text-slate-400 font-mono block">Meta App / Channel ID:</span>
+                      <span className="text-[10px] text-slate-400 font-mono block">{t('Meta App / Channel ID:', 'Meta App / 渠道 ID：')}</span>
                       <span className="font-bold font-mono text-[11px] truncate block text-slate-900 dark:text-white">
                         {item.appId}
                       </span>
                     </div>
 
                     <div>
-                      <span className="text-[10px] text-slate-400 font-mono block">Total Ingested Leads:</span>
+                      <span className="text-[10px] text-slate-400 font-mono block">{t('Total Ingested Leads:', '累计入库线索：')}</span>
                       <span className="font-bold text-cyan-600 dark:text-cyan-400">
-                        {item.leadsIngestedTotal.toLocaleString()} leads
+                        {item.leadsIngestedTotal.toLocaleString()} {t('leads', '条线索')}
                       </span>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between pt-1">
-                    <span className="text-[10px] text-slate-400 font-mono">Last Webhook: {item.lastWebhookPing}</span>
+                    <span className="text-[10px] text-slate-400 font-mono">{t('Last Webhook:', '最近 Webhook：')} {item.lastWebhookPing}</span>
 
                     <div className="flex items-center gap-2">
                       <button
@@ -368,7 +372,7 @@ export function SettingsPage() {
                         className="px-3 py-1.5 rounded-xl text-xs font-bold bg-cyan-500 text-white flex items-center gap-1.5 hover:bg-cyan-600 transition-all shadow-xs"
                       >
                         <Edit3 className="w-3 h-3" />
-                        <span>Configure API</span>
+                        <span>{t('Configure API', '配置 API')}</span>
                       </button>
 
                       <button
@@ -377,7 +381,7 @@ export function SettingsPage() {
                         className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-1.5 hover:bg-slate-100 transition-all shadow-2xs"
                       >
                         <RefreshCw className={`w-3 h-3 ${syncingId === item.id ? 'animate-spin' : ''}`} />
-                        <span>Test Ping</span>
+                        <span>{t('Test Ping', '测试连通')}</span>
                       </button>
                     </div>
                   </div>
@@ -390,14 +394,14 @@ export function SettingsPage() {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-cyan-400 flex items-center gap-1.5 font-mono">
                   <Key className="w-3.5 h-3.5" />
-                  <span>Unified Omnichannel Webhook Listener Endpoint (Auto-Ingestion to Inbox)</span>
+                  <span>{t('Unified Omnichannel Webhook Listener Endpoint (Auto-Ingestion to Inbox)', '统一全渠道 Webhook 监听端点（自动入库至收件箱）')}</span>
                 </span>
                 <button
-                  onClick={() => triggerToast('Webhook URL copied to clipboard!')}
+                  onClick={() => triggerToast(t('Webhook URL copied to clipboard!', 'Webhook URL 已复制到剪贴板！'))}
                   className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 flex items-center gap-1"
                 >
                   <Copy className="w-3 h-3" />
-                  <span>Copy</span>
+                  <span>{t('Copy', '复制')}</span>
                 </button>
               </div>
               <div className="font-mono text-xs text-emerald-400 bg-slate-950 p-2.5 rounded-xl overflow-x-auto">
@@ -422,16 +426,16 @@ export function SettingsPage() {
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-cyan-500" />
-                <h2 className="font-extrabold text-base text-slate-900 dark:text-white">Exporter Factory Profile & Licensing</h2>
+                <h2 className="font-extrabold text-base text-slate-900 dark:text-white">{t('Exporter Factory Profile & Licensing', '出口商工厂资料与资质')}</h2>
               </div>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
-                VERIFIED EXPORTER
+                {t('VERIFIED EXPORTER', '认证出口商')}
               </span>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4 text-xs">
               <div>
-                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Official Company / Factory Name</label>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">{t('Official Company / Factory Name', '公司 / 工厂全称')}</label>
                 <input
                   type="text"
                   value={factoryName}
@@ -441,7 +445,7 @@ export function SettingsPage() {
               </div>
 
               <div>
-                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Unified Social Credit Code (China Tax ID)</label>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">{t('Unified Social Credit Code (China Tax ID)', '统一社会信用代码（中国税号）')}</label>
                 <input
                   type="text"
                   value={taxId}
@@ -451,32 +455,32 @@ export function SettingsPage() {
               </div>
 
               <div>
-                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">System Base Accounting Currency</label>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">{t('System Base Accounting Currency', '系统记账本位币')}</label>
                 <select className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold text-slate-900 dark:text-white outline-none">
-                  <option>USD ($) - United States Dollar (Default Base)</option>
-                  <option>EUR (€) - Eurozone Settlement Currency</option>
-                  <option>GBP (£) - British Pound Sterling</option>
-                  <option>CNY (¥) - Chinese Yuan Renminbi Direct</option>
+                  <option>{t('USD ($) - United States Dollar (Default Base)', '美元（$）- 美元（默认本位币）')}</option>
+                  <option>{t('EUR (€) - Eurozone Settlement Currency', '欧元（€）- 欧元区结算货币')}</option>
+                  <option>{t('GBP (£) - British Pound Sterling', '英镑（£）- 英国英镑')}</option>
+                  <option>{t('CNY (¥) - Chinese Yuan Renminbi Direct', '人民币（¥）- 人民币直接结算')}</option>
                 </select>
               </div>
 
               <div>
-                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Main Manufacturing Category</label>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">{t('Main Manufacturing Category', '主营制造品类')}</label>
                 <select className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold text-slate-900 dark:text-white outline-none">
-                  <option>Eco Wooden Toys & Child Montessori Goods</option>
-                  <option>High-Tech Electronics & Machinery</option>
-                  <option>Solar PV & Energy Storage</option>
-                  <option>Apparel, Footwear & Textiles</option>
+                  <option>{t('Eco Wooden Toys & Child Montessori Goods', '环保木制玩具与儿童蒙台梭利产品')}</option>
+                  <option>{t('High-Tech Electronics & Machinery', '高科技电子与机械设备')}</option>
+                  <option>{t('Solar PV & Energy Storage', '光伏与储能产品')}</option>
+                  <option>{t('Apparel, Footwear & Textiles', '服装、鞋履与纺织品')}</option>
                 </select>
               </div>
             </div>
 
             <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
               <button
-                onClick={() => triggerToast('Manufacturer Profile details saved!')}
+                onClick={() => triggerToast(t('Manufacturer Profile details saved!', '制造商资料已保存！'))}
                 className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs"
               >
-                Save Factory Profile
+                {t('Save Factory Profile', '保存工厂资料')}
               </button>
             </div>
           </div>
@@ -492,49 +496,49 @@ export function SettingsPage() {
               <div className="flex items-center gap-2">
                 <Bot className="w-5 h-5 text-cyan-500" />
                 <div>
-                  <h2 className="font-extrabold text-base text-slate-900 dark:text-white">AI Chatbot Profile & Persona Builder</h2>
-                  <p className="text-xs text-slate-400">Configure your storefront AI consultant name, tone, role, and human escalation triggers</p>
+                  <h2 className="font-extrabold text-base text-slate-900 dark:text-white">{t('AI Chatbot Profile & Persona Builder', 'AI 聊天机器人画像与人设构建')}</h2>
+                  <p className="text-xs text-slate-400">{t('Configure your storefront AI consultant name, tone, role, and human escalation triggers', '配置店铺端 AI 顾问的姓名、语调、职位与人工升级触发条件')}</p>
                 </div>
               </div>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-cyan-100 text-cyan-800 dark:bg-cyan-950/80 dark:text-cyan-300">
-                DEEPSEEK AI INTEGRATED
+                {t('DEEPSEEK AI INTEGRATED', '已集成 DeepSeek AI')}
               </span>
             </div>
 
             <div className="grid md:grid-cols-3 gap-4 text-xs">
               <div>
-                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Chatbot / Agent Name</label>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">{t('Chatbot / Agent Name', '聊天机器人 / 智能体名称')}</label>
                 <input
                   type="text"
                   value={botName}
                   onChange={(e) => setBotName(e.target.value)}
-                  placeholder="e.g. Sarah Chen"
+                  placeholder={t('e.g. Sarah Chen', '例如：Sarah Chen')}
                   className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold text-slate-900 dark:text-white outline-none focus:border-cyan-500"
                 />
               </div>
 
               <div>
-                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Agent Official Title / Role</label>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">{t('Agent Official Title / Role', '智能体官方职位 / 角色')}</label>
                 <input
                   type="text"
                   value={botRole}
                   onChange={(e) => setBotRole(e.target.value)}
-                  placeholder="e.g. Senior Export Account Director"
+                  placeholder={t('e.g. Senior Export Account Director', '例如：高级出口客户总监')}
                   className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold text-slate-900 dark:text-white outline-none focus:border-cyan-500"
                 />
               </div>
 
               <div>
-                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Conversational Tone</label>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">{t('Conversational Tone', '会话语调')}</label>
                 <select
                   value={botTone}
                   onChange={(e) => setBotTone(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold text-slate-900 dark:text-white outline-none focus:border-cyan-500"
                 >
-                  <option value="warm_professional">Warm, Natural & Professional (Recommended)</option>
-                  <option value="luxury_executive">High-End Luxury Concierge</option>
-                  <option value="friendly_casual">Friendly & Approachable Retailer</option>
-                  <option value="direct_b2b">Direct Factory Wholesale / Technical</option>
+                  <option value="warm_professional">{t('Warm, Natural & Professional (Recommended)', '温暖、自然与专业（推荐）')}</option>
+                  <option value="luxury_executive">{t('High-End Luxury Concierge', '高端奢华礼宾式')}</option>
+                  <option value="friendly_casual">{t('Friendly & Approachable Retailer', '友好亲和的零售商式')}</option>
+                  <option value="direct_b2b">{t('Direct Factory Wholesale / Technical', '直接工厂批发 / 技术式')}</option>
                 </select>
               </div>
             </div>
@@ -542,22 +546,22 @@ export function SettingsPage() {
             <div className="grid md:grid-cols-2 gap-4 text-xs pt-2 border-t border-slate-100 dark:border-slate-800">
               <div>
                 <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">
-                  Auto-Escalate to Human Agent After (Complex Inquiries)
+                  {t('Auto-Escalate to Human Agent After (Complex Inquiries)', '复杂问询转人工条件')}
                 </label>
                 <select
                   value={autoEscalateAfter}
                   onChange={(e) => setAutoEscalateAfter(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold text-slate-900 dark:text-white outline-none"
                 >
-                  <option value="1">Instant Escalation on Custom OEM / Tooling</option>
-                  <option value="3">After 3 Unresolved Technical Questions</option>
-                  <option value="manual">Only on Explicit Buyer Request ("Human / Manager")</option>
+                  <option value="1">{t('Instant Escalation on Custom OEM / Tooling', '定制 OEM / 模具问询即时转人工')}</option>
+                  <option value="3">{t('After 3 Unresolved Technical Questions', '3 个技术问题未解决后转人工')}</option>
+                  <option value="manual">{t('Only on Explicit Buyer Request ("Human / Manager")', '仅买家明确要求时（"人工 / 经理"）')}</option>
                 </select>
               </div>
 
               <div>
                 <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">
-                  Sample Policy Offer in Chat
+                  {t('Sample Policy Offer in Chat', '会话中的样品政策')}
                 </label>
                 <div className="flex items-center gap-3 pt-2">
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -568,7 +572,7 @@ export function SettingsPage() {
                       className="w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500"
                     />
                     <span className="font-semibold text-slate-800 dark:text-slate-200">
-                      Enable "Free Quality Samples (Freight Collect)"
+                      {t('Enable "Free Quality Samples (Freight Collect)"', '启用「免费品质样品（运费到付）」')}
                     </span>
                   </label>
                 </div>
@@ -582,8 +586,8 @@ export function SettingsPage() {
               <div className="flex items-center gap-2">
                 <Bot className="w-5 h-5 text-purple-500" />
                 <div>
-                  <h2 className="font-extrabold text-base text-slate-900 dark:text-white">AI Autonomous Negotiation & Shipping Constraints</h2>
-                  <p className="text-xs text-slate-400">Set hard financial guardrails for automatic quoting, discount margins, and shipment deadlines</p>
+                  <h2 className="font-extrabold text-base text-slate-900 dark:text-white">{t('AI Autonomous Negotiation & Shipping Constraints', 'AI 自主谈判与发货约束')}</h2>
+                  <p className="text-xs text-slate-400">{t('Set hard financial guardrails for automatic quoting, discount margins, and shipment deadlines', '为自动报价、折扣幅度与发货截止日期设定硬性财务护栏')}</p>
                 </div>
               </div>
             </div>
@@ -591,7 +595,7 @@ export function SettingsPage() {
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
               <div>
                 <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">
-                  Target Profit Margin Floor (%)
+                  {t('Target Profit Margin Floor (%)', '目标利润率下限（%）')}
                 </label>
                 <input
                   type="number"
@@ -599,12 +603,12 @@ export function SettingsPage() {
                   onChange={(e) => setMinMargin(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold text-slate-900 dark:text-white outline-none focus:border-purple-500"
                 />
-                <span className="text-[10px] text-slate-400 mt-1 block">Bot will never quote below this margin</span>
+                <span className="text-[10px] text-slate-400 mt-1 block">{t('Bot will never quote below this margin', '机器人报价不会低于此利润率')}</span>
               </div>
 
               <div>
                 <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">
-                  Max Autonomous Discount (%)
+                  {t('Max Autonomous Discount (%)', '最大自主折扣（%）')}
                 </label>
                 <input
                   type="number"
@@ -612,12 +616,12 @@ export function SettingsPage() {
                   onChange={(e) => setMaxDiscount(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold text-slate-900 dark:text-white outline-none focus:border-purple-500"
                 />
-                <span className="text-[10px] text-slate-400 mt-1 block">Maximum tier-2 volume discount allowed</span>
+                <span className="text-[10px] text-slate-400 mt-1 block">{t('Maximum tier-2 volume discount allowed', '允许的二级阶梯量价折扣上限')}</span>
               </div>
 
               <div>
                 <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">
-                  Max Production Lead Time (Days)
+                  {t('Max Production Lead Time (Days)', '最大生产交期（天）')}
                 </label>
                 <input
                   type="number"
@@ -625,12 +629,12 @@ export function SettingsPage() {
                   onChange={(e) => setMaxShipmentDays(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold text-slate-900 dark:text-white outline-none focus:border-purple-500"
                 />
-                <span className="text-[10px] text-slate-400 mt-1 block">Maximum promised manufacturing days</span>
+                <span className="text-[10px] text-slate-400 mt-1 block">{t('Maximum promised manufacturing days', '承诺的最大生产天数')}</span>
               </div>
 
               <div>
                 <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">
-                  Sample Dispatch Lead Time (Days)
+                  {t('Sample Dispatch Lead Time (Days)', '样品发货交期（天）')}
                 </label>
                 <input
                   type="number"
@@ -638,46 +642,46 @@ export function SettingsPage() {
                   onChange={(e) => setSampleDispatchDays(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold text-slate-900 dark:text-white outline-none focus:border-purple-500"
                 />
-                <span className="text-[10px] text-slate-400 mt-1 block">Promised courier dispatch time</span>
+                <span className="text-[10px] text-slate-400 mt-1 block">{t('Promised courier dispatch time', '承诺的快递发货时间')}</span>
               </div>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4 text-xs pt-2 border-t border-slate-100 dark:border-slate-800">
               <div>
-                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Default International Incoterms</label>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">{t('Default International Incoterms', '默认国际贸易术语')}</label>
                 <select
                   value={defaultIncoterms}
                   onChange={(e) => setDefaultIncoterms(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold text-slate-900 dark:text-white outline-none"
                 >
-                  <option value="FOB Shanghai (CNSHA)">FOB Shanghai (CNSHA)</option>
-                  <option value="FOB Ningbo (CNNGB)">FOB Ningbo (CNNGB)</option>
-                  <option value="CIF Rotterdam">CIF Rotterdam (NLRTM)</option>
-                  <option value="CIF Los Angeles">CIF Los Angeles (USLAX)</option>
-                  <option value="DDP Delivered Duty Paid">DDP Delivered Duty Paid</option>
+                  <option value="FOB Shanghai (CNSHA)">{t('FOB Shanghai (CNSHA)', 'FOB 上海（CNSHA）')}</option>
+                  <option value="FOB Ningbo (CNNGB)">{t('FOB Ningbo (CNNGB)', 'FOB 宁波（CNNGB）')}</option>
+                  <option value="CIF Rotterdam">{t('CIF Rotterdam (NLRTM)', 'CIF 鹿特丹（NLRTM）')}</option>
+                  <option value="CIF Los Angeles">{t('CIF Los Angeles (USLAX)', 'CIF 洛杉矶（USLAX）')}</option>
+                  <option value="DDP Delivered Duty Paid">{t('DDP Delivered Duty Paid', 'DDP 完税后交货')}</option>
                 </select>
               </div>
 
               <div>
-                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Standard Payment Terms</label>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">{t('Standard Payment Terms', '标准付款条款')}</label>
                 <select
                   value={paymentTerm}
                   onChange={(e) => setPaymentTerm(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold text-slate-900 dark:text-white outline-none"
                 >
-                  <option value="30/70 T/T Split">30% Deposit / 70% Against B/L Copy (T/T)</option>
-                  <option value="100% Irrevocable L/C at Sight">100% Irrevocable L/C at Sight</option>
-                  <option value="OA 60 Days with Sinosure">OA 60 Days (Sinosure Insured)</option>
+                  <option value="30/70 T/T Split">{t('30% Deposit / 70% Against B/L Copy (T/T)', '30% 预付 / 70% 凭提单副本（T/T）')}</option>
+                  <option value="100% Irrevocable L/C at Sight">{t('100% Irrevocable L/C at Sight', '100% 不可撤销即期信用证')}</option>
+                  <option value="OA 60 Days with Sinosure">{t('OA 60 Days (Sinosure Insured)', 'OA 60 天（信保承保）')}</option>
                 </select>
               </div>
             </div>
 
             <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
               <button
-                onClick={() => triggerToast(`AI Chatbot rules saved! Bot: ${botName} (${botRole}), Max Discount: ${maxDiscount}%, Max Lead Time: ${maxShipmentDays} days.`)}
+                onClick={() => triggerToast(t(`AI Chatbot rules saved! Bot: ${botName} (${botRole}), Max Discount: ${maxDiscount}%, Max Lead Time: ${maxShipmentDays} days.`, `AI 聊天机器人规则已保存！机器人：${botName}（${botRole}），最大折扣：${maxDiscount}%，最大交期：${maxShipmentDays} 天。`))}
                 className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-bold text-xs shadow-md transition-all"
               >
-                Save Chatbot & Negotiation Rules
+                {t('Save Chatbot & Negotiation Rules', '保存聊天机器人与谈判规则')}
               </button>
             </div>
           </div>
@@ -691,27 +695,27 @@ export function SettingsPage() {
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <Ship className="w-5 h-5 text-blue-500" />
-                <h2 className="font-extrabold text-base text-slate-900 dark:text-white">Ocean Freight Defaults & Carrier Integrations</h2>
+                <h2 className="font-extrabold text-base text-slate-900 dark:text-white">{t('Ocean Freight Defaults & Carrier Integrations', '海运默认设置与承运人集成')}</h2>
               </div>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4 text-xs">
               <div>
-                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Preferred Ocean Carrier</label>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">{t('Preferred Ocean Carrier', '首选海运承运人')}</label>
                 <select
                   value={preferredCarrier}
                   onChange={(e) => setPreferredCarrier(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold text-slate-900 dark:text-white outline-none"
                 >
-                  <option value="COSCO Shipping">COSCO Shipping (Direct Terminal Line)</option>
-                  <option value="Maersk Line">Maersk Line (Spot Integrated)</option>
-                  <option value="MSC Mediterranean">MSC Mediterranean Shipping</option>
-                  <option value="CMA CGM Group">CMA CGM Group</option>
+                  <option value="COSCO Shipping">{t('COSCO Shipping (Direct Terminal Line)', '中远海运（直达干线）')}</option>
+                  <option value="Maersk Line">{t('Maersk Line (Spot Integrated)', '马士基航运（现货接入）')}</option>
+                  <option value="MSC Mediterranean">{t('MSC Mediterranean Shipping', 'MSC 地中海航运')}</option>
+                  <option value="CMA CGM Group">{t('CMA CGM Group', '达飞轮船集团')}</option>
                 </select>
               </div>
 
               <div>
-                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Primary Export Loading Port (POL)</label>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">{t('Primary Export Loading Port (POL)', '主出口装运港（POL）')}</label>
                 <input
                   type="text"
                   defaultValue="Ningbo-Zhoushan Port (CNNGB) / Shanghai Port (CNSHA)"
@@ -722,10 +726,10 @@ export function SettingsPage() {
 
             <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
               <button
-                onClick={() => triggerToast('Logistics carrier defaults and port configurations saved!')}
+                onClick={() => triggerToast(t('Logistics carrier defaults and port configurations saved!', '物流承运人默认设置与港口配置已保存！'))}
                 className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs"
               >
-                Save Logistics Settings
+                {t('Save Logistics Settings', '保存物流设置')}
               </button>
             </div>
           </div>
@@ -739,13 +743,13 @@ export function SettingsPage() {
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-emerald-500" />
-                <h2 className="font-extrabold text-base text-slate-900 dark:text-white">Credit Shield & Sinosure Risk Scoring</h2>
+                <h2 className="font-extrabold text-base text-slate-900 dark:text-white">{t('Credit Shield & Sinosure Risk Scoring', '信用盾与中信保风险评分')}</h2>
               </div>
             </div>
 
             <div className="space-y-4 text-xs">
               <div>
-                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Minimum Buyer Credit Score for L/C Approval</label>
+                <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">{t('Minimum Buyer Credit Score for L/C Approval', 'L/C 审批最低买家信用分')}</label>
                 <input
                   type="number"
                   value={minCreditScore}
@@ -757,19 +761,19 @@ export function SettingsPage() {
               <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-2">
                 <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                   <Lock className="w-3.5 h-3.5 text-purple-500" />
-                  Automated Wire Sanction & Entity List Screening
+                  {t('Automated Wire Sanction & Entity List Screening', '电汇制裁与实体清单自动筛查')}
                 </div>
                 <p className="text-slate-500 dark:text-slate-400 font-medium">
-                  Real-time screening against OFAC, EU, UN, and US Department of Commerce entity lists before accepting T/T wire transfers.
+                  {t('Real-time screening against OFAC, EU, UN, and US Department of Commerce entity lists before accepting T/T wire transfers.', '在接受 T/T 电汇前，实时比对 OFAC、欧盟、联合国与美国商务部实体清单。')}
                 </p>
               </div>
             </div>
 
             <button
-              onClick={() => triggerToast('Credit Shield risk thresholds saved!')}
+              onClick={() => triggerToast(t('Credit Shield risk thresholds saved!', '信用盾风险阈值已保存！'))}
               className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs"
             >
-              Save Security Rules
+              {t('Save Security Rules', '保存安全规则')}
             </button>
           </div>
         </div>
@@ -782,7 +786,7 @@ export function SettingsPage() {
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <Bell className="w-5 h-5 text-amber-500" />
-                <h2 className="font-extrabold text-base text-slate-900 dark:text-white">API Integration Keys & Notifications</h2>
+                <h2 className="font-extrabold text-base text-slate-900 dark:text-white">{t('API Integration Keys & Notifications', 'API 集成密钥与通知')}</h2>
               </div>
             </div>
 
@@ -790,7 +794,7 @@ export function SettingsPage() {
               <div>
                 <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1 flex items-center gap-1.5">
                   <Key className="w-3.5 h-3.5 text-cyan-500" />
-                  XiSync Production Live API Key
+                  {t('XiSync Production Live API Key', 'XiSync 生产环境正式 API Key')}
                 </label>
                 <div className="flex items-center gap-2">
                   <input
@@ -800,27 +804,27 @@ export function SettingsPage() {
                     className="flex-1 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white outline-none"
                   />
                   <button
-                    onClick={() => triggerToast('API Key copied to clipboard!')}
+                    onClick={() => triggerToast(t('API Key copied to clipboard!', 'API Key 已复制到剪贴板！'))}
                     className="px-4 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs"
                   >
-                    Copy Key
+                    {t('Copy Key', '复制密钥')}
                   </button>
                 </div>
               </div>
 
               <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-2">
-                <div className="font-bold text-slate-900 dark:text-white">Omnichannel Lead Webhook Triggers</div>
+                <div className="font-bold text-slate-900 dark:text-white">{t('Omnichannel Lead Webhook Triggers', '全渠道线索 Webhook 触发器')}</div>
                 <p className="text-slate-500 dark:text-slate-400 font-medium">
-                  Instant webhook alerts dispatched for Meta Ads, Google Search inquiries, and WhatsApp Direct buyer leads.
+                  {t('Instant webhook alerts dispatched for Meta Ads, Google Search inquiries, and WhatsApp Direct buyer leads.', '为 Meta 广告、Google 搜索询盘与 WhatsApp 直连买家线索即时派发 Webhook 提醒。')}
                 </p>
               </div>
             </div>
 
             <button
-              onClick={() => triggerToast('Notification settings updated!')}
+              onClick={() => triggerToast(t('Notification settings updated!', '通知设置已更新！'))}
               className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs"
             >
-              Save API Preferences
+              {t('Save API Preferences', '保存 API 偏好')}
             </button>
           </div>
         </div>
@@ -837,10 +841,10 @@ export function SettingsPage() {
                 </div>
                 <div>
                   <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
-                    Configure {editingChannel.name}
+                    {t('Configure', '配置')} {editingChannel.name}
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Enter Meta Cloud API credentials, webhook verification tokens, and Phone IDs
+                    {t('Enter Meta Cloud API credentials, webhook verification tokens, and Phone IDs', '填写 Meta Cloud API 凭据、Webhook 验证令牌与 Phone ID')}
                   </p>
                 </div>
               </div>
@@ -861,7 +865,7 @@ export function SettingsPage() {
               className="space-y-4 text-xs"
             >
               <div>
-                <label className="font-bold text-slate-500 block mb-1">Account / Display Name</label>
+                <label className="font-bold text-slate-500 block mb-1">{t('Account / Display Name', '账户 / 显示名称')}</label>
                 <input
                   type="text"
                   value={editingChannel.accountName}
@@ -872,7 +876,7 @@ export function SettingsPage() {
 
               <div className="grid md:grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-slate-500 block mb-1">Meta App ID / Client ID</label>
+                  <label className="font-bold text-slate-500 block mb-1">{t('Meta App ID / Client ID', 'Meta App ID / 客户端 ID')}</label>
                   <input
                     type="text"
                     value={editingChannel.appId}
@@ -883,18 +887,18 @@ export function SettingsPage() {
 
                 {editingChannel.channel === 'whatsapp' ? (
                   <div>
-                    <label className="font-bold text-slate-500 block mb-1">Phone Number ID (Meta WABA)</label>
+                    <label className="font-bold text-slate-500 block mb-1">{t('Phone Number ID (Meta WABA)', 'Phone Number ID（Meta WABA）')}</label>
                     <input
                       type="text"
                       value={editingChannel.phoneNumberId || '108472910482910'}
                       onChange={(e) => setEditingChannel({ ...editingChannel, phoneNumberId: e.target.value })}
-                      placeholder="e.g. 108472910482910"
+                      placeholder={t('e.g. 108472910482910', '例如：108472910482910')}
                       className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-mono font-bold outline-none"
                     />
                   </div>
                 ) : (
                   <div>
-                    <label className="font-bold text-slate-500 block mb-1">Webhook Secret / App Secret</label>
+                    <label className="font-bold text-slate-500 block mb-1">{t('Webhook Secret / App Secret', 'Webhook Secret / 应用密钥')}</label>
                     <input
                       type="password"
                       value={editingChannel.webhookSecret}
@@ -908,18 +912,18 @@ export function SettingsPage() {
               {editingChannel.channel === 'whatsapp' && (
                 <div className="grid md:grid-cols-2 gap-3">
                   <div>
-                    <label className="font-bold text-slate-500 block mb-1">WhatsApp Business Account ID (WABA ID)</label>
+                    <label className="font-bold text-slate-500 block mb-1">{t('WhatsApp Business Account ID (WABA ID)', 'WhatsApp 商业账户 ID（WABA ID）')}</label>
                     <input
                       type="text"
                       value={editingChannel.wabaId || 'waba_994810293847'}
                       onChange={(e) => setEditingChannel({ ...editingChannel, wabaId: e.target.value })}
-                      placeholder="e.g. waba_994810293847"
+                      placeholder={t('e.g. waba_994810293847', '例如：waba_994810293847')}
                       className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-mono font-bold outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="font-bold text-slate-500 block mb-1">Webhook Secret</label>
+                    <label className="font-bold text-slate-500 block mb-1">{t('Webhook Secret', 'Webhook Secret')}</label>
                     <input
                       type="password"
                       value={editingChannel.webhookSecret}
@@ -931,7 +935,7 @@ export function SettingsPage() {
               )}
 
               <div>
-                <label className="font-bold text-slate-500 block mb-1">Meta System User Permanent Access Token (Bearer)</label>
+                <label className="font-bold text-slate-500 block mb-1">{t('Meta System User Permanent Access Token (Bearer)', 'Meta 系统用户长期访问令牌（Bearer）')}</label>
                 <input
                   type="password"
                   value={editingChannel.permanentAccessToken || 'EAAG94810...x9841zK9'}
@@ -942,7 +946,7 @@ export function SettingsPage() {
               </div>
 
               <div>
-                <label className="font-bold text-slate-500 block mb-1">Webhook Verify Token (Enter in Meta Developer App)</label>
+                <label className="font-bold text-slate-500 block mb-1">{t('Webhook Verify Token (Enter in Meta Developer App)', 'Webhook 验证令牌（在 Meta 开发者应用中填写）')}</label>
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
@@ -952,10 +956,10 @@ export function SettingsPage() {
                   />
                   <button
                     type="button"
-                    onClick={() => triggerToast('Verify Token copied to clipboard!')}
+                    onClick={() => triggerToast(t('Verify Token copied to clipboard!', '验证令牌已复制到剪贴板！'))}
                     className="px-3 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs"
                   >
-                    Copy Token
+                    {t('Copy Token', '复制令牌')}
                   </button>
                 </div>
               </div>
@@ -963,7 +967,7 @@ export function SettingsPage() {
               <div className="p-3.5 rounded-2xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800/60 text-cyan-900 dark:text-cyan-200 text-xs space-y-1">
                 <div className="font-extrabold flex items-center gap-1.5">
                   <Key className="w-3.5 h-3.5 text-cyan-500" />
-                  Meta Webhook Callback URL:
+                  {t('Meta Webhook Callback URL:', 'Meta Webhook 回调 URL：')}
                 </div>
                 <div className="font-mono font-bold text-[11px] select-all bg-white dark:bg-slate-900 p-2 rounded-lg border border-cyan-100 dark:border-cyan-900">
                   https://api.xisync.com/v1/omnichannel/inbox/webhook?tenant_id=tn_ecotoys_99182
@@ -976,14 +980,14 @@ export function SettingsPage() {
                   onClick={() => setEditingChannel(null)}
                   className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs"
                 >
-                  Cancel
+                  {t('Cancel', '取消')}
                 </button>
 
                 <button
                   type="submit"
                   className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-xisync-blue-600 to-xisync-cyan-500 text-white font-extrabold text-xs shadow-md"
                 >
-                  Save API Credentials
+                  {t('Save API Credentials', '保存 API 凭据')}
                 </button>
               </div>
             </form>

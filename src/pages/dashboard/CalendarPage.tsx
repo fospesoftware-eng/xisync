@@ -10,28 +10,32 @@ import {
   Square,
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
+import { useI18n } from '../../lib/i18n';
 
 type CalendarEvent = {
   id: string;
   day: number;
   time: string;
-  title: string;
+  title: { en: string; zh: string };
   category: 'meeting' | 'freight' | 'marketing' | 'compliance';
   color: string;
 };
 
 const sampleEvents: CalendarEvent[] = [
-  { id: '1', day: 14, time: '10:00 AM', title: 'ABC Corp Contract Call', category: 'meeting', color: 'bg-blue-500/90 text-white' },
-  { id: '2', day: 14, time: '02:30 PM', title: 'COSCO Vessel Departure', category: 'freight', color: 'bg-emerald-500/90 text-white' },
-  { id: '3', day: 14, time: '04:00 PM', title: 'Meta & Google Ad Scaling', category: 'marketing', color: 'bg-purple-500/90 text-white' },
-  { id: '4', day: 15, time: '11:00 AM', title: 'EU CE Compliance Audit', category: 'compliance', color: 'bg-amber-500/90 text-white' },
-  { id: '5', day: 18, time: '09:00 AM', title: 'Dubai Expo Logistics Briefing', category: 'meeting', color: 'bg-blue-500/90 text-white' },
-  { id: '6', day: 20, time: '01:00 PM', title: 'DHL Air Freight Customs Check', category: 'freight', color: 'bg-emerald-500/90 text-white' },
-  { id: '7', day: 22, time: '03:00 PM', title: 'Q3 Revenue & ROI Forecast', category: 'marketing', color: 'bg-purple-500/90 text-white' },
-  { id: '8', day: 25, time: '10:30 AM', title: 'FDA Export Clearance Review', category: 'compliance', color: 'bg-amber-500/90 text-white' },
+  { id: '1', day: 14, time: '10:00 AM', title: { en: 'ABC Corp Contract Call', zh: 'ABC Corp 合同通话' }, category: 'meeting', color: 'bg-blue-500/90 text-white' },
+  { id: '2', day: 14, time: '02:30 PM', title: { en: 'COSCO Vessel Departure', zh: 'COSCO 船舶开航' }, category: 'freight', color: 'bg-emerald-500/90 text-white' },
+  { id: '3', day: 14, time: '04:00 PM', title: { en: 'Meta & Google Ad Scaling', zh: 'Meta & Google 广告放量' }, category: 'marketing', color: 'bg-purple-500/90 text-white' },
+  { id: '4', day: 15, time: '11:00 AM', title: { en: 'EU CE Compliance Audit', zh: '欧盟 CE 合规审核' }, category: 'compliance', color: 'bg-amber-500/90 text-white' },
+  { id: '5', day: 18, time: '09:00 AM', title: { en: 'Dubai Expo Logistics Briefing', zh: '迪拜世博物流简报' }, category: 'meeting', color: 'bg-blue-500/90 text-white' },
+  { id: '6', day: 20, time: '01:00 PM', title: { en: 'DHL Air Freight Customs Check', zh: 'DHL 空运清关复核' }, category: 'freight', color: 'bg-emerald-500/90 text-white' },
+  { id: '7', day: 22, time: '03:00 PM', title: { en: 'Q3 Revenue & ROI Forecast', zh: 'Q3 营收与 ROI 预测' }, category: 'marketing', color: 'bg-purple-500/90 text-white' },
+  { id: '8', day: 25, time: '10:30 AM', title: { en: 'FDA Export Clearance Review', zh: 'FDA 出口清关复核' }, category: 'compliance', color: 'bg-amber-500/90 text-white' },
 ];
 
 export function CalendarPage() {
+  const { language } = useI18n();
+  const isZh = language === 'zh';
+  const t = (en: string, zh: string) => (isZh ? zh : en);
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'day' | 'agenda'>('month');
   const [activeCategories, setActiveCategories] = useState<Record<string, boolean>>({
     meeting: true,
@@ -40,7 +44,15 @@ export function CalendarPage() {
     compliance: true,
   });
 
-  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const daysOfWeek = [
+    t('Sun', '周日'),
+    t('Mon', '周一'),
+    t('Tue', '周二'),
+    t('Wed', '周三'),
+    t('Thu', '周四'),
+    t('Fri', '周五'),
+    t('Sat', '周六'),
+  ];
 
   // August 2026 starts on Saturday (day 6), 31 days
   const daysInMonth = 31;
@@ -75,14 +87,14 @@ export function CalendarPage() {
               <CalendarIcon className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-xl font-extrabold tracking-tight">August 2026</h1>
-              <p className="text-xs text-slate-500 dark:text-slate-300 font-medium">XiSync Trade Schedule & Activities</p>
+              <h1 className="text-xl font-extrabold tracking-tight">{t('August 2026', '2026 年 8 月')}</h1>
+              <p className="text-xs text-slate-500 dark:text-slate-300 font-medium">{t('XiSync Trade Schedule & Activities', 'XiSync 贸易日程与活动')}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-1.5 ml-4">
             <button className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-extrabold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-              Today
+              {t('Today', '今天')}
             </button>
             <button className="p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
               <ChevronLeft className="w-4 h-4" />
@@ -106,12 +118,12 @@ export function CalendarPage() {
                     : 'text-slate-600 dark:text-slate-300 hover:text-white'
                 }`}
               >
-                {m}
+                {m === 'month' ? t('Month', '月') : m === 'week' ? t('Week', '周') : m === 'day' ? t('Day', '日') : t('Agenda', '日程')}
               </button>
             ))}
           </div>
 
-          <Button icon={<Plus className="w-4 h-4" />}>Create Event</Button>
+          <Button icon={<Plus className="w-4 h-4" />}>{t('Create Event', '新建事件')}</Button>
         </div>
       </div>
 
@@ -123,15 +135,15 @@ export function CalendarPage() {
           <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-4">
             <h3 className="text-xs font-extrabold uppercase text-slate-500 dark:text-slate-400 tracking-wider flex items-center gap-1.5">
               <Filter className="w-3.5 h-3.5 text-xisync-cyan-500" />
-              My Trade Calendars
+              {t('My Trade Calendars', '我的贸易日历')}
             </h3>
 
             <div className="space-y-2.5 text-xs font-semibold">
               {[
-                { id: 'meeting', label: 'B2B Buyer Meetings', color: 'bg-blue-500' },
-                { id: 'freight', label: 'Logistics & Ocean Freight', color: 'bg-emerald-500' },
-                { id: 'marketing', label: 'Ad Campaigns & ROI', color: 'bg-purple-500' },
-                { id: 'compliance', label: 'Customs & Compliance', color: 'bg-amber-500' },
+                { id: 'meeting', label: { en: 'B2B Buyer Meetings', zh: 'B2B 买家会议' }, color: 'bg-blue-500' },
+                { id: 'freight', label: { en: 'Logistics & Ocean Freight', zh: '物流与海运' }, color: 'bg-emerald-500' },
+                { id: 'marketing', label: { en: 'Ad Campaigns & ROI', zh: '广告投放与 ROI' }, color: 'bg-purple-500' },
+                { id: 'compliance', label: { en: 'Customs & Compliance', zh: '海关与合规' }, color: 'bg-amber-500' },
               ].map((cat) => (
                 <button
                   key={cat.id}
@@ -140,7 +152,7 @@ export function CalendarPage() {
                 >
                   <div className="flex items-center gap-2.5">
                     <span className={`w-3 h-3 rounded-full ${cat.color}`} />
-                    <span className="text-slate-800 dark:text-slate-200">{cat.label}</span>
+                    <span className="text-slate-800 dark:text-slate-200">{isZh ? cat.label.zh : cat.label.en}</span>
                   </div>
                   {activeCategories[cat.id] ? (
                     <CheckSquare className="w-4 h-4 text-xisync-cyan-500" />
@@ -156,17 +168,17 @@ export function CalendarPage() {
           <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-4">
             <h3 className="text-xs font-extrabold uppercase text-slate-500 dark:text-slate-400 tracking-wider flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-xisync-cyan-500" />
-              Upcoming Activities
+              {t('Upcoming Activities', '即将到来的活动')}
             </h3>
 
             <div className="space-y-3">
               {sampleEvents.slice(0, 4).map((evt) => (
                 <div key={evt.id} className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-1">
                   <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
-                    <span>Aug {evt.day}, 2026</span>
+                    <span>{t('Aug', '8 月')} {evt.day}, 2026</span>
                     <span>{evt.time}</span>
                   </div>
-                  <div className="font-extrabold text-xs text-slate-900 dark:text-white">{evt.title}</div>
+                  <div className="font-extrabold text-xs text-slate-900 dark:text-white">{isZh ? evt.title.zh : evt.title.en}</div>
                 </div>
               ))}
             </div>
@@ -220,10 +232,10 @@ export function CalendarPage() {
                       <div
                         key={evt.id}
                         className={`px-2 py-1 rounded-lg text-[10px] font-extrabold truncate shadow-xs cursor-pointer hover:opacity-90 ${evt.color}`}
-                        title={`${evt.time} - ${evt.title}`}
+                        title={`${evt.time} - ${isZh ? evt.title.zh : evt.title.en}`}
                       >
                         <span className="font-mono opacity-80 mr-1">{evt.time}</span>
-                        <span>{evt.title}</span>
+                        <span>{isZh ? evt.title.zh : evt.title.en}</span>
                       </div>
                     ))}
                   </div>
