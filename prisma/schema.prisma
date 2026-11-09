@@ -299,3 +299,108 @@ model CampaignAttributedLead {
   @@index([tenantId])
   @@map("campaign_attributed_leads")
 }
+
+// ------------------------------------------------------------------------------------
+// 5. MARKETPLACE CHANNELS SUBSYSTEM (Alibaba.com + Made-in-China.com catalog sync)
+// Mirrors the Media Buyer credential model: SaaS holds master channel app creds;
+// per-tenant rows track SKU ↔ listing mappings and sync runs.
+// ------------------------------------------------------------------------------------
+
+enum MarketplaceChannel {
+  ALIBABA
+  MADE_IN_CHINA
+}
+
+enum MarketplaceCredentialStatus {
+  CONNECTED
+  NEEDS_REAUTH
+  RATE_LIMITED
+  ERROR
+  DISCONNECTED
+}
+
+enum MarketplaceListingSyncState {
+  NOT_SYNCED
+  SYNCING
+  LIVE
+  PENDING_REVIEW
+  REJECTED
+  PAUSED
+  ERROR
+}
+
+enum MarketplaceSyncDirection {
+  EXPORT
+  IMPORT
+}
+
+enum MarketplaceSyncRunStatus {
+  RUNNING
+  SUCCESS
+  PARTIAL
+  FAILED
+}
+
+model MarketplaceChannelCredential {
+  id                    String                      @id @default(uuid())
+  channel               MarketplaceChannel          @unique
+  encryptedCredentials  String                      // AES-256 encrypted appkey/secret payload
+  appKeyMasked          String?
+  appSecretLast4        String?
+  sellerMemberId        String?                     // SaaS test storefront member id
+  membershipTier        String                      @default("PAID_SUPPLIER")
+  integrationMode       String                      @default("PARTNER_APP") // OFFICIAL_API | PARTNER_APP | MANUAL_CSV
+  status                MarketplaceCredentialStatus @default(CONNECTED)
+  apiHealth             String                      @default("HEALTHY_200_OK")
+  dailyApiQuota         Int                         @default(5000)
+  apiCallsToday         Int                         @default(0)
+  lastHealthCheckedAt   DateTime                    @default(now())
+  lastSyncAt            DateTime?
+  createdAt             DateTime                    @default(now())
+  updatedAt             DateTime                    @updatedAt
+
+  @@map("marketplace_channel_credentials")
+}
+
+model MarketplaceListingMappingRecord {
+  id                  String                      @id @default(uuid())
+  tenantId            String
+  channel             MarketplaceChannel
+  sku                 String                      // XiSync catalog SKU (source of truth)
+  externalListingId   String?                     // Alibaba offer id / MIC product id
+  externalListingUrl  String?
+  channelTitle        String?
+  listingPriceUsd     Decimal?                    @db.Decimal(12, 2)
+  listingStockQty     Int?
+  syncState           MarketplaceListingSyncState @default(NOT_SYNCED)
+  lastSyncAt          DateTime?
+  lastSyncMessage     String?
+  createdAt           DateTime                    @default(now())
+  updatedAt           DateTime                    @updatedAt
+
+  @@unique([tenantId, channel, sku])
+  @@index([tenantId, channel, syncState])
+  @@map("marketplace_listing_mapping_records")
+}
+
+model MarketplaceSyncRunRecord {
+  id              String                    @id @default(uuid())
+  tenantId        String
+  channel         MarketplaceChannel
+  direction       MarketplaceSyncDirection
+  mode            String                    @default("FULL") // FULL | INCREMENTAL | SINGLE_SKU
+  status          MarketplaceSyncRunStatus  @default(RUNNING)
+  triggeredBy     String                    @default("MANUAL") // MANUAL | API | SCHEDULED
+  itemsProcessed  Int                       @default(0)
+  itemsCreated    Int                       @default(0)
+  itemsUpdated    Int                       @default(0)
+  itemsFailed     Int                       @default(0)
+  message         String                    @default("")
+  detail          Json                      @default("[]") // Per-SKU results
+  startedAt       DateTime                  @default(now())
+  finishedAt      DateTime?
+  createdAt       DateTime                  @default(now())
+
+  @@index([tenantId, createdAt])
+  @@map("marketplace_sync_run_records")
+}

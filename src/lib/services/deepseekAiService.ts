@@ -150,7 +150,7 @@ export class DeepSeekAiService {
             title: { en: 'Featured Export Inventory Catalog', zh: '核心出口产品目录' },
             subtitle: {
               en: 'Connected to XiSync Live Stock Inventory',
-              zh: '已实时同步犀同步智能库存中心',
+              zh: '已实时同步XiSync智能库存中心',
             },
           },
           {

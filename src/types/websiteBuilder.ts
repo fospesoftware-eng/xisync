@@ -113,6 +113,7 @@ export interface InventoryItemSync {
   category: string;
   image_url: string;
   sync_enabled: boolean;
+  status?: 'ACTIVE' | 'DRAFT' | 'ARCHIVED';
 }
 
 export interface SeoAuditCheck {

@@ -102,7 +102,7 @@ const DEFAULT_DEMO_WEBSITE: Website = {
           id: 'sec-products',
           type: 'products',
           title: { en: 'Featured Export Inventory Catalog', zh: '核心现货出口产品目录' },
-          subtitle: { en: 'Connected to XiSync Live Stock Inventory', zh: '已实时同步犀同步智能库存中心' },
+          subtitle: { en: 'Connected to XiSync Live Stock Inventory', zh: '已实时同步XiSync智能库存中心' },
         },
       ],
     },
@@ -460,7 +460,7 @@ export function PublishedWebsiteView() {
           <div className="space-y-2 text-left">
             <div className="inline-flex items-center gap-2 text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider">
               <Package className="w-4 h-4" />
-              <span>{lang === 'zh' ? '犀同步 实时现货库存中心' : 'XiSync Live Stock & Catalog'}</span>
+              <span>{lang === 'zh' ? 'XiSync 实时现货库存中心' : 'XiSync Live Stock & Catalog'}</span>
             </div>
             <h2 className="text-3xl font-black text-white">
               {lang === 'zh' ? '核心外贸出口产品现货目录' : 'Featured Export Product Catalog'}
