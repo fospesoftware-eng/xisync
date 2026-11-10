@@ -1,95 +1,95 @@
-# Trade Intelligence 上线前最终冒烟测试报告
+# Trade Intelligence — Final Pre-Go-Live Smoke Test Report
 
-| 项目 | 内容 |
+| Field | Value |
 | --- | --- |
-| 应用 | `@workspace/imported-app`（`artifacts/imported-app`） |
-| 冒烟日期 | 2026-11-10 |
-| 测试环境 | macOS，本机开发服务器 `http://127.0.0.1:5173/`（Vite dev，HMR 中），真实 Chrome（Playwright，headless） |
-| 构建环境 | `PORT=4173 BASE_PATH=/ pnpm build` → `dist/public`（2.6 MB） |
-| 总体结论 | **通过，可进入发布流程**（12/12 浏览器冒烟 + 20/20 单测 + typecheck/build 全绿） |
-| 配套文档 | [上线检查清单与部署说明](./trade-intelligence-go-live.md) |
+| Application | `@workspace/imported-app` (`artifacts/imported-app`) |
+| Smoke date | 2026-11-10 |
+| Test environment | macOS; local dev server `http://127.0.0.1:5173/` (Vite dev, HMR active); real Chrome via Playwright, headless |
+| Build environment | `PORT=4173 BASE_PATH=/ pnpm build` → `dist/public` (2.6 MB) |
+| Overall verdict | **Pass — clear to enter the release process** (12/12 browser checks, 20/20 unit tests, typecheck and build green) |
+| Companion document | [Go-live checklist and deployment guide](./trade-intelligence-go-live.md) |
 
 ---
 
-## 1. 质量门禁
+## 1. Quality gates
 
-| 检查项 | 命令 | 结果 |
+| Check | Command | Result |
 | --- | --- | --- |
-| 类型检查 | `pnpm typecheck` | 通过，退出码 0 |
-| 单元测试 | `pnpm test` | **20/20 通过**（含快照无历史/单日/多日、KPI 环比、未处理撮合年龄用例） |
-| 生产构建 | `PORT=4173 BASE_PATH=/ pnpm build` | 通过（3.88s）；产物 `dist/public/index.html` 存在，总大小 2.6 MB |
-| 构建警告 | — | 仅剩入口 chunk 515 kB 体积提示（路由已懒加载拆包，非阻塞） |
+| Typecheck | `pnpm typecheck` | Pass, exit code 0 |
+| Unit tests | `pnpm test` | **20/20 pass** (includes snapshot no-history / one-day / multi-day, KPI deltas, untouched-match age) |
+| Production build | `PORT=4173 BASE_PATH=/ pnpm build` | Pass (3.88 s); `dist/public/index.html` present; 2.6 MB total |
+| Build warnings | — | Only the entry chunk 515 kB size notice (routes are already lazy-loaded; non-blocking) |
 
-## 2. 路由与登录门禁
+## 2. Routes and auth gate
 
-对运行中的 dev 服务器逐路由探测：
+Each route was probed against the running dev server:
 
-| 路由 | HTTP | 说明 |
+| Route | HTTP | Notes |
 | --- | --- | --- |
-| `/`、`/login` | 200 | 正常渲染 |
-| `/dashboard` 及 6 个 Trade Intelligence 模块路由 | 200（SPA 回退） | 浏览器端均被 `AuthRequired` 拦截 |
-| `/qa` | 200（SPA 回退） | 源码中已无任何 `/qa` 引用，临时验证路由已移除 |
+| `/`, `/login` | 200 | Renders normally |
+| `/dashboard` and the 6 Trade Intelligence module routes | 200 (SPA fallback) | All intercepted by `AuthRequired` in the browser |
+| `/qa` | 200 (SPA fallback) | No `/qa` references remain in source; the temporary verification route was removed |
 
-浏览器端登录门禁实测（未登录真实 Chrome 访问）：
+Auth gate verified in a real unauthenticated Chrome session:
 
-- `/dashboard` → 重定向 `/login`：通过
-- `/dashboard/trade-intelligence` → 重定向 `/login`：通过
-- `/dashboard/trade-intelligence/matching` → 重定向 `/login`：通过
+- `/dashboard` → redirects to `/login`: pass
+- `/dashboard/trade-intelligence` → redirects to `/login`: pass
+- `/dashboard/trade-intelligence/matching` → redirects to `/login`: pass
 
-## 3. 浏览器冒烟（真实 Chrome，12/12 通过）
+## 3. Browser smoke test (real Chrome, 12/12 pass)
 
-| # | 检查项 | 结果 |
+| # | Check | Result |
 | --- | --- | --- |
-| 1 | 登录页深色渲染（1440×1000） | 通过，`dark` class 生效，横向溢出 0px |
-| 2 | 登录页深色无控制台错误 | 通过 |
-| 3 | 登录页浅色渲染（1440×1000） | 通过，横向溢出 0px |
-| 4 | 登录页浅色无控制台错误 | 通过 |
-| 5–7 | 登录门禁拦截 3 条受保护路由 | 通过 |
-| 8 | 主题 `dark` 写入 `xisync-theme` 后刷新仍生效 | 通过 |
-| 9 | 主题 `light` 写入后刷新仍生效 | 通过 |
-| 10 | 无存储时默认跟随系统深色偏好 | 通过 |
-| 11 | 390×844 窄屏无横向溢出 | 通过（0px） |
-| 12 | 存储键 `xisync:trade-intelligence:v1:` 与 45 天快照保留在源码中 | 通过 |
+| 1 | Login page renders in dark (1440×1000) | Pass; `dark` class applied; horizontal overflow 0px |
+| 2 | No console errors on login, dark | Pass |
+| 3 | Login page renders in light (1440×1000) | Pass; horizontal overflow 0px |
+| 4 | No console errors on login, light | Pass |
+| 5–7 | Auth gate blocks 3 protected routes | Pass |
+| 8 | Theme `dark` written to `xisync-theme` still applies after reload | Pass |
+| 9 | Theme `light` still applies after reload | Pass |
+| 10 | With no stored value, follows the system dark preference | Pass |
+| 11 | No horizontal overflow at 390×844 | Pass (0px) |
+| 12 | Storage key `xisync:trade-intelligence:v1:` and the 45-day snapshot constant are present in source | Pass |
 
-说明：主题切换按钮位于登录后的仪表盘布局内，其点击切换与持久化已在深色模式专项审计（见第 4 节）中实测；本次冒烟在未登录态验证了持久化机制本身（存储值 → `dark` class → 刷新保持，双向）。
+Note: the theme toggle button lives inside the authenticated dashboard layout, so it is not reachable on the logged-out login page. This run therefore verified the persistence mechanism itself in both directions (stored value → `dark` class → survives reload); the click interaction was already exercised during the dark-mode audit summarised in section 4.
 
-## 4. 深色模式专项审计结论（沿用本轮修复后的最终结果）
+## 4. Dark-mode audit conclusion (final state after fixes)
 
-此前已用真实 Chrome 对指挥中心 + 六个模块在 1440 深/浅、390 深色逐页截图并计算对比度，修复后终态：
+A real Chrome pass over the command centre plus the six modules at 1440 dark/light and 390 dark, with screenshots and computed contrast, produced this end state:
 
-- 深色对比度失败：每页仅剩 1 处（渐变裁剪 logo 的算法误报，非真实问题）
-- 浅色对比度失败：同为渐变/logo 误报
-- 玻璃面板边框、评分环、迷你折线、图表图例：逐页目视可读
-- 实际修复内容：次级文字双色反转（`500/400`）、浅色徽章 `600→700`、管道/撮合空列玻璃边框补强、图表脚注与图例对比提升
+- Dark-mode contrast failures: 1 per page, all false positives from the gradient-clipped logo
+- Light-mode contrast failures: same gradient/logo false positives only
+- Glass panel borders, score rings, sparklines, and chart legends: visually legible page by page
+- Actual fixes applied: inverted muted text tokens (`500/400`), darkened light-mode badges from `600` to `700`, strengthened glass borders and fills on empty pipeline/matching columns, raised contrast for chart footnotes and legends
 
-## 5. 数据与快照行为
+## 5. Data and snapshot behaviour
 
-| 检查项 | 结果 |
+| Check | Result |
 | --- | --- |
-| 快照写入时机（打开应用 + 每次状态变更） | 单测覆盖，通过 |
-| 同日覆盖、按日升序、45 天裁剪 | 单测覆盖，通过 |
-| 首次运行无前一日：KPI 显示“建立基准”，简报明示无昨日数据 | 单测覆盖，通过 |
-| 前一日/跨多日环比读取存储快照（非时间戳推断） | 单测覆盖，通过 |
-| 未处理撮合种子年龄（0–18 天）与 ≥7 天滞留 | 单测覆盖，通过 |
+| Snapshot triggers (app open plus every state change) | Covered by unit tests, pass |
+| Same-day overwrite, ascending order by date, 45-day trim | Covered by unit tests, pass |
+| First run with no prior day: KPI shows "New baseline", briefing states no prior-day data | Covered by unit tests, pass |
+| Prior-day and multi-day deltas read stored snapshots rather than timestamps | Covered by unit tests, pass |
+| Seeded age for untouched matches (0–18 days) and 7-day staleness | Covered by unit tests, pass |
 
-## 6. 已知限制（不阻塞上线）
+## 6. Known limitations (non-blocking)
 
-1. 业务数据存于浏览器 `localStorage`，清缓存即清空；跨设备不同步。
-2. 未配置 `VITE_TRADE_AI_ENDPOINT` 时全部为本地确定性引擎结果；配置后 2.5s 超时自动降级。
-3. 登录后仪表盘内部的逐页点击回归依赖此前的专项审计；建议在预发环境按上线清单第 10 步冒烟脚本完整过一遍人工点击。
-4. 入口 chunk 超 500 kB 的构建提示，后续可用 `manualChunks` 优化，非功能问题。
+1. Business data lives in browser `localStorage`; clearing it wipes the workspace and there is no cross-device sync.
+2. Without `VITE_TRADE_AI_ENDPOINT` every result comes from the local deterministic engine; with it configured, a 2.5 s timeout falls back automatically.
+3. Click-by-click regression inside the authenticated dashboard relies on the earlier dedicated audit; the recommendation is still to run the section 6 manual pass in the go-live document on staging.
+4. The entry chunk exceeds the 500 kB notice; `manualChunks` can optimise this later, and it is not a functional issue.
 
-## 7. 发布结论
+## 7. Release conclusion
 
-- [x] 质量门禁全绿（typecheck / 20×20 单测 / build）
-- [x] 浏览器冒烟 12/12
-- [x] 登录门禁有效、临时路由已清除
-- [x] 主题双端持久化、深浅可读、窄屏无溢出
-- [x] 快照与环比逻辑单测覆盖（无历史/单日/多日）
+- [x] All quality gates green (typecheck / 20 of 20 unit tests / build)
+- [x] Browser smoke test 12/12
+- [x] Auth gate effective and temporary routes removed
+- [x] Theme persists in both directions, both themes readable, no narrow-width overflow
+- [x] Snapshot and delta logic covered by unit tests (no history / one day / multiple days)
 
-**结论：冒烟全部通过，可按《上线检查清单与部署说明》进入发布。**
+**Conclusion: the smoke test passes in full; proceed to release per the go-live checklist and deployment guide.**
 
-| 角色 | 签名 | 日期 |
+| Role | Signature | Date |
 | --- | --- | --- |
-| 测试执行 | （待签） | 2026-11-10 |
-| 发布审批 | （待签） | |
+| Test executed by | (pending) | 2026-11-10 |
+| Release approved by | (pending) | |
