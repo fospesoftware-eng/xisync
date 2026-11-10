@@ -644,6 +644,9 @@ importers:
       drizzle-kit:
         specifier: ^0.31.10
         version: 0.31.10
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.13
 
   lib/replit-auth-web:
     dependencies:
