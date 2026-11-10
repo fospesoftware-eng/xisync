@@ -49,3 +49,11 @@ Thumbs.db
 .local/
 test-results/
 playwright-report/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Local vendored Python packages
+vendor-pip/

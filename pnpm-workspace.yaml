@@ -160,3 +160,8 @@ overrides:
   esbuild: "0.28.2"
   # orval pins js-yaml to an exact version older than the CVE fix (>=4.3.2)
   js-yaml: '4.3.2'
+
+# Allow esbuild's postinstall to verify/install its native binary when the
+# workspace is installed on a non-Linux host (e.g. local macOS development).
+allowBuilds:
+  esbuild: true
