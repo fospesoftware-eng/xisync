@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import type { ReactNode } from 'react';
 import { AuthProvider } from './lib/auth-context';
 import { I18nProvider } from './lib/i18n';
@@ -16,42 +17,130 @@ import { DemoPage } from './pages/marketing/DemoPage';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 
-import { DashboardLayout } from './components/dashboard/DashboardLayout';
-import { DashboardHome } from './pages/dashboard/DashboardHome';
-import { LeadsPage } from './pages/dashboard/crm/LeadsPage';
-import { AccountsPage } from './pages/dashboard/crm/AccountsPage';
-import { ContactsPage } from './pages/dashboard/crm/ContactsPage';
-import { DealsPage } from './pages/dashboard/crm/DealsPage';
-import { InboxPage } from './pages/dashboard/InboxPage';
-import { LogisticsPage } from './pages/dashboard/LogisticsPage';
-import { AICopilotPage } from './pages/dashboard/AICopilotPage';
-import { SettingsPage } from './pages/dashboard/SettingsPage';
-import { MarketingHubPage } from './pages/dashboard/marketing/MarketingHubPage';
-import { MarketingCampaignsPage } from './pages/dashboard/marketing/MarketingCampaignsPage';
-import { MarketingChannelsPage } from './pages/dashboard/marketing/MarketingChannelsPage';
-import { MarketingCreativeStudioPage } from './pages/dashboard/marketing/MarketingCreativeStudioPage';
-import { MarketingAttributionPage } from './pages/dashboard/marketing/MarketingAttributionPage';
-import { UltraDashboardPage } from './pages/dashboard/UltraDashboardPage';
-import { WebsitePage } from './pages/dashboard/WebsitePage';
-
-import { AdminDashboard } from './pages/admin/AdminDashboard';
-import { TenantsPage } from './pages/admin/TenantsPage';
-import { CMSPage } from './pages/admin/CMSPage';
-import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
-import { MediaEngineAdminPage } from './pages/admin/mediaEngine/MediaEngineAdminPage';
-import { MediaBuyerPage } from './pages/dashboard/mediaBuyer/MediaBuyerPage';
-
-import { PortalLayout } from './components/portal/PortalLayout';
-import { PortalDashboard } from './pages/portal/PortalDashboard';
-import { PortalShipments } from './pages/portal/PortalShipments';
-import { PortalMessages } from './pages/portal/PortalMessages';
-
-import { ProductsPage } from './pages/dashboard/ProductsPage';
-import { CompliancePage } from './pages/dashboard/CompliancePage';
-import { CalendarPage } from './pages/dashboard/CalendarPage';
-import { PublishedWebsiteView } from './pages/public/PublishedWebsiteView';
+const DashboardLayout = lazy(() =>
+  import('./components/dashboard/DashboardLayout').then((module) => ({ default: module.DashboardLayout })),
+);
+const DashboardHome = lazy(() =>
+  import('./pages/dashboard/DashboardHome').then((module) => ({ default: module.DashboardHome })),
+);
+const TradeCommandCenter = lazy(() =>
+  import('./pages/dashboard/TradeCommandCenter').then((module) => ({ default: module.TradeCommandCenter })),
+);
+const TradeIntelligenceHome = lazy(() =>
+  import('./pages/dashboard/trade/TradeIntelligenceHome').then((module) => ({ default: module.TradeIntelligenceHome })),
+);
+const CreditAssessmentPage = lazy(() =>
+  import('./pages/dashboard/trade/CreditAssessmentPage').then((module) => ({ default: module.CreditAssessmentPage })),
+);
+const ShippingPredictorPage = lazy(() =>
+  import('./pages/dashboard/trade/ShippingPredictorPage').then((module) => ({ default: module.ShippingPredictorPage })),
+);
+const MatchingPage = lazy(() =>
+  import('./pages/dashboard/trade/MatchingPage').then((module) => ({ default: module.MatchingPage })),
+);
+const TradeAnalyticsPage = lazy(() =>
+  import('./pages/dashboard/trade/TradeAnalyticsPage').then((module) => ({ default: module.TradeAnalyticsPage })),
+);
+const AiToolkitPage = lazy(() =>
+  import('./pages/dashboard/trade/AiToolkitPage').then((module) => ({ default: module.AiToolkitPage })),
+);
+const LeadsPage = lazy(() =>
+  import('./pages/dashboard/crm/LeadsPage').then((module) => ({ default: module.LeadsPage })),
+);
+const AccountsPage = lazy(() =>
+  import('./pages/dashboard/crm/AccountsPage').then((module) => ({ default: module.AccountsPage })),
+);
+const ContactsPage = lazy(() =>
+  import('./pages/dashboard/crm/ContactsPage').then((module) => ({ default: module.ContactsPage })),
+);
+const DealsPage = lazy(() =>
+  import('./pages/dashboard/crm/DealsPage').then((module) => ({ default: module.DealsPage })),
+);
+const InboxPage = lazy(() =>
+  import('./pages/dashboard/InboxPage').then((module) => ({ default: module.InboxPage })),
+);
+const LogisticsPage = lazy(() =>
+  import('./pages/dashboard/LogisticsPage').then((module) => ({ default: module.LogisticsPage })),
+);
+const AICopilotPage = lazy(() =>
+  import('./pages/dashboard/AICopilotPage').then((module) => ({ default: module.AICopilotPage })),
+);
+const SettingsPage = lazy(() =>
+  import('./pages/dashboard/SettingsPage').then((module) => ({ default: module.SettingsPage })),
+);
+const MarketingHubPage = lazy(() =>
+  import('./pages/dashboard/marketing/MarketingHubPage').then((module) => ({ default: module.MarketingHubPage })),
+);
+const MarketingCampaignsPage = lazy(() =>
+  import('./pages/dashboard/marketing/MarketingCampaignsPage').then((module) => ({ default: module.MarketingCampaignsPage })),
+);
+const MarketingChannelsPage = lazy(() =>
+  import('./pages/dashboard/marketing/MarketingChannelsPage').then((module) => ({ default: module.MarketingChannelsPage })),
+);
+const MarketingCreativeStudioPage = lazy(() =>
+  import('./pages/dashboard/marketing/MarketingCreativeStudioPage').then((module) => ({ default: module.MarketingCreativeStudioPage })),
+);
+const MarketingAttributionPage = lazy(() =>
+  import('./pages/dashboard/marketing/MarketingAttributionPage').then((module) => ({ default: module.MarketingAttributionPage })),
+);
+const UltraDashboardPage = lazy(() =>
+  import('./pages/dashboard/UltraDashboardPage').then((module) => ({ default: module.UltraDashboardPage })),
+);
+const WebsitePage = lazy(() =>
+  import('./pages/dashboard/WebsitePage').then((module) => ({ default: module.WebsitePage })),
+);
+const AdminDashboard = lazy(() =>
+  import('./pages/admin/AdminDashboard').then((module) => ({ default: module.AdminDashboard })),
+);
+const TenantsPage = lazy(() =>
+  import('./pages/admin/TenantsPage').then((module) => ({ default: module.TenantsPage })),
+);
+const CMSPage = lazy(() =>
+  import('./pages/admin/CMSPage').then((module) => ({ default: module.CMSPage })),
+);
+const AdminSettingsPage = lazy(() =>
+  import('./pages/admin/AdminSettingsPage').then((module) => ({ default: module.AdminSettingsPage })),
+);
+const MediaEngineAdminPage = lazy(() =>
+  import('./pages/admin/mediaEngine/MediaEngineAdminPage').then((module) => ({ default: module.MediaEngineAdminPage })),
+);
+const MediaBuyerPage = lazy(() =>
+  import('./pages/dashboard/mediaBuyer/MediaBuyerPage').then((module) => ({ default: module.MediaBuyerPage })),
+);
+const PortalLayout = lazy(() =>
+  import('./components/portal/PortalLayout').then((module) => ({ default: module.PortalLayout })),
+);
+const PortalDashboard = lazy(() =>
+  import('./pages/portal/PortalDashboard').then((module) => ({ default: module.PortalDashboard })),
+);
+const PortalShipments = lazy(() =>
+  import('./pages/portal/PortalShipments').then((module) => ({ default: module.PortalShipments })),
+);
+const PortalMessages = lazy(() =>
+  import('./pages/portal/PortalMessages').then((module) => ({ default: module.PortalMessages })),
+);
+const ProductsPage = lazy(() =>
+  import('./pages/dashboard/ProductsPage').then((module) => ({ default: module.ProductsPage })),
+);
+const CompliancePage = lazy(() =>
+  import('./pages/dashboard/CompliancePage').then((module) => ({ default: module.CompliancePage })),
+);
+const CalendarPage = lazy(() =>
+  import('./pages/dashboard/CalendarPage').then((module) => ({ default: module.CalendarPage })),
+);
+const PublishedWebsiteView = lazy(() =>
+  import('./pages/public/PublishedWebsiteView').then((module) => ({ default: module.PublishedWebsiteView })),
+);
 import { Loader2 } from 'lucide-react';
 import { useAuth } from './lib/auth-context';
+
+function RouteFallback() {
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center">
+      <Loader2 className="h-6 w-6 animate-spin text-xisync-cyan-500" />
+    </div>
+  );
+}
 
 function AuthRequired({ children }: { children: ReactNode }) {
   const { user, profile, loading, error } = useAuth();
@@ -73,6 +162,7 @@ function App() {
             <CurrencyProvider>
               <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || '/'}>
                 <AppGuard>
+                  <Suspense fallback={<RouteFallback />}>
                   <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/product" element={<ProductPage />} />
@@ -85,6 +175,8 @@ function App() {
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
 
+
+
                     {/* Public Live Website & Preview Routes */}
                     <Route path="/site/:subdomain" element={<PublishedWebsiteView />} />
                     <Route path="/site/:subdomain/*" element={<PublishedWebsiteView />} />
@@ -92,6 +184,13 @@ function App() {
                     <Route path="/preview/:siteId" element={<PublishedWebsiteView />} />
 
               <Route path="/dashboard/ultra" element={<AuthRequired><UltraDashboardPage /></AuthRequired>}>
+                <Route index element={<TradeCommandCenter />} />
+                <Route path="trade-intelligence" element={<TradeIntelligenceHome />} />
+                <Route path="trade-intelligence/credit" element={<CreditAssessmentPage />} />
+                <Route path="trade-intelligence/shipping" element={<ShippingPredictorPage />} />
+                <Route path="trade-intelligence/matching" element={<MatchingPage />} />
+                <Route path="trade-intelligence/analytics" element={<TradeAnalyticsPage />} />
+                <Route path="trade-intelligence/toolkit" element={<AiToolkitPage />} />
                 <Route path="calendar" element={<CalendarPage />} />
                 <Route path="marketing" element={<MarketingHubPage />} />
                 <Route path="media-buyer" element={<MediaBuyerPage />} />
@@ -134,7 +233,13 @@ function App() {
               </Route>
 
               <Route path="/dashboard" element={<AuthRequired><DashboardLayout /></AuthRequired>}>
-                <Route index element={<DashboardHome />} />
+                <Route index element={<TradeCommandCenter />} />
+                <Route path="trade-intelligence" element={<TradeIntelligenceHome />} />
+                <Route path="trade-intelligence/credit" element={<CreditAssessmentPage />} />
+                <Route path="trade-intelligence/shipping" element={<ShippingPredictorPage />} />
+                <Route path="trade-intelligence/matching" element={<MatchingPage />} />
+                <Route path="trade-intelligence/analytics" element={<TradeAnalyticsPage />} />
+                <Route path="trade-intelligence/toolkit" element={<AiToolkitPage />} />
                 <Route path="calendar" element={<CalendarPage />} />
                 <Route path="marketing" element={<MarketingHubPage />} />
                 <Route path="media-buyer" element={<MediaBuyerPage />} />
@@ -200,6 +305,7 @@ function App() {
 
               <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
+                  </Suspense>
                 </AppGuard>
               </BrowserRouter>
             </CurrencyProvider>

@@ -37,8 +37,10 @@ import {
   Video,
   Ship,
   Plus,
+  BrainCircuit,
 } from 'lucide-react';
 import { Link, useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { getTradeCopy } from '../../lib/i18n/tradeCopy';
 
 interface NavItem {
   categoryEn?: string;
@@ -177,6 +179,21 @@ export function UltraDashboardPage() {
   // Categorized client navigation items
   const navigationItems: NavItem[] = [
     { categoryEn: 'Core Workspace', categoryZh: '核心工作台', name: t.dashboard.nav.dashboard, href: '/dashboard/ultra', icon: LayoutDashboard },
+    {
+      categoryEn: 'Trade Intelligence',
+      categoryZh: '贸易智能',
+      name: getTradeCopy(language).nav.group,
+      href: '/dashboard/ultra/trade-intelligence',
+      icon: BrainCircuit,
+      children: [
+        { name: getTradeCopy(language).nav.overview, href: '/dashboard/ultra/trade-intelligence' },
+        { name: getTradeCopy(language).nav.credit, href: '/dashboard/ultra/trade-intelligence/credit' },
+        { name: getTradeCopy(language).nav.shipping, href: '/dashboard/ultra/trade-intelligence/shipping' },
+        { name: getTradeCopy(language).nav.matching, href: '/dashboard/ultra/trade-intelligence/matching' },
+        { name: getTradeCopy(language).nav.analytics, href: '/dashboard/ultra/trade-intelligence/analytics' },
+        { name: getTradeCopy(language).nav.toolkit, href: '/dashboard/ultra/trade-intelligence/toolkit' },
+      ],
+    },
     {
       categoryEn: 'Growth & Ads',
       categoryZh: '数字营销与获客',

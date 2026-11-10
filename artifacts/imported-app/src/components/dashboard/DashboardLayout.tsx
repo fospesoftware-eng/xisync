@@ -31,7 +31,9 @@ import {
   Wand2,
   Sparkles,
   Calendar,
+  BrainCircuit,
 } from 'lucide-react';
+import { getTradeCopy } from '../../lib/i18n/tradeCopy';
 
 type NavItem = {
   name: string;
@@ -54,6 +56,19 @@ export function DashboardLayout({ variant = 'client' }: DashboardLayoutProps) {
 
   const clientNavigation: NavItem[] = [
     { name: t.dashboard.nav.dashboard, href: '/dashboard', icon: LayoutDashboard },
+    {
+      name: getTradeCopy(language).nav.group,
+      href: '/dashboard/trade-intelligence',
+      icon: BrainCircuit,
+      children: [
+        { name: getTradeCopy(language).nav.overview, href: '/dashboard/trade-intelligence' },
+        { name: getTradeCopy(language).nav.credit, href: '/dashboard/trade-intelligence/credit' },
+        { name: getTradeCopy(language).nav.shipping, href: '/dashboard/trade-intelligence/shipping' },
+        { name: getTradeCopy(language).nav.matching, href: '/dashboard/trade-intelligence/matching' },
+        { name: getTradeCopy(language).nav.analytics, href: '/dashboard/trade-intelligence/analytics' },
+        { name: getTradeCopy(language).nav.toolkit, href: '/dashboard/trade-intelligence/toolkit' },
+      ],
+    },
     {
       name: (t as any).marketing?.nav?.marketing || (language === 'zh' ? '犀同步 全球数字营销' : 'Global Marketing'),
       href: '/dashboard/marketing',
@@ -162,7 +177,14 @@ export function DashboardLayout({ variant = 'client' }: DashboardLayoutProps) {
   };
 
   return (
-    <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div className={`relative min-h-screen ${theme === 'dark' ? 'bg-slate-950' : 'bg-slate-50'}`}>
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className={`absolute inset-0 ${theme === 'dark' ? 'bg-[radial-gradient(120%_80%_at_50%_-10%,rgba(30,58,138,0.55),transparent_60%)]' : 'bg-[radial-gradient(120%_80%_at_50%_-10%,rgba(219,234,254,0.9),transparent_65%)]'}`} />
+        <div className="animate-float-slower absolute -left-24 -top-32 h-[420px] w-[420px] rounded-full bg-xisync-cyan-400/20 blur-3xl" />
+        <div className="animate-float-slow absolute -right-32 top-1/3 h-[380px] w-[380px] rounded-full bg-xisync-blue-500/15 blur-3xl" />
+        <div className="animate-float absolute bottom-0 left-1/3 h-[320px] w-[320px] rounded-full bg-xisync-lime-400/10 blur-3xl" />
+        <div className="absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(30,58,138,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(30,58,138,0.12)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_at_top,black,transparent_78%)] dark:opacity-[0.12]" />
+      </div>
       <div
         className={`fixed inset-0 bg-gray-900/50 z-40 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}
         onClick={() => setSidebarOpen(false)}
@@ -171,8 +193,8 @@ export function DashboardLayout({ variant = 'client' }: DashboardLayoutProps) {
       <aside
         className={`
           fixed top-0 left-0 z-50 h-full w-64
-          ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}
-          border-r transform transition-transform duration-200 ease-in-out
+          ${theme === 'dark' ? 'bg-slate-950/80 border-white/10' : 'bg-white/80 border-slate-200/70'}
+          border-r backdrop-blur-2xl shadow-[24px_0_60px_-50px_rgba(30,58,138,0.6)] transform transition-transform duration-200 ease-in-out
           lg:translate-x-0
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
@@ -305,7 +327,8 @@ export function DashboardLayout({ variant = 'client' }: DashboardLayoutProps) {
       </aside>
 
       <div className="lg:pl-64">
-        <header className={`sticky top-0 z-30 border-b ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+        <header className={`sticky top-0 z-30 border-b backdrop-blur-xl ${theme === 'dark' ? 'bg-slate-950/70 border-white/10' : 'bg-white/70 border-slate-200/70'}`}>
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-xisync-cyan-500/60 to-transparent" />
           <div className="flex items-center justify-between h-16 px-4 lg:px-6">
             <div className="flex items-center gap-4">
               <button
