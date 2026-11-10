@@ -32,7 +32,17 @@ test('dashboard, admin, and portal require an authenticated session', async ({ p
   }
 });
 
-test('workspace API denies unauthenticated reads', async ({ page }) => {
+test('workspace API denies unauthenticated reads', async ({ page, request }) => {
+  // Requires the API service. On Replit the artifact router sends /api to it;
+  // the bare Vite dev server has no /api route, so skip instead of asserting
+  // against the SPA fallback.
+  const health = await request.get('/api/healthz').catch(() => null);
+  const isApi =
+    !!health &&
+    health.ok() &&
+    (health.headers()['content-type'] || '').includes('application/json');
+  test.skip(!isApi, 'API service is not reachable for this base URL.');
+
   await page.goto('/login');
   const status = await page.evaluate(async () => {
     const response = await fetch('/api/xisync/context', { credentials: 'include' });
