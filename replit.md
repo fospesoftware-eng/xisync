@@ -4,10 +4,35 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5050 locally; Replit injects `PORT`)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
+
+### Run locally without Replit
+
+```bash
+createdb xisync_dev          # once; Postgres must be running locally
+pnpm run db:local            # migrate + seed against xisync_dev
+pnpm run dev:local           # API on :5050, web app on :5173 (Vite proxies /api)
+```
+
+Open http://localhost:5173 and sign in with the demo admin below.
+
+Demo credentials (created by the seed, **change or delete before any real use**):
+
+- Email: `admin@xisync.demo`
+- Password: `Xisync#2026Admin`
+- Tenant: `lumen-trading` (the seeded demo workspace)
+
+Credentials auth stores a scrypt hash in `users.password_hash` and issues the
+same encrypted session cookie as the Replit OIDC callback, so `/api/xisync/*`
+behaves identically. The login page offers email/password (`POST /api/auth/login`)
+only; the OIDC routes (`/api/login`, `/api/callback`, and the Replit redirect on
+logout) remain available server-side for the deployed app. Override the local DB
+with `DATABASE_URL` or the proxy target with `VITE_API_PROXY_TARGET`. The local
+API uses port `5050` because macOS AirPlay Receiver occupies `5000`; override
+with `PORT` (and point `VITE_API_PROXY_TARGET` at it) if needed.
 
 ### Database
 

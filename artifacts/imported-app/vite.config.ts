@@ -26,6 +26,13 @@ if (!basePath) {
   );
 }
 
+// Local development proxies /api to the standalone API server. On Replit the
+// artifact router already forwards /api, so the proxy stays off unless a
+// target is explicitly provided.
+const apiProxyTarget =
+  process.env.VITE_API_PROXY_TARGET ??
+  (process.env.REPL_ID ? undefined : 'http://localhost:5050');
+
 export default defineConfig({
   base: basePath,
   plugins: [
@@ -70,6 +77,14 @@ export default defineConfig({
     fs: {
       strict: true,
     },
+    proxy: apiProxyTarget
+      ? {
+          '/api': {
+            target: apiProxyTarget,
+            changeOrigin: true,
+          },
+        }
+      : undefined,
   },
   preview: {
     port,
