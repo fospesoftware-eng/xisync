@@ -24,6 +24,14 @@ test('the app no longer includes Supabase demo-password scaffolding', () => {
   assert.doesNotMatch(loginPage, /demo@/i);
 });
 
+test('registration hands off to the credentials login', () => {
+  const registerPage = read('src/pages/auth/RegisterPage.tsx');
+  assert.match(registerPage, /to="\/login"/);
+  // No client-side entry point may start the Replit OIDC redirect.
+  assert.doesNotMatch(registerPage, /useAuth|signIn|\/api\/login|onClick=/);
+  assert.doesNotMatch(read('src/pages/auth/LoginPage.tsx'), /\/api\/login|onClick=\{signIn\}/);
+});
+
 test('workspace APIs derive scope from the authenticated profile', () => {
   const routes = read('../api-server/src/routes/xisync.ts');
   assert.match(routes, /function requireUser/);
