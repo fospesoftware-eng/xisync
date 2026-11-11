@@ -17,18 +17,20 @@ test('public pages and mobile layout remain accessible', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test('sign-in screen uses Replit authentication instead of demo credentials', async ({ page }) => {
+test('sign-in screen offers only email/password authentication', async ({ page }) => {
   await page.goto('/login');
   await expect(page.getByRole('heading', { name: /sign in to xisync/i })).toBeVisible();
-  await expect(page.getByRole('button', { name: /continue securely/i })).toBeVisible();
-  await expect(page.locator('input[type=email], input[type=password]')).toHaveCount(0);
+  await expect(page.locator('input[type=email]')).toHaveCount(1);
+  await expect(page.locator('input[type=password]')).toHaveCount(1);
+  await expect(page.locator('button[type=submit]')).toBeVisible();
+  await expect(page.getByRole('button', { name: /continue securely|安全继续/i })).toHaveCount(0);
 });
 
 test('dashboard, admin, and portal require an authenticated session', async ({ page }) => {
   for (const route of ['/dashboard', '/admin', '/portal']) {
     await page.goto(route);
     await expect(page).toHaveURL(/\/login$/);
-    await expect(page.getByRole('button', { name: /continue securely/i })).toBeVisible();
+    await expect(page.locator('input[type=password]')).toBeVisible();
   }
 });
 

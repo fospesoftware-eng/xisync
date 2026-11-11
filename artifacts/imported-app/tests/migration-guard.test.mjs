@@ -7,12 +7,21 @@ import { dirname, resolve } from 'node:path';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (path) => readFileSync(resolve(root, path), 'utf8');
 
-test('the app no longer includes Supabase or demo-password sign-in', () => {
+test('the app no longer includes Supabase demo-password scaffolding', () => {
   const packageJson = JSON.parse(read('package.json'));
   assert.equal(packageJson.dependencies?.['@supabase/supabase-js'], undefined);
   assert.equal(existsSync(resolve(root, 'src/lib/supabase.ts')), false);
   assert.match(read('src/lib/auth-context.tsx'), /useReplitAuth/);
-  assert.doesNotMatch(read('src/pages/auth/LoginPage.tsx'), /type=["']password["']|demo@/i);
+
+  const loginPage = read('src/pages/auth/LoginPage.tsx');
+  assert.match(loginPage, /\/api\/auth\/login/);
+  assert.match(loginPage, /type="password"/);
+  // Email/password is the only entry point in the UI; OIDC routes stay server-side.
+  assert.doesNotMatch(loginPage, /continue securely|安全继续/i);
+  assert.doesNotMatch(loginPage, /onClick=\{signIn\}/);
+  // Credentials live in the seed/API only; the UI must never embed them.
+  assert.doesNotMatch(loginPage, /Xisync#2026Admin/);
+  assert.doesNotMatch(loginPage, /demo@/i);
 });
 
 test('workspace APIs derive scope from the authenticated profile', () => {
