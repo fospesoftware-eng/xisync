@@ -6,7 +6,6 @@ import { I18nProvider } from './lib/i18n';
 import { ThemeProvider } from './lib/theme-context';
 import { PasswordProvider } from './lib/password-context';
 import { CurrencyProvider } from './lib/currency-context';
-import { AppGuard } from './components/AppGuard';
 
 import { HomePage } from './pages/marketing/HomePage';
 import { ProductPage } from './pages/marketing/ProductPage';
@@ -161,8 +160,7 @@ function App() {
           <AuthProvider>
             <CurrencyProvider>
               <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || '/'}>
-                <AppGuard>
-                  <Suspense fallback={<RouteFallback />}>
+                <Suspense fallback={<RouteFallback />}>
                   <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/product" element={<ProductPage />} />
@@ -306,7 +304,6 @@ function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                   </Suspense>
-                </AppGuard>
               </BrowserRouter>
             </CurrencyProvider>
           </AuthProvider>
