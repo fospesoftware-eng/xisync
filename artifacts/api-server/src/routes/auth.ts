@@ -2,8 +2,8 @@ import {
   GetCurrentAuthUserResponse,
 } from '@workspace/api-zod';
 import type { AuthUser } from '@workspace/api-zod';
-import { db, usersTable } from '@workspace/db';
-import { eq } from 'drizzle-orm';
+import { db, usersTable, verifyPassword } from '@workspace/db';
+import { eq, sql } from 'drizzle-orm';
 import { Router, type IRouter, type Request, type Response } from 'express';
 import * as oidc from 'openid-client';
 import {
@@ -19,6 +19,16 @@ import {
 
 const router: IRouter = Router();
 const OIDC_COOKIE_TTL = 10 * 60 * 1000;
+const MAX_PASSWORD_LENGTH = 200;
+
+// Verified against when the email is unknown, so both failure paths do the same work.
+const DUMMY_PASSWORD_HASH =
+  'scrypt$16384$8$1$Y80RXn5h7s8lMc5sylf8OA$iGz51-ozqtKXNlt8Hp6aCJJczwxOYQBgv-LqIt4YX4VhVhRLe6Z1-I_q7ayvguAmFrw8RN5ZH9KWuts0V52Tlg';
+
+function isSecureRequest(req: Request): boolean {
+  const forwarded = String(req.headers['x-forwarded-proto'] ?? '').split(',')[0].trim();
+  return req.secure || forwarded === 'https';
+}
 
 function getOrigin(req: Request): string {
   const protocol = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
@@ -90,6 +100,58 @@ router.get('/login', async (req: Request, res: Response): Promise<void> => {
   res.redirect(redirectTo.href);
 });
 
+router.post('/auth/login', async (req: Request, res: Response): Promise<void> => {
+  const body = (req.body ?? {}) as { email?: unknown; password?: unknown };
+  const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+  const password = typeof body.password === 'string' ? body.password : '';
+
+  const reject = (): void => {
+    res.status(401).json({ error: 'Invalid email or password.' });
+  };
+
+  if (!email || !email.includes('@') || !password || password.length > MAX_PASSWORD_LENGTH) {
+    reject();
+    return;
+  }
+
+  const [dbUser] = await db
+    .select()
+    .from(usersTable)
+    .where(sql`lower(${usersTable.email}) = ${email}`)
+    .limit(1);
+
+  // Always run a full scrypt verification, even for unknown accounts, so the
+  // response time does not reveal whether the email exists.
+  const passwordMatches = await verifyPassword(password, dbUser?.passwordHash ?? DUMMY_PASSWORD_HASH);
+
+  if (!dbUser || !dbUser.passwordHash || !passwordMatches) {
+    req.log.warn('Rejected credentials sign-in');
+    reject();
+    return;
+  }
+
+  const user: AuthUser = {
+    id: dbUser.id,
+    email: dbUser.email,
+    firstName: dbUser.firstName,
+    lastName: dbUser.lastName,
+    profileImageUrl: dbUser.profileImageUrl,
+  };
+  const sessionData: SessionData = {
+    user,
+    access_token: 'credentials',
+  };
+  const sid = await createSession(sessionData);
+  res.cookie(SESSION_COOKIE, sid, {
+    httpOnly: true,
+    secure: isSecureRequest(req),
+    sameSite: 'lax',
+    path: '/',
+    maxAge: SESSION_TTL,
+  });
+  res.json(GetCurrentAuthUserResponse.parse({ user }));
+});
+
 router.get('/callback', async (req: Request, res: Response): Promise<void> => {
   const config = await getOidcConfig();
   const origin = getOrigin(req);
@@ -148,15 +210,21 @@ router.get('/callback', async (req: Request, res: Response): Promise<void> => {
 });
 
 router.get('/logout', async (req: Request, res: Response): Promise<void> => {
-  const config = await getOidcConfig();
   const origin = getOrigin(req);
   const returnTo = safeReturnTo(req.query.returnTo);
   await clearSession(res, getSessionId(req));
-  const endSessionUrl = oidc.buildEndSessionUrl(config, {
-    client_id: process.env.REPL_ID!,
-    post_logout_redirect_uri: new URL(returnTo, `${origin}/`).href,
-  });
-  res.redirect(endSessionUrl.href);
+
+  let redirectTo = returnTo;
+  try {
+    const config = await getOidcConfig();
+    redirectTo = oidc.buildEndSessionUrl(config, {
+      client_id: process.env.REPL_ID!,
+      post_logout_redirect_uri: new URL(returnTo, `${origin}/`).href,
+    }).href;
+  } catch {
+    // OIDC is not configured (for example local Postgres development).
+  }
+  res.redirect(redirectTo);
 });
 
 export default router;

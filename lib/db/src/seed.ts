@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { hashPassword } from './password';
 import {
   accountsTable,
   cmsPagesTable,
@@ -52,7 +53,12 @@ const U = {
   lena: uuid('contact:lumen:lena'),
   daniel: uuid('user:daniel-wu'),
   aisha: uuid('user:aisha-rahman'),
+  admin: uuid('user:demo-admin'),
 };
+
+// DEMO CREDENTIAL ONLY. Change or remove this account before any real use.
+const DEMO_ADMIN_EMAIL = 'admin@xisync.demo';
+const DEMO_ADMIN_PASSWORD = 'Xisync#2026Admin';
 
 const A = {
   nordline: uuid('account:lumen:nordline'),
@@ -238,6 +244,16 @@ async function seed(): Promise<void> {
       createdAt: day(-40),
       updatedAt: day(-3),
     },
+    {
+      id: U.admin,
+      email: DEMO_ADMIN_EMAIL,
+      firstName: 'XiSync',
+      lastName: 'Admin',
+      profileImageUrl: 'https://cdn.xisync.app/avatars/demo-admin.svg',
+      passwordHash: await hashPassword(DEMO_ADMIN_PASSWORD),
+      createdAt: day(-30),
+      updatedAt: day(0),
+    },
   ]);
 
   // --------------------------------------------------------------- profiles
@@ -311,6 +327,20 @@ async function seed(): Promise<void> {
       settings: { notificationEmail: true, sidebarCollapsed: false, onboardingStep: 'invite-team' },
       createdAt: day(-40),
       updatedAt: day(-3),
+    },
+    {
+      id: U.admin,
+      tenantId: T.lumen,
+      fullName: 'XiSync Demo Admin',
+      fullNameCn: 'XiSync 演示管理员',
+      role: 'admin',
+      avatarUrl: 'https://cdn.xisync.app/avatars/demo-admin.svg',
+      phone: '+86 21 6888 1200',
+      language: 'zh',
+      isActive: true,
+      settings: { notificationEmail: true, sidebarCollapsed: false, demoAccount: true },
+      createdAt: day(-30),
+      updatedAt: day(0),
     },
   ]);
 
@@ -696,6 +726,9 @@ async function seed(): Promise<void> {
   }
   console.log(`[db:seed] Primary demo tenant: lumen-trading (${T.lumen})`);
   console.log('[db:seed] Bind a real login to it with: pnpm --filter @workspace/db bind <email>');
+  console.log('[db:seed] DEMO CREDENTIAL — change or remove before real use:');
+  console.log(`[db:seed]   email:    ${DEMO_ADMIN_EMAIL}`);
+  console.log(`[db:seed]   password: ${DEMO_ADMIN_PASSWORD}`);
 }
 
 seed()
