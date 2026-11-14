@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Header } from '../../components/marketing/Header';
 import { Footer } from '../../components/marketing/Footer';
 import { Check, X, HelpCircle } from 'lucide-react';
@@ -278,8 +278,8 @@ export function PricingPage() {
                   </thead>
                   <tbody>
                     {featureCategories.map((category) => (
-                      <>
-                        <tr key={category.name} className="bg-gray-100">
+                      <Fragment key={category.name}>
+                        <tr className="bg-gray-100">
                           <td colSpan={5} className="p-4 font-semibold text-gray-900">
                             {category.name}
                           </td>
@@ -293,7 +293,7 @@ export function PricingPage() {
                             <td className="p-4 text-center">{renderFeatureValue(feature.enterprise)}</td>
                           </tr>
                         ))}
-                      </>
+                      </Fragment>
                     ))}
                   </tbody>
                 </table>
